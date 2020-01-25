@@ -15,8 +15,11 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Security analysis tool for Zigbee networks
+Collection of parsing modules for the zigator package
 """
 
-from . import parsing
-from .__about__ import *
+from .pcap_directory import pcap_directory
+from .pcap_file import pcap_file
+
+
+__all__ = ["pcap_directory", "pcap_file"]

@@ -16,11 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import zigator
+
+
+def parse_pcap_files():
+    while True:
+        dirpath = input("Enter the directory with the pcap files: ")
+        if os.path.isdir(dirpath):
+            zigator.parsing.pcap_directory(dirpath)
+            return
+        else:
+            print("The provided directory \"{}\" does not exist"
+                  "".format(dirpath))
+
 
 def main():
     """Generate the main menu and handle user input."""
     menu = {
-        "1": ("Exit this program", exit)
+        "1": ("Parse pcap files", parse_pcap_files),
+        "2": ("Exit this program", exit)
     }
     while True:
         print("\nEnter the number of an available option:")

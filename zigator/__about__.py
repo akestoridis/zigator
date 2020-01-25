@@ -42,7 +42,9 @@ __classifiers__ = [
     "Programming Language :: Python :: 3",
     "Topic :: Security"
 ]
-__install_requires__ = []
+__install_requires__ = [
+    "scapy===2.4.3-zigator"
+]
 __python_requires__ = ">=3.5.3"
 __entry_points__ = {
     "console_scripts": [

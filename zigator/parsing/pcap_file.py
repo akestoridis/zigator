@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Security analysis tool for Zigbee networks
-"""
+from scapy.all import *
 
-from . import parsing
-from .__about__ import *
+
+def pcap_file(filepath):
+    """Parse all packets in the provided pcap file."""
+    for pkt in PcapReader(filepath):
+        print(pkt.show(dump=True))

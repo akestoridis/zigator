@@ -14,9 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Security analysis tool for Zigbee networks
-"""
+import glob
+import os
 
-from . import parsing
-from .__about__ import *
+from .pcap_file import pcap_file
+
+
+def pcap_directory(dirpath):
+    """Parse all pcap files in the provided directory."""
+    filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))
+    filepaths.sort()
+    for filepath in filepaths:
+        pcap_file(filepath)
