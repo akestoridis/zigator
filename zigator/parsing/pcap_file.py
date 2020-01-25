@@ -14,10 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import os
+
 from scapy.all import *
+
+from . import config
 
 
 def pcap_file(filepath):
     """Parse all packets in the provided pcap file."""
+    config.reset_entries()
+    head, tail = os.path.split(os.path.abspath(filepath))
+    config.entry["pcap_directory"] = head
+    config.entry["pcap_filename"] = tail
+    config.entry["pkt_num"] = 0
     for pkt in PcapReader(filepath):
-        print(pkt.show(dump=True))
+        config.entry["pkt_num"] += 1
+        config.insert_pkt_into_database()
+        config.reset_entries(keep=["pcap_directory",
+                                   "pcap_filename",
+                                   "pkt_num"])

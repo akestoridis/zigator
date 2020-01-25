@@ -17,12 +17,16 @@
 import glob
 import os
 
+from . import config
+
 from .pcap_file import pcap_file
 
 
 def pcap_directory(dirpath):
     """Parse all pcap files in the provided directory."""
+    config.initialize_db()
     filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))
     filepaths.sort()
     for filepath in filepaths:
         pcap_file(filepath)
+    config.finalize_db()
