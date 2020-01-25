@@ -44,6 +44,11 @@ __classifiers__ = [
 ]
 __install_requires__ = []
 __python_requires__ = ">=3.5.3"
+__entry_points__ = {
+    "console_scripts": [
+        "zigator=zigator.main:main"
+    ]
+}
 __all__ = [
     "__title__",
     "__version__",
@@ -56,5 +61,6 @@ __all__ = [
     "__keywords__",
     "__classifiers__",
     "__install_requires__",
-    "__python_requires__"
+    "__python_requires__",
+    "__entry_points__"
 ]
