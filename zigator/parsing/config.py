@@ -14,11 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import string
 import sqlite3
 
 from scapy.all import *
 
+
+# Make sure that the configuration directory exists
+config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")
+os.makedirs(config_dir, exist_ok=True)
 
 # Configure Scapy to assume that Zigbee is above the MAC layer
 conf.dot15d4_protocol = "zigbee"
@@ -42,11 +47,15 @@ entry = {column[0]: None for column in columns}
 db_connection = None
 db_cursor = None
 
+# Define the filepath of the database
+db_filepath = os.path.join(config_dir, "traffic.db")
+
 
 def reset_entries(keep=[]):
+    # Reset all data entries in the shared dictionary except
+    # the ones that were requested to maintain their values
     if keep is None:
         keep = []
-
     for column_name in entry.keys():
         if column_name not in keep:
             entry[column_name] = None
@@ -57,8 +66,7 @@ def initialize_db():
     global db_cursor
 
     # Open a connection with the database
-    # TODO: Change the location of the database
-    db_connection = sqlite3.connect("zigator.db")
+    db_connection = sqlite3.connect(db_filepath)
     db_connection.text_factory = str
     db_cursor = db_connection.cursor()
 
