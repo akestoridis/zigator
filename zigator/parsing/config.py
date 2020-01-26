@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 import string
 import sqlite3
 
 from scapy.all import *
 
+
+# Configure the logging system
+logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
 
 # Make sure that the configuration directory exists
 config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")

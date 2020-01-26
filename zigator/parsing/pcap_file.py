@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from scapy.all import *
@@ -28,6 +29,7 @@ def pcap_file(filepath):
     config.entry["pcap_directory"] = head
     config.entry["pcap_filename"] = tail
     config.entry["pkt_num"] = 0
+    logging.info("Reading packets from \"{}\"".format(filepath))
     for pkt in PcapReader(filepath):
         config.entry["pkt_num"] += 1
         config.insert_pkt_into_database()
