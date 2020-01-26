@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Configuration script for the zigator package
+"""
+
 import logging
 import os
 import string
@@ -96,6 +100,10 @@ def initialize_db():
                 raise ValueError("The character \"{}\" in the name of the "
                                  "column \"{}\" is not allowed"
                                  "".format(c, column[0]))
+        if column[0][0].isdigit():
+            raise ValueError("The name of the column \"{}\" is not allowed "
+                             "because it starts with a digit"
+                             "".format(column[0]))
         table_creation_command += column[0]
 
         if column[1] not in allowed_types:
