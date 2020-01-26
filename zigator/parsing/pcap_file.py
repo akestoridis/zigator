@@ -20,7 +20,7 @@ import os
 
 from scapy.all import *
 
-from . import config
+from .. import config
 from .phy_fields import phy_fields
 
 

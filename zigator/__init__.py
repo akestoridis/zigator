@@ -18,5 +18,6 @@
 Security analysis tool for Zigbee networks
 """
 
+from . import config
 from . import parsing
 from .__about__ import *

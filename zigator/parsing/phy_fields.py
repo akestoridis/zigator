@@ -16,7 +16,7 @@
 
 from scapy.all import *
 
-from . import config
+from .. import config
 
 
 def phy_fields(pkt):

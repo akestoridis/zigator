@@ -18,8 +18,7 @@ import glob
 import logging
 import os
 
-from . import config
-
+from .. import config
 from .pcap_file import pcap_file
 
 
