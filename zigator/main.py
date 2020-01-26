@@ -24,7 +24,7 @@ def parse_pcap_files():
     while True:
         dirpath = input("Enter the directory with the pcap files: ")
         if os.path.isdir(dirpath):
-            zigator.parsing.pcap_directory(dirpath)
+            zigator.parsing.main(dirpath)
             return
         else:
             print("The provided directory \"{}\" does not exist"

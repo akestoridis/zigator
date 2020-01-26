@@ -22,7 +22,7 @@ from .. import config
 from .pcap_file import pcap_file
 
 
-def pcap_directory(dirpath):
+def main(dirpath):
     """Parse all pcap files in the provided directory."""
     config.initialize_db()
     filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))

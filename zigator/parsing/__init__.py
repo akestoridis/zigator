@@ -18,7 +18,7 @@
 Collection of parsing modules for the zigator package
 """
 
-from .pcap_directory import pcap_directory
+from .main import main
 
 
-__all__ = ["pcap_directory"]
+__all__ = ["main"]
