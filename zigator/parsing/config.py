@@ -36,7 +36,12 @@ conf.dot15d4_protocol = "zigbee"
 columns = [
         ("pcap_directory", "TEXT", "NOT NULL"),
         ("pcap_filename", "TEXT", "NOT NULL"),
-        ("pkt_num", "INTEGER", "NOT NULL")
+        ("pkt_num", "INTEGER", "NOT NULL"),
+        ("raw_pkt", "TEXT", "NOT NULL"),
+        ("show_pkt", "TEXT", "NOT NULL"),
+        ("phy_length", "INTEGER", None),
+        ("error_msg", "TEXT", None)
+
 ]
 
 # Define sets for sanity checks of the column definitions

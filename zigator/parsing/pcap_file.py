@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import binascii
 import logging
 import os
 
 from scapy.all import *
 
 from . import config
+from .phy_fields import phy_fields
 
 
 def pcap_file(filepath):
@@ -32,7 +34,12 @@ def pcap_file(filepath):
     logging.info("Reading packets from \"{}\"".format(filepath))
     for pkt in PcapReader(filepath):
         config.entry["pkt_num"] += 1
+        config.entry["raw_pkt"] = binascii.hexlify(raw(pkt))
+        config.entry["show_pkt"] = pkt.show(dump=True)
+        phy_fields(pkt)
         config.insert_pkt_into_database()
         config.reset_entries(keep=["pcap_directory",
                                    "pcap_filename",
                                    "pkt_num"])
+    logging.info("Parsed {} packets from \"{}\""
+                 "".format(config.entry["pkt_num"], filepath))
