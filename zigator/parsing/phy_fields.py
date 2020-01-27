@@ -32,6 +32,7 @@ def phy_fields(pkt):
 
     if pkt.haslayer(Dot15d4FCS):
         mac_fields(pkt)
+        return
     else:
         config.entry["error_msg"] = (
             "It does not contain IEEE 802.15.4 MAC fields"

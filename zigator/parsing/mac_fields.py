@@ -20,6 +20,7 @@ import struct
 from scapy.all import *
 
 from .. import config
+from .nwk_fields import nwk_fields
 
 
 def get_mac_frametype(pkt):
@@ -100,8 +101,80 @@ def get_mac_srcaddrmode(pkt):
 
 
 def mac_beacon(pkt):
-    # TODO
-    return
+    if config.entry["mac_panidcomp"] != "Do not compress the source PAN ID":
+        config.entry["error_msg"] = (
+            "The source PAN ID of MAC Beacons should not be compressed"
+        )
+        return
+    elif config.entry["mac_dstaddrmode"] != "No destination MAC address":
+        config.entry["error_msg"] = (
+            "MAC Beacons should not contain a destination PAN ID and address"
+        )
+        return
+
+    # Addressing fields
+    config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Beacon].src_panid)
+    if config.entry["mac_srcaddrmode"] == "Short source MAC address":
+        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Beacon].src_addr)
+    elif config.entry["mac_srcaddrmode"] == "Extended source MAC address":
+        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Beacon].src_addr)
+    elif config.entry["mac_srcaddrmode"] == "No source MAC address":
+        config.entry["error_msg"] = (
+            "MAC Beacons should contain a source PAN ID and address"
+        )
+        return
+    else:
+        config.entry["error_msg"] = "Unknown MAC SA mode"
+        return
+
+    # Superframe Specification field
+    config.entry["mac_beacon_beaconorder"] = pkt[Dot15d4Beacon].sf_beaconorder
+    config.entry["mac_beacon_sforder"] = pkt[Dot15d4Beacon].sf_sforder
+    config.entry["mac_beacon_finalcap"] = pkt[Dot15d4Beacon].sf_finalcapslot
+    config.entry["mac_beacon_ble"] = pkt[Dot15d4Beacon].sf_battlifeextend
+    config.entry["mac_beacon_pancoord"] = pkt[Dot15d4Beacon].sf_pancoord
+    config.entry["mac_beacon_assocpermit"] = pkt[Dot15d4Beacon].sf_assocpermit
+
+    # GTS Specification field
+    config.entry["mac_beacon_gtsnum"] = pkt[Dot15d4Beacon].gts_spec_desccount
+    config.entry["mac_beacon_gtspermit"] = pkt[Dot15d4Beacon].gts_spec_permit
+
+    # GTS Directions Mask field
+    if config.entry["mac_beacon_gtsnum"] > 0:
+        config.entry["mac_beacon_gtsmask"] = pkt[Dot15d4Beacon].gts_dir_mask
+
+    # GTS List field
+    if config.entry["mac_beacon_gtsnum"] > 0:
+        logging.warning("Packet #{} in {} contains a GTS List field "
+                        "which could not be processed"
+                        "".format(config.entry["pkt_num"],
+                                  config.entry["pcap_filename"]))
+        config.entry["error_msg"] = "Could not process the GTS List"
+        return
+
+    # Pending Address Specification field
+    config.entry["mac_beacon_nsap"] = pkt[Dot15d4Beacon].pa_num_short
+    config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
+
+    # Address List field
+    if (config.entry["mac_beacon_nsap"] > 0
+            or config.entry["mac_beacon_neap"] > 0):
+        logging.warning("Packet #{} in {} contains an Address List field "
+                        "which could not be processed"
+                        "".format(config.entry["pkt_num"],
+                                  config.entry["pcap_filename"]))
+        config.entry["error_msg"] = "Could not process the Address List"
+        return
+
+    # Beacon Payload field
+    if pkt.haslayer(ZigBeeBeacon):
+        nwk_fields(pkt)
+        return
+    else:
+        config.entry["error_msg"] = (
+            "It does not contain the payload of a Zigbee Beacon"
+        )
+        return
 
 
 def mac_command(pkt):
@@ -164,6 +237,7 @@ def mac_fields(pkt):
         elif config.entry["mac_frametype"] == "MAC Beacon":
             if pkt.haslayer(Dot15d4Beacon):
                 mac_beacon(pkt)
+                return
             else:
                 config.entry["error_msg"] = (
                     "It does not contain MAC Beacon fields"
@@ -172,6 +246,7 @@ def mac_fields(pkt):
         elif config.entry["mac_frametype"] == "MAC Command":
             if pkt.haslayer(Dot15d4Cmd):
                 mac_command(pkt)
+                return
             else:
                 config.entry["error_msg"] = (
                     "It does not contain MAC Command fields"
@@ -179,7 +254,8 @@ def mac_fields(pkt):
                 return
         elif config.entry["mac_frametype"] == "MAC Data":
             if pkt.haslayer(Dot15d4Data):
-                return mac_data(pkt)
+                mac_data(pkt)
+                return
             else:
                 config.entry["error_msg"] = (
                     "It does not contain MAC Data fields"
