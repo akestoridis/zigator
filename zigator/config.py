@@ -44,6 +44,16 @@ columns = [
         ("raw_pkt", "TEXT", "NOT NULL"),
         ("show_pkt", "TEXT", "NOT NULL"),
         ("phy_length", "INTEGER", None),
+        ("mac_fcs", "TEXT", None),
+        ("mac_frametype", "TEXT", None),
+        ("mac_security", "TEXT", None),
+        ("mac_framepending", "TEXT", None),
+        ("mac_ackreq", "TEXT", None),
+        ("mac_panidcomp", "TEXT", None),
+        ("mac_dstaddrmode", "TEXT", None),
+        ("mac_frameversion", "TEXT", None),
+        ("mac_srcaddrmode", "TEXT", None),
+        ("mac_seqnum", "INTEGER", None),
         ("error_msg", "TEXT", None)
 
 ]

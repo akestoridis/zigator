@@ -17,6 +17,7 @@
 from scapy.all import *
 
 from .. import config
+from .mac_fields import mac_fields
 
 
 def phy_fields(pkt):
@@ -30,9 +31,9 @@ def phy_fields(pkt):
     config.entry["phy_length"] = len(pkt)
 
     if pkt.haslayer(Dot15d4FCS):
-        # TODO: Replace `return` with `mac_fields(pkt)`
-        return
+        mac_fields(pkt)
     else:
         config.entry["error_msg"] = (
             "It does not contain IEEE 802.15.4 MAC fields"
         )
+        return
