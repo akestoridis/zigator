@@ -38,53 +38,58 @@ conf.dot15d4_protocol = "zigbee"
 
 # Define the columns of the table in the database
 columns = [
-        ("pcap_directory", "TEXT", "NOT NULL"),
-        ("pcap_filename", "TEXT", "NOT NULL"),
-        ("pkt_num", "INTEGER", "NOT NULL"),
-        ("raw_pkt", "TEXT", "NOT NULL"),
-        ("show_pkt", "TEXT", "NOT NULL"),
-        ("phy_length", "INTEGER", None),
-        ("mac_fcs", "TEXT", None),
-        ("mac_frametype", "TEXT", None),
-        ("mac_security", "TEXT", None),
-        ("mac_framepending", "TEXT", None),
-        ("mac_ackreq", "TEXT", None),
-        ("mac_panidcomp", "TEXT", None),
-        ("mac_dstaddrmode", "TEXT", None),
-        ("mac_frameversion", "TEXT", None),
-        ("mac_srcaddrmode", "TEXT", None),
-        ("mac_seqnum", "INTEGER", None),
-        ("mac_srcpanid", "TEXT", None),
-        ("mac_srcshortaddr", "TEXT", None),
-        ("mac_srcextendedaddr", "TEXT", None),
-        ("mac_beacon_beaconorder", "INTEGER", None),
-        ("mac_beacon_sforder", "INTEGER", None),
-        ("mac_beacon_finalcap", "INTEGER", None),
-        ("mac_beacon_ble", "INTEGER", None),
-        ("mac_beacon_pancoord", "INTEGER", None),
-        ("mac_beacon_assocpermit", "INTEGER", None),
-        ("mac_beacon_gtsnum", "INTEGER", None),
-        ("mac_beacon_gtspermit", "INTEGER", None),
-        ("mac_beacon_gtsmask", "INTEGER", None),
-        ("mac_beacon_nsap", "INTEGER", None),
-        ("mac_beacon_neap", "INTEGER", None),
-        ("nwk_beacon_protocolid", "INTEGER", None),
-        ("nwk_beacon_stackprofile", "INTEGER", None),
-        ("nwk_beacon_protocolversion", "TEXT", None),
-        ("nwk_beacon_routercap", "INTEGER", None),
-        ("nwk_beacon_devdepth", "INTEGER", None),
-        ("nwk_beacon_edcap", "INTEGER", None),
-        ("nwk_beacon_epid", "TEXT", None),
-        ("nwk_beacon_txoffset", "INTEGER", None),
-        ("nwk_beacon_updateid", "INTEGER", None),
-        ("error_msg", "TEXT", None)
-
+    ("pcap_directory", "TEXT"),
+    ("pcap_filename", "TEXT"),
+    ("pkt_num", "INTEGER"),
+    ("raw_pkt", "TEXT"),
+    ("show_pkt", "TEXT"),
+    ("phy_length", "INTEGER"),
+    ("mac_fcs", "TEXT"),
+    ("mac_frametype", "TEXT"),
+    ("mac_security", "TEXT"),
+    ("mac_framepending", "TEXT"),
+    ("mac_ackreq", "TEXT"),
+    ("mac_panidcomp", "TEXT"),
+    ("mac_dstaddrmode", "TEXT"),
+    ("mac_frameversion", "TEXT"),
+    ("mac_srcaddrmode", "TEXT"),
+    ("mac_seqnum", "INTEGER"),
+    ("mac_srcpanid", "TEXT"),
+    ("mac_srcshortaddr", "TEXT"),
+    ("mac_srcextendedaddr", "TEXT"),
+    ("mac_beacon_beaconorder", "INTEGER"),
+    ("mac_beacon_sforder", "INTEGER"),
+    ("mac_beacon_finalcap", "INTEGER"),
+    ("mac_beacon_ble", "INTEGER"),
+    ("mac_beacon_pancoord", "INTEGER"),
+    ("mac_beacon_assocpermit", "INTEGER"),
+    ("mac_beacon_gtsnum", "INTEGER"),
+    ("mac_beacon_gtspermit", "INTEGER"),
+    ("mac_beacon_gtsmask", "INTEGER"),
+    ("mac_beacon_nsap", "INTEGER"),
+    ("mac_beacon_neap", "INTEGER"),
+    ("nwk_beacon_protocolid", "INTEGER"),
+    ("nwk_beacon_stackprofile", "INTEGER"),
+    ("nwk_beacon_protocolversion", "TEXT"),
+    ("nwk_beacon_routercap", "INTEGER"),
+    ("nwk_beacon_devdepth", "INTEGER"),
+    ("nwk_beacon_edcap", "INTEGER"),
+    ("nwk_beacon_epid", "TEXT"),
+    ("nwk_beacon_txoffset", "INTEGER"),
+    ("nwk_beacon_updateid", "INTEGER"),
+    ("error_msg", "TEXT")
 ]
 
-# Define sets for sanity checks of the column definitions
+# Define sets that will be used to construct valid column definitions
 allowed_characters = set(string.ascii_letters + string.digits + "_")
 allowed_types = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-allowed_constraints = set([None, "NOT NULL"])
+constrained_columns = set([
+    "pcap_directory",
+    "pcap_filename",
+    "pkt_num",
+    "raw_pkt",
+    "show_pkt"
+])
 
 # Use a shared dictionary to set up data entries
 entry = {column[0]: None for column in columns}
@@ -123,35 +128,38 @@ def initialize_db():
 
     # Create a table for the parsed packets, if it doesn't already exist
     table_creation_command = "CREATE TABLE IF NOT EXISTS packets("
-    first_column = True
+    delimiter_needed = False
     for column in columns:
-        if not first_column:
+        if delimiter_needed:
             table_creation_command += ", "
+        else:
+            delimiter_needed = True
 
-        for c in column[0]:
-            if c not in allowed_characters:
+        column_name = column[0]
+        column_type = column[1]
+
+        for i in range(len(column_name)):
+            if column_name[i] not in allowed_characters:
                 raise ValueError("The character \"{}\" in the name of the "
                                  "column \"{}\" is not allowed"
-                                 "".format(c, column[0]))
-        if column[0][0].isdigit():
+                                 "".format(column_name[i], column_name))
+
+        if column_name[0].isdigit():
             raise ValueError("The name of the column \"{}\" is not allowed "
                              "because it starts with a digit"
-                             "".format(column[0]))
-        table_creation_command += column[0]
+                             "".format(column_name))
 
-        if column[1] not in allowed_types:
+        table_creation_command += column_name
+
+        if column_type not in allowed_types:
             raise ValueError("The column type \"{}\" is not in the "
                              "set of allowed column types {}"
-                             "".format(column[1], allowed_types))
-        table_creation_command += " " + column[1]
+                             "".format(column_type, allowed_types))
 
-        if column[2] not in allowed_constraints:
-            raise ValueError("The column constraint \"{}\" is not in the "
-                             "set of allowed column constraints {}"
-                             "".format(column[2], allowed_constraints))
-        if column[2] is not None:
-            table_creation_command += " " + column[2]
-        first_column = False
+        table_creation_command += " " + column_type
+
+        if column_name in constrained_columns:
+            table_creation_command += " NOT NULL"
     table_creation_command += ")"
 
     db_cursor.execute(table_creation_command)
