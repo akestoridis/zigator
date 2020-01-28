@@ -17,8 +17,14 @@
 import logging
 import struct
 
+from scapy.all import Dot15d4AuxSecurityHeader
 from scapy.all import Dot15d4Beacon
 from scapy.all import Dot15d4Cmd
+from scapy.all import Dot15d4CmdAssocReq
+from scapy.all import Dot15d4CmdAssocResp
+from scapy.all import Dot15d4CmdCoordRealign
+from scapy.all import Dot15d4CmdDisassociation
+from scapy.all import Dot15d4CmdGTSReq
 from scapy.all import Dot15d4Data
 from scapy.all import Dot15d4FCS
 from scapy.all import ZigBeeBeacon
@@ -104,6 +110,219 @@ def get_mac_srcaddrmode(pkt):
     return mac_srcaddr_modes.get(srcaddr_mode, "Unknown MAC SA mode")
 
 
+def get_mac_command(pkt):
+    mac_commands = {
+            1: "MAC Association Request",
+            2: "MAC Association Response",
+            3: "MAC Disassociation Notification",
+            4: "MAC Data Request",
+            5: "MAC PAN ID Conflict Notification",
+            6: "MAC Orphan Notification",
+            7: "MAC Beacon Request",
+            8: "MAC Coordinator Realignment",
+            9: "MAC GTS Request"
+    }
+    command_id = pkt[Dot15d4Cmd].cmd_id
+    return mac_commands.get(command_id, "Unknown MAC Command")
+
+
+def get_mac_assocreq_devtype(pkt):
+    device_types = {
+            0: "Reduced-Function Device",
+            1: "Full-Function Device"
+    }
+    devtype_id = pkt[Dot15d4CmdAssocReq].device_type
+    return device_types.get(devtype_id, "Unknown device type")
+
+
+def get_mac_assocreq_powsrc(pkt):
+    power_sources = {
+            0: "Battery",
+            1: "Mains"
+    }
+    pwrsrc_id = pkt[Dot15d4CmdAssocReq].power_source
+    return power_sources.get(pwrsrc_id, "Unknown power source")
+
+
+def get_mac_assocreq_rxidle(pkt):
+    rxidle_states = {
+            0: "Disables the receiver to conserve power when idle",
+            1: "Does not disable the receiver to conserve power"
+    }
+    rxidle_state = pkt[Dot15d4CmdAssocReq].receiver_on_when_idle
+    return rxidle_states.get(rxidle_state, "Unknown RX state when idle")
+
+
+def get_mac_assocreq_seccap(pkt):
+    seccap_states = {
+            0: "Cannot transmit and receive secure MAC frames",
+            1: "Can transmit and receive secure MAC frames"
+    }
+    seccap_state = pkt[Dot15d4CmdAssocReq].security_capability
+    return seccap_states.get(seccap_state, "Unknown MAC security capacity")
+
+
+def get_mac_assocreq_allocaddr(pkt):
+    allocaddr_states = {
+            0: "Does not request a short address",
+            1: "Requests a short address"
+    }
+    allocaddr_state = pkt[Dot15d4CmdAssocReq].allocate_address
+    return allocaddr_states.get(allocaddr_state, "Unknown address allocation")
+
+
+def get_mac_assocresp_status(pkt):
+    assoc_statuses = {
+            0: "Association successful",
+            1: "PAN at capacity",
+            2: "PAN access denied"
+    }
+    assoc_status = pkt[Dot15d4CmdAssocResp].association_status
+    return assoc_statuses.get(assoc_status, "Unknown association status")
+
+
+def get_mac_disassoc_reason(pkt):
+    disassoc_reasons = {
+            1: "The coordinator wishes the device to leave the PAN",
+            2: "The device wishes to leave the PAN"
+    }
+    reason_id = pkt[Dot15d4CmdDisassociation].disassociation_reason
+    return disassoc_reasons.get(reason_id, "Unknown disassociation reason")
+
+
+def get_mac_gtsreq_dir(pkt):
+    gts_directions = {
+            0: "Transmit-Only GTS",
+            1: "Receive-Only GTS"
+    }
+    dir_id = pkt[Dot15d4CmdGTSReq].gts_dir
+    return gts_direction.get(dir_id, "Unknown GTS direction")
+
+
+def get_mac_gtsreq_chartype(pkt):
+    charact_types = {
+            0: "GTS Deallocation",
+            1: "GTS Allocation"
+    }
+    chartype_id = pkt[Dot15d4CmdGTSReq].charact_type
+    return charact_types.get(chartype_id, "Unknown GTS characteristics type")
+
+
+def mac_assocreq(pkt):
+    config.entry["mac_assocreq_devtype"] = get_mac_assocreq_devtype(pkt)
+    config.entry["mac_assocreq_powsrc"] = get_mac_assocreq_powsrc(pkt)
+    config.entry["mac_assocreq_rxidle"] = get_mac_assocreq_rxidle(pkt)
+    config.entry["mac_assocreq_seccap"] = get_mac_assocreq_seccap(pkt)
+    config.entry["mac_assocreq_allocaddr"] = get_mac_assocreq_allocaddr(pkt)
+
+
+def mac_assocresp(pkt):
+    config.entry["mac_assocresp_shortaddr"] = hex(
+        pkt[Dot15d4CmdAssocResp].short_address)
+    config.entry["mac_assocresp_status"] = get_mac_assocresp_status(pkt)
+
+
+def mac_disassoc(pkt):
+    config.entry["mac_disassoc_reason"] = get_mac_disassoc_reason(pkt)
+
+
+def mac_realign(pkt):
+    config.entry["mac_realign_panid"] = hex(pkt[Dot15d4CmdCoordRealign].panid)
+    config.entry["mac_realign_coordaddr"] = hex(
+        pkt[Dot15d4CmdCoordRealign].coord_address)
+    config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
+    config.entry["mac_realign_shortaddr"] = hex(
+        pkt[Dot15d4CmdCoordRealign].dev_address)
+    logging.warning("Packet #{} in {} may contain a Channel Page field "
+                    "which was ignored"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["warning_msg"] = "Ignored the Channel Page field"
+
+
+def mac_gtsreq(pkt):
+    config.entry["mac_gtsreq_length"] = pkt[Dot15d4CmdGTSReq].gts_len
+    config.entry["mac_gtsreq_dir"] = get_mac_gtsreq_dir(pkt)
+    config.entry["mac_gtsreq_chartype"] = get_mac_gtsreq_chartype(pkt)
+
+
+def mac_command(pkt):
+    # Destination Addressing fields
+    if (config.entry["mac_dstaddrmode"]
+            == "Short destination MAC address"):
+        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Cmd].dest_panid)
+        config.entry["mac_dstshortaddr"] = hex(pkt[Dot15d4Cmd].dest_addr)
+    elif (config.entry["mac_dstaddrmode"]
+            == "Extended destination MAC address"):
+        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Cmd].dest_panid)
+        config.entry["mac_dstextendedaddr"] = hex(pkt[Dot15d4Cmd].dest_addr)
+    elif (config.entry["mac_dstaddrmode"]
+            != "No destination MAC address"):
+        config.entry["error_msg"] = "Unknown MAC DA mode"
+        return
+
+    # Source Addressing fields
+    if (config.entry["mac_srcaddrmode"]
+            == "Short source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Cmd].src_panid)
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Cmd].src_addr)
+    elif (config.entry["mac_srcaddrmode"]
+            == "Extended source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Cmd].src_panid)
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Cmd].src_addr)
+    elif (config.entry["mac_srcaddrmode"]
+            != "No source MAC address"):
+        config.entry["error_msg"] = "Unknown MAC SA mode"
+        return
+
+    # Command Frame Identifier field
+    config.entry["mac_cmd_id"] = get_mac_command(pkt)
+
+    # Command Payload field
+    if config.entry["mac_cmd_id"] == "MAC Association Request":
+        mac_assocreq(pkt)
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Association Response":
+        mac_assocresp(pkt)
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Disassociation Notification":
+        mac_disassoc(pkt)
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Data Request":
+        # MAC Data Requests do not contain any other fields
+        return
+    elif config.entry["mac_cmd_id"] == "MAC PAN ID Conflict Notification":
+        # MAC PAN ID Conflict Notifications do not contain any other fields
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Orphan Notification":
+        # MAC Orphan Notifications do not contain any other fields
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Beacon Request":
+        # MAC Beacon Requests do not contain any other fields
+        return
+    elif config.entry["mac_cmd_id"] == "MAC Coordinator Realignment":
+        mac_realign(pkt)
+        return
+    elif config.entry["mac_cmd_id"] == "MAC GTS Request":
+        mac_gtsreq(pkt)
+        return
+    else:
+        conflig.entry["error_msg"] = "Unknown MAC Command"
+        return
+
+
 def mac_beacon(pkt):
     if config.entry["mac_panidcomp"] != "Do not compress the source PAN ID":
         config.entry["error_msg"] = (
@@ -181,11 +400,6 @@ def mac_beacon(pkt):
         return
 
 
-def mac_command(pkt):
-    # TODO
-    return
-
-
 def mac_data(pkt):
     # TODO
     return
@@ -219,6 +433,7 @@ def mac_fields(pkt):
     config.entry["mac_frameversion"] = get_mac_frameversion(pkt)
     config.entry["mac_srcaddrmode"] = get_mac_srcaddrmode(pkt)
 
+    # Sequence Number field
     config.entry["mac_seqnum"] = pkt[Dot15d4FCS].seqnum
 
     if config.entry["mac_security"] == "MAC Security Enabled":
@@ -236,17 +451,8 @@ def mac_fields(pkt):
             return
     elif config.entry["mac_security"] == "MAC Security Disabled":
         if config.entry["mac_frametype"] == "MAC Acknowledgment":
-            # MAC Acknowledgments do not use any other fields
+            # MAC Acknowledgments do not contain any other fields
             return
-        elif config.entry["mac_frametype"] == "MAC Beacon":
-            if pkt.haslayer(Dot15d4Beacon):
-                mac_beacon(pkt)
-                return
-            else:
-                config.entry["error_msg"] = (
-                    "It does not contain MAC Beacon fields"
-                )
-                return
         elif config.entry["mac_frametype"] == "MAC Command":
             if pkt.haslayer(Dot15d4Cmd):
                 mac_command(pkt)
@@ -254,6 +460,15 @@ def mac_fields(pkt):
             else:
                 config.entry["error_msg"] = (
                     "It does not contain MAC Command fields"
+                )
+                return
+        elif config.entry["mac_frametype"] == "MAC Beacon":
+            if pkt.haslayer(Dot15d4Beacon):
+                mac_beacon(pkt)
+                return
+            else:
+                config.entry["error_msg"] = (
+                    "It does not contain MAC Beacon fields"
                 )
                 return
         elif config.entry["mac_frametype"] == "MAC Data":
