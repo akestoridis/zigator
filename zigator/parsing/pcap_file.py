@@ -18,7 +18,7 @@ import binascii
 import logging
 import os
 
-from scapy.all import *
+from scapy.all import PcapReader
 
 from .. import config
 from .phy_fields import phy_fields

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import *
+from scapy.all import ZigBeeBeacon
 
 from .. import config
 

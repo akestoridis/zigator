@@ -23,7 +23,7 @@ import os
 import string
 import sqlite3
 
-from scapy.all import *
+from scapy.all import conf
 
 
 # Configure the logging system

@@ -17,7 +17,11 @@
 import logging
 import struct
 
-from scapy.all import *
+from scapy.all import Dot15d4Beacon
+from scapy.all import Dot15d4Cmd
+from scapy.all import Dot15d4Data
+from scapy.all import Dot15d4FCS
+from scapy.all import ZigBeeBeacon
 
 from .. import config
 from .nwk_fields import nwk_fields
