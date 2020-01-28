@@ -28,6 +28,7 @@ from scapy.all import Dot15d4CmdGTSReq
 from scapy.all import Dot15d4Data
 from scapy.all import Dot15d4FCS
 from scapy.all import ZigBeeBeacon
+from scapy.all import ZigbeeNWK
 
 from .. import config
 from .nwk_fields import nwk_fields
@@ -401,8 +402,55 @@ def mac_beacon(pkt):
 
 
 def mac_data(pkt):
-    # TODO
-    return
+    # Destination Addressing fields
+    if (config.entry["mac_dstaddrmode"]
+            == "Short destination MAC address"):
+        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Data].dest_panid)
+        config.entry["mac_dstshortaddr"] = hex(pkt[Dot15d4Data].dest_addr)
+    elif (config.entry["mac_dstaddrmode"]
+            == "Extended destination MAC address"):
+        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Data].dest_panid)
+        config.entry["mac_dstextendedaddr"] = hex(pkt[Dot15d4Data].dest_addr)
+    elif (config.entry["mac_dstaddrmode"]
+            != "No destination MAC address"):
+        config.entry["error_msg"] = "Unknown MAC DA mode"
+        return
+
+    # Source Addressing fields
+    if (config.entry["mac_srcaddrmode"]
+            == "Short source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Data].src_panid)
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Data].src_addr)
+    elif (config.entry["mac_srcaddrmode"]
+            == "Extended source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Data].src_panid)
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Data].src_addr)
+    elif (config.entry["mac_srcaddrmode"]
+            != "No source MAC address"):
+        config.entry["error_msg"] = "Unknown MAC SA mode"
+        return
+
+    # Data Payload field
+    if pkt.haslayer(ZigbeeNWK):
+        nwk_fields(pkt)
+        return
+    else:
+        config.entry["error_msg"] = (
+            "It does not contain Zigbee NWK fields"
+        )
+        return
 
 
 def mac_fields(pkt):
@@ -443,6 +491,9 @@ def mac_fields(pkt):
                             "security services on the MAC layer"
                             "".format(config.entry["pkt_num"],
                                       config.entry["pcap_filename"]))
+            config.entry["warning_msg"] = (
+                "Ignored the MAC Auxiliary Security Header"
+            )
             return
         else:
             config.entry["error_msg"] = (
