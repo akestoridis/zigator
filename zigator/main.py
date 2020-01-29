@@ -31,6 +31,12 @@ parser.add_argument("--pcap_directory",
                     action="store",
                     help="Directory with pcap files",
                     default=None)
+parser.add_argument("--network_keys",
+                    dest="network_keys_filepath",
+                    type=str,
+                    action="store",
+                    help="File with network keys",
+                    default=None)
 args = parser.parse_args()
 
 
@@ -39,6 +45,9 @@ def main():
     if len(sys.argv) == 1:
         parser.print_help()
         return
+
+    if args.network_keys_filepath is not None:
+        zigator.config.add_network_keys(args.network_keys_filepath)
 
     if args.pcap_directory is not None:
         zigator.parsing.main(args.pcap_directory)

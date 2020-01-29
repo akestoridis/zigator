@@ -25,6 +25,8 @@ import sqlite3
 
 from scapy.all import conf
 
+from . import load
+
 
 # Configure the logging system
 logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
@@ -32,6 +34,11 @@ logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
 # Make sure that the configuration directory exists
 config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")
 os.makedirs(config_dir, exist_ok=True)
+
+# Load network keys
+network_keys_filepath = os.path.join(config_dir, "network_keys.tsv")
+network_keys = load.network_keys(network_keys_filepath, optional=True)
+logging.info("Loaded {} network keys".format(len(network_keys)))
 
 # Configure Scapy to assume that Zigbee is above the MAC layer
 conf.dot15d4_protocol = "zigbee"
@@ -223,3 +230,29 @@ def finalize_db():
     db_connection.close()
     db_connection = None
     db_cursor = None
+
+
+def save_network_key(key_name):
+    with open(network_keys_filepath, "a") as fp:
+        fp.write("{}\t{}\n".format(network_keys[key_name].hex(), key_name))
+
+
+def add_network_keys(filepath):
+    tmp_keys = load.network_keys(filepath, optional=False)
+    added_keys = 0
+    for key_name in tmp_keys.keys():
+        if tmp_keys[key_name] in network_keys.values():
+            logging.warning("The network key {} in \"{}\" was already loaded"
+                            "".format(tmp_keys[key_name].hex(), filepath))
+        elif key_name in network_keys.keys():
+            logging.warning("The network key {} from \"{}\" was not added "
+                            "because its key name \"{}\" is also used by "
+                            "the network key {}"
+                            "".format(tmp_keys[key_name].hex(), filepath,
+                                      key_name, network_keys[key_name].hex()))
+        else:
+            network_keys[key_name] = tmp_keys[key_name]
+            save_network_key(key_name)
+            added_keys += 1
+    logging.info("Added {} network keys from \"{}\""
+                 "".format(added_keys, filepath))
