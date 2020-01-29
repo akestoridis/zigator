@@ -16,36 +16,32 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import sys
+
+from argparse import ArgumentParser
+
 import zigator
 
 
-def parse_pcap_files():
-    while True:
-        dirpath = input("Enter the directory with the pcap files: ")
-        if os.path.isdir(dirpath):
-            zigator.parsing.main(dirpath)
-            return
-        else:
-            print("The provided directory \"{}\" does not exist"
-                  "".format(dirpath))
+parser = ArgumentParser(description="Zigator: Security analysis tool "
+                                    "for Zigbee networks")
+parser.add_argument("--pcap_directory",
+                    dest="pcap_directory",
+                    type=str,
+                    action="store",
+                    help="Directory with pcap files",
+                    default=None)
+args = parser.parse_args()
 
 
 def main():
-    """Generate the main menu and handle user input."""
-    menu = {
-        "1": ("Parse pcap files", parse_pcap_files),
-        "2": ("Exit this program", exit)
-    }
-    while True:
-        print("\nEnter the number of an available option:")
-        for key in sorted(menu.keys()):
-            print("{}) {}".format(key, menu[key][0]))
-        while True:
-            option = input("#? ")
-            if option in menu.keys():
-                menu[option][1]()
-                break
+    """Handle user input and call the required functions."""
+    if len(sys.argv) == 1:
+        parser.print_help()
+        return
+
+    if args.pcap_directory is not None:
+        zigator.parsing.main(args.pcap_directory)
 
 
 if __name__ == "__main__":

@@ -24,15 +24,27 @@ from .pcap_file import pcap_file
 
 def main(dirpath):
     """Parse all pcap files in the provided directory."""
+    # Sanity check
+    if not os.path.isdir(dirpath):
+        raise ValueError("The provided directory \"{}\" "
+                         "does not exist".format(dirpath))
+
+    # Initialize the database that will store the parsed data
     config.initialize_db()
+
+    # Get a sorted list of pcap filepaths
     filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))
     filepaths.sort()
     logging.info("Detected {} pcap files in the directory \"{}\""
                  "".format(len(filepaths), dirpath))
+
+    # Parse the detected pcap files
     pcap_counter = 0
     for filepath in filepaths:
         pcap_file(filepath)
         pcap_counter += 1
         logging.info("Parsed {} out of the {} pcap files"
                      "".format(pcap_counter, len(filepaths)))
+
+    # Finalize the connection with the database
     config.finalize_db()
