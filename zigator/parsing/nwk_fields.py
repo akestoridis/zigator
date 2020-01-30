@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import binascii
+import logging
+
 from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigBeeBeacon
 from scapy.all import ZigbeeNWK
@@ -21,6 +24,7 @@ from scapy.all import ZigbeeNWKCommandPayload
 from scapy.all import ZigbeeSecurityHeader
 
 from .. import config
+from .. import crypto
 
 
 def get_nwk_frametype(pkt):
@@ -145,12 +149,47 @@ def nwk_auxiliary(pkt):
             pkt[ZigbeeSecurityHeader].key_seqnum
         )
         key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
-        potential_keys = config.network_keys
+        potential_keys = config.network_keys.values()
     else:
         config.entry["error_msg"] = "Unexpected key type on the NWK layer"
         return
 
-    # TODO: Attempt to decrypt the payload
+    # Attempt to decrypt the payload
+    nwk_header = pkt[ZigbeeNWK].copy()
+    nwk_header.remove_payload()
+    header = raw(nwk_header)
+    security_control = raw(pkt[ZigbeeSecurityHeader])[0]
+    encrypted_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    mic = pkt[ZigbeeSecurityHeader].data[-4:]
+    for source_addr in potential_sources:
+        for key in potential_keys:
+            decrypted_payload, authentic_payload = crypto.decrypt_payload(
+                key=key,
+                source_addr=source_addr,
+                frame_counter=frame_counter,
+                security_control=security_control,
+                header=header,
+                key_seqnum=key_seqnum,
+                encrypted_payload=encrypted_payload,
+                mic=mic)
+            if authentic_payload:
+                config.entry["nwk_aux_decryptedpayload"] = binascii.hexlify(
+                    decrypted_payload)
+                if config.entry["nwk_frametype"] == "NWK Command":
+                    nwk_command(ZigbeeNWKCommandPayload(decrypted_payload))
+                    return
+                elif config.entry["nwk_frametype"] == "NWK Data":
+                    # TODO: aps_fields(ZigbeeAppDataPayload(decrypted_payload))
+                    return
+                else:
+                    config.entry["error_msg"] = (
+                        "Unexpected format of decrypted NWK payload"
+                    )
+                    return
+    logging.warning("Unable to decrypt the NWK payload of packet #{} in {}"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["warning_msg"] = "Unable to decrypt the NWK payload"
     return
 
 

@@ -127,6 +127,7 @@ columns = [
     ("nwk_aux_framecounter", "INTEGER"),
     ("nwk_aux_srcaddr", "TEXT"),
     ("nwk_aux_keyseqnum", "INTEGER"),
+    ("nwk_aux_decryptedpayload", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]
