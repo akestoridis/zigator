@@ -25,9 +25,9 @@ from .. import config
 
 def get_nwk_frametype(pkt):
     nwk_frame_types = {
-            0: "NWK Data",
-            1: "NWK Command",
-            3: "NWK Inter-PAN"
+        0: "NWK Data",
+        1: "NWK Command",
+        3: "NWK Inter-PAN"
     }
     frametype_id = pkt[ZigbeeNWK].frametype
     return nwk_frame_types.get(frametype_id, "Unknown NWK frame type")
@@ -35,9 +35,9 @@ def get_nwk_frametype(pkt):
 
 def get_nwk_protocolversion(pkt):
     protocol_versions = {
-            1: "Zigbee 2004",
-            2: "Zigbee PRO",
-            3: "Zigbee Green Power"
+        1: "Zigbee 2004",
+        2: "Zigbee PRO",
+        3: "Zigbee Green Power"
     }
     if pkt.haslayer(ZigbeeNWK):
         prot_ver = pkt[ZigbeeNWK].proto_version
@@ -50,11 +50,46 @@ def get_nwk_protocolversion(pkt):
 
 def get_nwk_discroute(pkt):
     discroute_states = {
-            0: "Suppress route discovery",
-            1: "Enable route discovery"
+        0: "Suppress route discovery",
+        1: "Enable route discovery"
     }
     discroute_state = pkt[ZigbeeNWK].discover_route
     return discroute_states.get(discroute_state, "Unknown NWK DR state")
+
+
+def get_nwk_aux_seclevel(pkt):
+    sec_levels = {
+        0: "None",
+        1: "MIC-32",
+        2: "MIC-64",
+        3: "MIC-128",
+        4: "ENC",
+        5: "ENC-MIC-32",
+        6: "ENC-MIC-64",
+        7: "ENC-MIC-128"
+    }
+    seclevel_id = pkt[ZigbeeSecurityHeader].nwk_seclevel
+    return sec_levels.get(seclevel_id, "Unknown NWK security level")
+
+
+def get_nwk_aux_keytype(pkt):
+    key_types = {
+        0: "Data Key",
+        1: "Network Key",
+        2: "Key-Transport Key",
+        3: "Key-Load Key"
+    }
+    keytype_id = pkt[ZigbeeSecurityHeader].key_type
+    return key_types.get(keytype_id, "Unknown NWK key type")
+
+
+def get_nwk_aux_extnonce(pkt):
+    extnonce_states = {
+        0: "The source address is not present",
+        1: "The source address is present"
+    }
+    extnonce_state = pkt[ZigbeeSecurityHeader].extended_nonce
+    return extnonce_states.get(extnonce_state, "Unknown NWK EN state")
 
 
 def nwk_command(pkt):
@@ -72,10 +107,50 @@ def nwk_beacon(pkt):
     config.entry["nwk_beacon_epid"] = hex(pkt[ZigBeeBeacon].extended_pan_id)
     config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset
     config.entry["nwk_beacon_updateid"] = pkt[ZigBeeBeacon].update_id
+    return
 
 
 def nwk_auxiliary(pkt):
-    # TODO
+    # Security Control field
+    config.entry["nwk_aux_seclevel"] = get_nwk_aux_seclevel(pkt)
+    config.entry["nwk_aux_keytype"] = get_nwk_aux_keytype(pkt)
+    config.entry["nwk_aux_extnonce"] = get_nwk_aux_extnonce(pkt)
+
+    # Frame Counter field
+    config.entry["nwk_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
+    frame_counter = pkt[ZigbeeSecurityHeader].fc
+
+    # Source Address field
+    if (config.entry["nwk_aux_extnonce"]
+            == "The source address is present"):
+        config.entry["nwk_aux_srcaddr"] = hex(
+            pkt[ZigbeeSecurityHeader].source)
+        potential_sources = set([pkt[ZigbeeSecurityHeader].source])
+    elif (config.entry["nwk_aux_extnonce"]
+            == "The source address is not present"):
+        potential_sources = set()
+        if config.entry["nwk_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["nwk_srcextendedaddr"], 16))
+        if config.entry["mac_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["mac_srcextendedaddr"], 16))
+    else:
+        config.entry["error_msg"] = "Unknown NWK EN state"
+        return
+
+    # Key Sequence Number field
+    if config.entry["nwk_aux_keytype"] == "Network Key":
+        config.entry["nwk_aux_keyseqnum"] = (
+            pkt[ZigbeeSecurityHeader].key_seqnum
+        )
+        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
+        potential_keys = config.network_keys
+    else:
+        config.entry["error_msg"] = "Unexpected key type on the NWK layer"
+        return
+
+    # TODO: Attempt to decrypt the payload
     return
 
 

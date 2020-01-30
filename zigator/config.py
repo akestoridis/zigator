@@ -121,6 +121,12 @@ columns = [
     ("nwk_srcroute_relaycount", "INTEGER"),
     ("nwk_srcroute_relayindex", "INTEGER"),
     ("nwk_srcroute_relaylist", "TEXT"),
+    ("nwk_aux_seclevel", "TEXT"),
+    ("nwk_aux_keytype", "TEXT"),
+    ("nwk_aux_extnonce", "TEXT"),
+    ("nwk_aux_framecounter", "INTEGER"),
+    ("nwk_aux_srcaddr", "TEXT"),
+    ("nwk_aux_keyseqnum", "INTEGER"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]
