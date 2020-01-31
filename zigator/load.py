@@ -24,8 +24,8 @@ import os
 import string
 
 
-def network_keys(filepath, optional=False):
-    """Load network keys from the provided text file."""
+def encryption_keys(filepath, optional=False):
+    """Load encryption keys from the provided text file."""
     # Check whether an exception should be raised if the file does not exist
     if not os.path.isfile(filepath):
         if optional:
@@ -52,34 +52,33 @@ def network_keys(filepath, optional=False):
             # Sanity checks
             if not (len(key_hex) == 32
                     and all(d in string.hexdigits for d in key_hex)):
-                raise ValueError("Line #{} in \"{}\" should contain a "
-                                 "128-bit key using 32 hexadecimal digits, "
-                                 "without any prefix".format(i, filepath))
+                raise ValueError("Line #{} in \"{}\" should contain "
+                                 "a 128-bit encryption key using "
+                                 "32 hexadecimal digits, without any prefix"
+                                 "".format(i, filepath))
             elif key_name == "":
                 raise ValueError("Line #{} in \"{}\" should contain a unique "
                                  "name for its key".format(i, filepath))
             elif key_name.startswith("_"):
-                raise ValueError("Line #{} in \"{}\" contains a key "
-                                 "name that starts with \"_\", which "
-                                 "is not allowed".format(i, filepath))
+                raise ValueError("Line #{} in \"{}\" contains a key name "
+                                 "that starts with \"_\", which is "
+                                 "not allowed".format(i, filepath))
 
             # Convert the hexadecimal representation into a bytes object
             key_bytes = bytes.fromhex(key_hex)
 
-            # Make sure that this key is not already loaded
+            # Make sure that this encryption key is not already loaded
             if key_bytes in loaded_keys.values():
-                logging.warning("The network key {} appears more than once "
-                                "in \"{}\"".format(key_bytes.hex(), filepath))
+                logging.warning("The encryption key {} appears "
+                                "more than once in \"{}\""
+                                "".format(key_bytes.hex(), filepath))
             elif key_name in loaded_keys.keys():
-                logging.warning("The network key {} from \"{}\" was ignored "
-                                "because its key name \"{}\" is also used by "
-                                "the network key {}"
+                logging.warning("The encryption key {} from \"{}\" "
+                                "was ignored because its name \"{}\" is "
+                                "also used by the encryption key {}"
                                 "".format(key_bytes.hex(), filepath, key_name,
                                           loaded_keys[key_name].hex()))
             else:
                 loaded_keys[key_name] = key_bytes
 
     return loaded_keys
-
-
-

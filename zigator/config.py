@@ -35,10 +35,18 @@ logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
 config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")
 os.makedirs(config_dir, exist_ok=True)
 
+# Define the filepaths of configuration files
+network_filepath = os.path.join(config_dir, "network_keys.tsv")
+link_filepath = os.path.join(config_dir, "link_keys.tsv")
+db_filepath = os.path.join(config_dir, "traffic.db")
+
 # Load network keys
-network_keys_filepath = os.path.join(config_dir, "network_keys.tsv")
-network_keys = load.network_keys(network_keys_filepath, optional=True)
+network_keys = load.encryption_keys(network_filepath, optional=True)
 logging.info("Loaded {} network keys".format(len(network_keys)))
+
+# Load link keys
+link_keys = load.encryption_keys(link_filepath, optional=True)
+logging.info("Loaded {} link keys".format(len(link_keys)))
 
 # Configure Scapy to assume that Zigbee is above the MAC layer
 conf.dot15d4_protocol = "zigbee"
@@ -219,9 +227,6 @@ entry = {column[0]: None for column in columns}
 db_connection = None
 db_cursor = None
 
-# Define the filepath of the database
-db_filepath = os.path.join(config_dir, "traffic.db")
-
 
 def reset_entries(keep=[]):
     # Reset all data entries in the shared dictionary except
@@ -308,27 +313,38 @@ def finalize_db():
     db_cursor = None
 
 
-def save_network_key(key_name):
-    with open(network_keys_filepath, "a") as fp:
-        fp.write("{}\t{}\n".format(network_keys[key_name].hex(), key_name))
+def add_encryption_keys(filepath, key_type):
+    # Distinguish network keys from link keys
+    if key_type.lower() == "network":
+        loaded_keys = network_keys
+        loaded_filepath = network_filepath
+    elif key_type.lower() == "link":
+        loaded_keys = link_keys
+        loaded_filepath = link_filepath
+    else:
+        raise ValueError("Unknown key type \"{}\"".format(key_type))
 
-
-def add_network_keys(filepath):
-    tmp_keys = load.network_keys(filepath, optional=False)
+    # Add the encryption keys that are not already loaded
+    tmp_keys = load.encryption_keys(filepath, optional=False)
     added_keys = 0
     for key_name in tmp_keys.keys():
-        if tmp_keys[key_name] in network_keys.values():
-            logging.warning("The network key {} in \"{}\" was already loaded"
+        if tmp_keys[key_name] in loaded_keys.values():
+            logging.warning("The encryption key {} from \"{}\" "
+                            "was already loaded"
                             "".format(tmp_keys[key_name].hex(), filepath))
-        elif key_name in network_keys.keys():
-            logging.warning("The network key {} from \"{}\" was not added "
-                            "because its key name \"{}\" is also used by "
-                            "the network key {}"
+        elif key_name in loaded_keys.keys():
+            logging.warning("The encryption key {} from \"{}\" "
+                            "was not added because its name \"{}\" is "
+                            "also used by the encryption key {}"
                             "".format(tmp_keys[key_name].hex(), filepath,
-                                      key_name, network_keys[key_name].hex()))
+                                      key_name, loaded_keys[key_name].hex()))
         else:
-            network_keys[key_name] = tmp_keys[key_name]
-            save_network_key(key_name)
+            loaded_keys[key_name] = tmp_keys[key_name]
             added_keys += 1
-    logging.info("Added {} network keys from \"{}\""
-                 "".format(added_keys, filepath))
+
+            # Save the encryption key in a configuration file
+            with open(loaded_filepath, "a") as fp:
+                fp.write("{}\t{}\n".format(loaded_keys[key_name].hex(),
+                                           key_name))
+    logging.info("Added {} {} keys from \"{}\""
+                 "".format(added_keys, key_type.lower(), filepath))
