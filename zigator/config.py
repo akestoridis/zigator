@@ -205,6 +205,7 @@ columns = [
     ("aps_aux_framecounter", "INTEGER"),
     ("aps_aux_srcaddr", "TEXT"),
     ("aps_aux_keyseqnum", "INTEGER"),
+    ("aps_aux_decryptedpayload", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]

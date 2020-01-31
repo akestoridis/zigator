@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import binascii
 import logging
 
 from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigbeeSecurityHeader
 
 from .. import config
+from .. import crypto
 
 
 def get_aps_frametype(pkt):
@@ -129,18 +131,60 @@ def aps_auxiliary(pkt):
         potential_keys = config.network_keys.values()
     elif config.entry["aps_aux_keytype"] == "Data Key":
         key_seqnum = None
-        # TODO: potential_keys =
+        potential_keys = config.link_keys.values()
     elif config.entry["aps_aux_keytype"] == "Key-Transport Key":
         key_seqnum = None
-        # TODO: potential_keys =
+        potential_keys = set([crypto.zigbee_hmac(bytes.fromhex("00"), key)
+                              for key in config.link_keys.values()])
     elif config.entry["aps_aux_keytype"] == "Key-Load Key":
         key_seqnum = None
-        # TODO: potential_keys =
+        potential_keys = set([crypto.zigbee_hmac(bytes.fromhex("02"), key)
+                              for key in config.link_keys.values()])
     else:
         config.entry["error_msg"] = "Unknown APS key type"
         return
 
-    # TODO: Attempt to decrypt the payload
+    # Attempt to decrypt the payload
+    aps_header = pkt[ZigbeeAppDataPayload].copy()
+    aps_header.remove_payload()
+    header = raw(aps_header)
+    security_control = raw(pkt[ZigbeeSecurityHeader])[0]
+    encrypted_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    mic = pkt[ZigbeeSecurityHeader].data[-4:]
+    for source_addr in potential_sources:
+        for key in potential_keys:
+            decrypted_payload, authentic_payload = crypto.decrypt_payload(
+                key=key,
+                source_addr=source_addr,
+                frame_counter=frame_counter,
+                security_control=security_control,
+                header=header,
+                key_seqnum=key_seqnum,
+                encrypted_payload=encrypted_payload,
+                mic=mic)
+            if authentic_payload:
+                config.entry["aps_aux_decryptedpayload"] = binascii.hexlify(
+                    decrypted_payload)
+                if config.entry["aps_frametype"] == "APS Data":
+                    # TODO
+                    return
+                elif config.entry["aps_frametype"] == "APS Command":
+                    # TODO
+                    return
+                elif config.entry["aps_frametype"] == "APS Acknowledgment":
+                    # APS Acknowledgments do not contain any other fields
+                    return
+                else:
+                    config.entry["error_msg"] = (
+                        "Unexpected format of decrypted APS payload"
+                    )
+                    return
+
+    logging.warning("Unable to decrypt the APS payload of packet #{} in {}"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["warning_msg"] = "Unable to decrypt the APS payload"
+    return
 
 
 def aps_data_header(pkt):
