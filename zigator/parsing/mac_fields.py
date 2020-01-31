@@ -127,6 +127,15 @@ def get_mac_command(pkt):
     return mac_commands.get(command_id, "Unknown MAC Command")
 
 
+def get_mac_assocreq_apc(pkt):
+    apc_states = {
+        0: "The sender is capable of becoming a PAN coordinator",
+        1: "The sender is not capable of becoming a PAN coordinator"
+    }
+    apc_state = pkt[Dot15d4CmdAssocReq].alternate_pan_coordinator
+    return apc_states.get(apc_state, "Unknown APC state")
+
+
 def get_mac_assocreq_devtype(pkt):
     device_types = {
         0: "Reduced-Function Device",
@@ -138,8 +147,8 @@ def get_mac_assocreq_devtype(pkt):
 
 def get_mac_assocreq_powsrc(pkt):
     power_sources = {
-        0: "Battery",
-        1: "Mains"
+        0: "The sender is not a mains-powered device",
+        1: "The sender is a mains-powered device"
     }
     pwrsrc_id = pkt[Dot15d4CmdAssocReq].power_source
     return power_sources.get(pwrsrc_id, "Unknown power source")
@@ -210,41 +219,67 @@ def get_mac_gtsreq_chartype(pkt):
 
 
 def mac_assocreq(pkt):
+    # Capability Information field
+    config.entry["mac_assocreq_apc"] = get_mac_assocreq_apc(pkt)
     config.entry["mac_assocreq_devtype"] = get_mac_assocreq_devtype(pkt)
     config.entry["mac_assocreq_powsrc"] = get_mac_assocreq_powsrc(pkt)
     config.entry["mac_assocreq_rxidle"] = get_mac_assocreq_rxidle(pkt)
     config.entry["mac_assocreq_seccap"] = get_mac_assocreq_seccap(pkt)
     config.entry["mac_assocreq_allocaddr"] = get_mac_assocreq_allocaddr(pkt)
 
+    return
+
 
 def mac_assocresp(pkt):
+    # Short Address field
     config.entry["mac_assocresp_shortaddr"] = hex(
         pkt[Dot15d4CmdAssocResp].short_address)
+
+    # Association Status field
     config.entry["mac_assocresp_status"] = get_mac_assocresp_status(pkt)
+
+    return
 
 
 def mac_disassoc(pkt):
+    # Disassociation Reason field
     config.entry["mac_disassoc_reason"] = get_mac_disassoc_reason(pkt)
+
+    return
 
 
 def mac_realign(pkt):
+    # PAN Identifier field
     config.entry["mac_realign_panid"] = hex(pkt[Dot15d4CmdCoordRealign].panid)
+
+    # Coordinator Short Address field
     config.entry["mac_realign_coordaddr"] = hex(
         pkt[Dot15d4CmdCoordRealign].coord_address)
+
+    # Channel Number field
     config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
+
+    # Short Address field
     config.entry["mac_realign_shortaddr"] = hex(
         pkt[Dot15d4CmdCoordRealign].dev_address)
+
+    # Channel Page field
     logging.warning("Packet #{} in {} may contain a Channel Page field "
                     "which was ignored"
                     "".format(config.entry["pkt_num"],
                               config.entry["pcap_filename"]))
     config.entry["warning_msg"] = "Ignored the Channel Page field"
 
+    return
+
 
 def mac_gtsreq(pkt):
+    # GTS Characteristics field
     config.entry["mac_gtsreq_length"] = pkt[Dot15d4CmdGTSReq].gts_len
     config.entry["mac_gtsreq_dir"] = get_mac_gtsreq_dir(pkt)
     config.entry["mac_gtsreq_chartype"] = get_mac_gtsreq_chartype(pkt)
+
+    return
 
 
 def mac_command(pkt):
