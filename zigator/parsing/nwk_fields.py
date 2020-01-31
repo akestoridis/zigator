@@ -25,6 +25,7 @@ from scapy.all import ZigbeeSecurityHeader
 
 from .. import config
 from .. import crypto
+from .aps_fields import aps_fields
 
 
 def get_nwk_frametype(pkt):
@@ -427,7 +428,7 @@ def nwk_routerecord(pkt):
     # Relay List field
     config.entry["nwk_routerecord_relaylist"] = ",".join(
         "0x{:04X}".format(addr)
-            for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
+        for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
 
     return
 
@@ -689,7 +690,7 @@ def nwk_auxiliary(pkt):
                     nwk_command(ZigbeeNWKCommandPayload(decrypted_payload))
                     return
                 elif config.entry["nwk_frametype"] == "NWK Data":
-                    # TODO: aps_fields(ZigbeeAppDataPayload(decrypted_payload))
+                    aps_fields(ZigbeeAppDataPayload(decrypted_payload))
                     return
                 else:
                     config.entry["error_msg"] = (
@@ -825,7 +826,7 @@ def nwk_fields(pkt):
             return
         elif config.entry["nwk_frametype"] == "NWK Data":
             if pkt.haslayer(ZigbeeAppDataPayload):
-                # TODO: aps_fields(pkt)
+                aps_fields(pkt)
                 return
             else:
                 config.entry["error_msg"] = (
