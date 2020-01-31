@@ -53,6 +53,96 @@ def get_aps_fragmentation(pkt):
     return aps_frag_state.get(frag_state, "Unknown APS fragmentation")
 
 
+def get_aps_aux_seclevel(pkt):
+    sec_levels = {
+        0: "None",
+        1: "MIC-32",
+        2: "MIC-64",
+        3: "MIC-128",
+        4: "ENC",
+        5: "ENC-MIC-32",
+        6: "ENC-MIC-64",
+        7: "ENC-MIC-128"
+    }
+    seclevel_id = pkt[ZigbeeSecurityHeader].nwk_seclevel
+    return sec_levels.get(seclevel_id, "Unknown APS security level")
+
+
+def get_aps_aux_keytype(pkt):
+    key_types = {
+        0: "Data Key",
+        1: "Network Key",
+        2: "Key-Transport Key",
+        3: "Key-Load Key"
+    }
+    keytype_id = pkt[ZigbeeSecurityHeader].key_type
+    return key_types.get(keytype_id, "Unknown APS key type")
+
+
+def get_aps_aux_extnonce(pkt):
+    extnonce_states = {
+        0: "The source address is not present",
+        1: "The source address is present"
+    }
+    extnonce_state = pkt[ZigbeeSecurityHeader].extended_nonce
+    return extnonce_states.get(extnonce_state, "Unknown APS EN state")
+
+
+def aps_auxiliary(pkt):
+    # Security Control field
+    config.entry["aps_aux_seclevel"] = get_aps_aux_seclevel(pkt)
+    config.entry["aps_aux_keytype"] = get_aps_aux_keytype(pkt)
+    config.entry["aps_aux_extnonce"] = get_aps_aux_extnonce(pkt)
+
+    # Frame Counter field
+    config.entry["aps_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
+    frame_counter = pkt[ZigbeeSecurityHeader].fc
+
+    # Source Address field
+    if (config.entry["aps_aux_extnonce"]
+            == "The source address is present"):
+        config.entry["aps_aux_srcaddr"] = hex(
+            pkt[ZigbeeSecurityHeader].source)
+        potential_sources = set([pkt[ZigbeeSecurityHeader].source])
+    elif (config.entry["aps_aux_extnonce"]
+            == "The source address is not present"):
+        potential_sources = set()
+        if config.entry["nwk_aux_srcaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["nwk_aux_srcaddr"], 16))
+        if config.entry["nwk_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["nwk_srcextendedaddr"], 16))
+        if config.entry["mac_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["mac_srcextendedaddr"], 16))
+    else:
+        config.entry["error_msg"] = "Unknown APS EN state"
+        return
+
+    # Key Sequence Number field
+    if config.entry["aps_aux_keytype"] == "Network Key":
+        config.entry["aps_aux_keyseqnum"] = (
+            pkt[ZigbeeSecurityHeader].key_seqnum
+        )
+        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
+        potential_keys = config.network_keys.values()
+    elif config.entry["aps_aux_keytype"] == "Data Key":
+        key_seqnum = None
+        # TODO: potential_keys =
+    elif config.entry["aps_aux_keytype"] == "Key-Transport Key":
+        key_seqnum = None
+        # TODO: potential_keys =
+    elif config.entry["aps_aux_keytype"] == "Key-Load Key":
+        key_seqnum = None
+        # TODO: potential_keys =
+    else:
+        config.entry["error_msg"] = "Unknown APS key type"
+        return
+
+    # TODO: Attempt to decrypt the payload
+
+
 def aps_data_header(pkt):
     if (config.entry["aps_delmode"] == "Normal unicast delivery"
             or config.entry["aps_delmode"] == "Broadcast"):
@@ -100,7 +190,7 @@ def aps_data_header(pkt):
 
     if config.entry["aps_security"] == "APS Security Enabled":
         if pkt.haslayer(ZigbeeSecurityHeader):
-            # TODO: aps_auxiliary(pkt)
+            aps_auxiliary(pkt)
             return
         else:
             config.entry["error_msg"] = (
@@ -121,7 +211,7 @@ def aps_command_header(pkt):
 
     if config.entry["aps_security"] == "APS Security Enabled":
         if pkt.haslayer(ZigbeeSecurityHeader):
-            # TODO: aps_auxiliary(pkt)
+            aps_auxiliary(pkt)
             return
         else:
             config.entry["error_msg"] = (
@@ -185,7 +275,7 @@ def aps_ack_header(pkt):
 
     if config.entry["aps_security"] == "APS Security Enabled":
         if pkt.haslayer(ZigbeeSecurityHeader):
-            # TODO: aps_auxiliary(pkt)
+            aps_auxiliary(pkt)
             return
         else:
             config.entry["error_msg"] = (

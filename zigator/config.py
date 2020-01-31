@@ -191,6 +191,12 @@ columns = [
     ("aps_fragmentation", "TEXT"),
     ("aps_blocknumber", "INTEGER"),
     ("aps_ackbitfield", "INTEGER"),
+    ("aps_aux_seclevel", "TEXT"),
+    ("aps_aux_keytype", "TEXT"),
+    ("aps_aux_extnonce", "TEXT"),
+    ("aps_aux_framecounter", "INTEGER"),
+    ("aps_aux_srcaddr", "TEXT"),
+    ("aps_aux_keyseqnum", "INTEGER"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]
