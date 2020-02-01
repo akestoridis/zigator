@@ -417,3 +417,31 @@ def add_install_codes(filepath):
                                            code_name))
     logging.info("Added {} install codes from \"{}\""
                  "".format(added_codes, filepath))
+
+
+def add_sniffed_key(key_bytes, key_type):
+    # Distinguish network keys from link keys
+    if key_type.lower() == "network":
+        loaded_keys = network_keys
+    elif key_type.lower() == "link":
+        loaded_keys = link_keys
+    else:
+        raise ValueError("Unknown key type \"{}\"".format(key_type))
+
+    # Add the sniffed key if it is not already loaded
+    if key_bytes not in loaded_keys.values():
+        # Give it a name
+        key_name = "_sniffed_{}".format(len(loaded_keys))
+
+        # Make sure that its name is unique before adding it
+        if key_name in loaded_keys.keys():
+            logging.warning("The sniffed key {} was not added because "
+                            "its name \"{}\" is also used by the {} key {}"
+                            "".format(key_bytes.hex(),
+                                      key_name,
+                                      key_type.lower(),
+                                      loaded_keys[key_name].hex()))
+        else:
+            loaded_keys[key_name] = key_bytes
+            logging.info("Added a sniffed {} key: {}"
+                         "".format(key_type.lower(), key_bytes.hex()))

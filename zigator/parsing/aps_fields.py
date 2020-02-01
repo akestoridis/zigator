@@ -154,7 +154,10 @@ def aps_transportkey(pkt):
             pkt[ZigbeeAppCommandPayload].dest_addr)
         config.entry["aps_transportkey_srcextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].src_addr)
-        # TODO: Add to network keys
+
+        # Store the sniffed network key
+        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "network")
+
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Trust Center Link Key"):
@@ -164,7 +167,10 @@ def aps_transportkey(pkt):
             pkt[ZigbeeAppCommandPayload].dest_addr)
         config.entry["aps_transportkey_srcextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].src_addr)
-        # TODO: Add to link keys
+
+        # Store the sniffed link key
+        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")
+
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Application Link Key"):
@@ -172,7 +178,10 @@ def aps_transportkey(pkt):
             pkt[ZigbeeAppCommandPayload].key)
         logging.warning("Ignoring the Partner Address field")
         logging.warning("Ignoring the Initiator Flag field")
-        # TODO: Add to link keys
+
+        # Store the sniffed link key
+        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")
+
         return
     else:
         config.entry["error_msg"] = "Unknown Standard Key Type"
