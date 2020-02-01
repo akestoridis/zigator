@@ -49,9 +49,29 @@ logging.info("Loaded {} network keys".format(len(network_keys)))
 link_keys = load.encryption_keys(link_filepath, optional=True)
 logging.info("Loaded {} link keys".format(len(link_keys)))
 
-# Load install codes
-install_codes = load.install_codes(install_filepath, optional=True)
+# Load install codes and derive link keys from them
+install_codes, derived_keys = load.install_codes(install_filepath,
+                                                 optional=True)
 logging.info("Loaded {} install codes".format(len(install_codes)))
+
+# Add link keys, derived from install codes, that are not already loaded
+added_keys = 0
+for key_name in derived_keys.keys():
+    if derived_keys[key_name] in link_keys.values():
+        logging.warning("The derived link key {} was already loaded"
+                        "".format(derived_keys[key_name].hex()))
+    elif key_name in link_keys.keys():
+        logging.warning("The derived link key {} was not added because "
+                        "its name \"{}\" is also used by the link key {}"
+                        "".format(derived_keys[key_name].hex(),
+                                  key_name,
+                                  link_keys[key_name].hex()))
+    else:
+        link_keys[key_name] = derived_keys[key_name]
+        added_keys += 1
+logging.info("Added {} link keys that were derived from install codes"
+             "".format(added_keys))
+
 
 # Configure Scapy to assume that Zigbee is above the MAC layer
 conf.dot15d4_protocol = "zigbee"

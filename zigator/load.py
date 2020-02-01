@@ -25,6 +25,8 @@ import string
 
 from pycrc.algorithms import Crc
 
+from . import crypto
+
 
 def encryption_keys(filepath, optional=False):
     """Load encryption keys from the provided text file."""
@@ -89,11 +91,11 @@ def encryption_keys(filepath, optional=False):
 
 
 def install_codes(filepath, optional=False):
-    """Load install codes from the provided text file."""
+    """Load install codes from the provided text file and derive link keys."""
     # Check whether an exception should be raised if the file does not exist
     if not os.path.isfile(filepath):
         if optional:
-            return {}
+            return {}, {}
         else:
             raise ValueError("The provided file \"{}\" "
                              "does not exist".format(filepath))
@@ -105,6 +107,7 @@ def install_codes(filepath, optional=False):
 
     # Read the provided file line by line
     loaded_codes = {}
+    derived_keys = {}
     with open(filepath, "r") as fp:
         rows = csv.reader(fp, delimiter="\t")
         for i, row in enumerate(rows, start=1):
@@ -170,4 +173,9 @@ def install_codes(filepath, optional=False):
             else:
                 loaded_codes[code_name] = code_bytes
 
-    return loaded_codes
+                # Derive the link key and give it a unique name
+                key_bytes = crypto.zigbee_mmo_hash(code_bytes)
+                key_name = "_derived_{}".format(code_bytes.hex())
+                derived_keys[key_name] = key_bytes
+
+    return loaded_codes, derived_keys
