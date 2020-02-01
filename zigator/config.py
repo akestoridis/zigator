@@ -38,6 +38,7 @@ os.makedirs(config_dir, exist_ok=True)
 # Define the filepaths of configuration files
 network_filepath = os.path.join(config_dir, "network_keys.tsv")
 link_filepath = os.path.join(config_dir, "link_keys.tsv")
+install_filepath = os.path.join(config_dir, "install_codes.tsv")
 db_filepath = os.path.join(config_dir, "traffic.db")
 
 # Load network keys
@@ -47,6 +48,10 @@ logging.info("Loaded {} network keys".format(len(network_keys)))
 # Load link keys
 link_keys = load.encryption_keys(link_filepath, optional=True)
 logging.info("Loaded {} link keys".format(len(link_keys)))
+
+# Load install codes
+install_codes = load.install_codes(install_filepath, optional=True)
+logging.info("Loaded {} install codes".format(len(install_codes)))
 
 # Configure Scapy to assume that Zigbee is above the MAC layer
 conf.dot15d4_protocol = "zigbee"
@@ -337,8 +342,10 @@ def add_encryption_keys(filepath, key_type):
             logging.warning("The encryption key {} from \"{}\" "
                             "was not added because its name \"{}\" is "
                             "also used by the encryption key {}"
-                            "".format(tmp_keys[key_name].hex(), filepath,
-                                      key_name, loaded_keys[key_name].hex()))
+                            "".format(tmp_keys[key_name].hex(),
+                                      filepath,
+                                      key_name,
+                                      loaded_keys[key_name].hex()))
         else:
             loaded_keys[key_name] = tmp_keys[key_name]
             added_keys += 1
@@ -349,3 +356,32 @@ def add_encryption_keys(filepath, key_type):
                                            key_name))
     logging.info("Added {} {} keys from \"{}\""
                  "".format(added_keys, key_type.lower(), filepath))
+
+
+def add_install_codes(filepath):
+    # Add the install codes that are not already loaded
+    tmp_codes = load.install_codes(filepath, optional=False)
+    added_codes = 0
+    for code_name in tmp_codes.keys():
+        if tmp_codes[code_name] in install_codes.values():
+            logging.warning("The install code {} from \"{}\" "
+                            "was already loaded"
+                            "".format(tmp_codes[code_name].hex(), filepath))
+        elif code_name in install_codes.keys():
+            logging.warning("The install code {} from \"{}\" "
+                            "was not added because its name \"{}\" is "
+                            "also used by the install code {}"
+                            "".format(tmp_codes[code_name].hex(),
+                                      filepath,
+                                      code_name,
+                                      install_codes[code_name].hex()))
+        else:
+            install_codes[code_name] = tmp_codes[code_name]
+            added_codes += 1
+
+            # Save the install code in a configuration file
+            with open(install_filepath, "a") as fp:
+                fp.write("{}\t{}\n".format(install_codes[code_name].hex(),
+                                           code_name))
+    logging.info("Added {} install codes from \"{}\""
+                 "".format(added_codes, filepath))

@@ -43,6 +43,12 @@ parser.add_argument("--link_keys",
                     action="store",
                     help="File with link keys",
                     default=None)
+parser.add_argument("--install_codes",
+                    dest="install_filepath",
+                    type=str,
+                    action="store",
+                    help="File with install codes",
+                    default=None)
 args = parser.parse_args()
 
 
@@ -57,6 +63,9 @@ def main():
 
     if args.link_filepath is not None:
         zigator.config.add_encryption_keys(args.link_filepath, "link")
+
+    if args.install_filepath is not None:
+        zigator.config.add_install_codes(args.install_filepath)
 
     if args.pcap_directory is not None:
         zigator.parsing.main(args.pcap_directory)

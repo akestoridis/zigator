@@ -23,6 +23,8 @@ import logging
 import os
 import string
 
+from pycrc.algorithms import Crc
+
 
 def encryption_keys(filepath, optional=False):
     """Load encryption keys from the provided text file."""
@@ -76,9 +78,96 @@ def encryption_keys(filepath, optional=False):
                 logging.warning("The encryption key {} from \"{}\" "
                                 "was ignored because its name \"{}\" is "
                                 "also used by the encryption key {}"
-                                "".format(key_bytes.hex(), filepath, key_name,
+                                "".format(key_bytes.hex(),
+                                          filepath,
+                                          key_name,
                                           loaded_keys[key_name].hex()))
             else:
                 loaded_keys[key_name] = key_bytes
 
     return loaded_keys
+
+
+def install_codes(filepath, optional=False):
+    """Load install codes from the provided text file."""
+    # Check whether an exception should be raised if the file does not exist
+    if not os.path.isfile(filepath):
+        if optional:
+            return {}
+        else:
+            raise ValueError("The provided file \"{}\" "
+                             "does not exist".format(filepath))
+
+    # Initialize the CRC algorithm
+    crc = Crc(width=16, poly=0x1021,
+              reflect_in=True, xor_in=0xffff,
+              reflect_out=True, xor_out=0xffff)
+
+    # Read the provided file line by line
+    loaded_codes = {}
+    with open(filepath, "r") as fp:
+        rows = csv.reader(fp, delimiter="\t")
+        for i, row in enumerate(rows, start=1):
+            # Sanity check
+            if len(row) != 2:
+                raise ValueError("Line #{} in \"{}\" should contain "
+                                 "2 tab-separated values, not {}"
+                                 "".format(i, filepath, len(row)))
+
+            # Extract the install code in hexadecimal notation and its name
+            code_hex = row[0]
+            code_name = row[1]
+
+            # Sanity checks
+            if not (len(code_hex) == 36
+                    and all(d in string.hexdigits for d in code_hex)):
+                raise ValueError("Line #{} in \"{}\" should contain "
+                                 "a 144-bit install code using "
+                                 "36 hexadecimal digits, without any prefix"
+                                 "".format(i, filepath))
+            elif code_name == "":
+                raise ValueError("Line #{} in \"{}\" should contain a unique "
+                                 "name for its code".format(i, filepath))
+            elif code_name.startswith("_"):
+                raise ValueError("Line #{} in \"{}\" contains a code name "
+                                 "that starts with \"_\", which is "
+                                 "not allowed".format(i, filepath))
+
+            # Convert the hexadecimal representation into a bytes object
+            code_bytes = bytes.fromhex(code_hex)
+
+            # Separate the 128-bit number from its CRC value
+            received_number = code_bytes[0:16]
+            received_crc = int.from_bytes(code_bytes[16:18],
+                                          byteorder="little")
+
+            # Compute the CRC value of the received number
+            computed_crc = crc.bit_by_bit_fast(received_number)
+
+            # Compare the computed CRC value with the received CRC value
+            if computed_crc != received_crc:
+                logging.warning("Ignoring the install code {} because "
+                                "its CRC value {} does not match the "
+                                "computed CRC value {}"
+                                "".format(code_bytes.hex(),
+                                          hex(received_crc),
+                                          hex(computed_crc)))
+                continue
+
+            # Make sure that this install code is not already loaded
+            if code_bytes in loaded_codes.values():
+                logging.warning("The install code {} appears "
+                                "more than once in \"{}\""
+                                "".format(code_bytes.hex(), filepath))
+            elif code_name in loaded_codes.keys():
+                logging.warning("The install code {} from \"{}\" "
+                                "was ignored because its name \"{}\" is "
+                                "also used by the install code {}"
+                                "".format(code_bytes.hex(),
+                                          filepath,
+                                          code_name,
+                                          loaded_codes[code_name].hex()))
+            else:
+                loaded_codes[code_name] = code_bytes
+
+    return loaded_codes

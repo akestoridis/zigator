@@ -43,6 +43,7 @@ __classifiers__ = [
     "Topic :: Security"
 ]
 __install_requires__ = [
+    "pycrc>=0.9.2",
     "pycryptodomex>=3.9.4",
     "scapy===2.4.3-zigator"
 ]
