@@ -231,6 +231,18 @@ columns = [
     ("aps_aux_srcaddr", "TEXT"),
     ("aps_aux_keyseqnum", "INTEGER"),
     ("aps_aux_decryptedpayload", "TEXT"),
+    ("aps_cmd_id", "TEXT"),
+    ("aps_transportkey_stdkeytype", "TEXT"),
+    ("aps_transportkey_key", "TEXT"),
+    ("aps_transportkey_keyseqnum", "INTEGER"),
+    ("aps_transportkey_dstextendedaddr", "TEXT"),
+    ("aps_transportkey_srcextendedaddr", "TEXT"),
+    ("aps_updatedevice_extendedaddr", "TEXT"),
+    ("aps_updatedevice_shortaddr", "TEXT"),
+    ("aps_updatedevice_status", "TEXT"),
+    ("aps_removedevice_extendedaddr", "TEXT"),
+    ("aps_requestkey_reqkeytype", "TEXT"),
+    ("aps_switchkey_keyseqnum", "INTEGER"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]

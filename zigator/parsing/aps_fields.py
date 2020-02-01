@@ -17,6 +17,7 @@
 import binascii
 import logging
 
+from scapy.all import ZigbeeAppCommandPayload
 from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigbeeSecurityHeader
 
@@ -88,6 +89,202 @@ def get_aps_aux_extnonce(pkt):
     }
     extnonce_state = pkt[ZigbeeSecurityHeader].extended_nonce
     return extnonce_states.get(extnonce_state, "Unknown APS EN state")
+
+
+def get_aps_command(pkt):
+    aps_commands = {
+        5: "APS Transport Key",
+        6: "APS Update Device",
+        7: "APS Remove Device",
+        8: "APS Request Key",
+        9: "APS Switch Key",
+        14: "APS Tunnel",
+        15: "APS Verify Key",
+        16: "APS Confirm Key"
+    }
+    cmd_id = pkt[ZigbeeAppCommandPayload].cmd_identifier
+    return aps_commands.get(cmd_id, "Unknown APS command")
+
+
+def get_aps_transportkey_stdkeytype(pkt):
+    stdkey_types = {
+        1: "Standard Network Key",
+        3: "Application Link Key",
+        4: "Trust Center Link Key"
+    }
+    stdkeytype_id = pkt[ZigbeeAppCommandPayload].key_type
+    return stdkey_types.get(stdkeytype_id, "Unknown Standard Key Type value")
+
+
+def get_aps_updatedevice_status(pkt):
+    status_values = {
+        0: "Standard device secured rejoin",
+        1: "Standard device unsecured rejoin",
+        2: "Device left",
+        3: "Standard device trust center rejoin"
+    }
+    status_value = pkt[ZigbeeAppCommandPayload].status
+    return status_values.get(status_value, "Unknown Status value")
+
+
+def get_aps_requestkey_reqkeytype(pkt):
+    reqkey_types = {
+        2: "Application Link Key",
+        4: "Trust Center Link Key"
+    }
+    reqkeytype_id = pkt[ZigbeeAppCommandPayload].key_type
+    return reqkey_types.get(reqkeytype_id, "Unknown Request Key Type value")
+
+
+def aps_transportkey(pkt):
+    # Standard Key Type field
+    config.entry["aps_transportkey_stdkeytype"] = (
+        get_aps_transportkey_stdkeytype(pkt)
+    )
+
+    # Key Descriptor field
+    if (config.entry["aps_transportkey_stdkeytype"]
+            == "Standard Network Key"):
+        config.entry["aps_transportkey_key"] = binascii.hexlify(
+            pkt[ZigbeeAppCommandPayload].key)
+        config.entry["aps_transportkey_keyseqnum"] = (
+            pkt[ZigbeeAppCommandPayload].key_seqnum
+        )
+        config.entry["aps_transportkey_dstextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPayload].dest_addr)
+        config.entry["aps_transportkey_srcextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPayload].src_addr)
+        # TODO: Add to network keys
+        return
+    elif (config.entry["aps_transportkey_stdkeytype"]
+            == "Trust Center Link Key"):
+        config.entry["aps_transportkey_key"] = binascii.hexlify(
+            pkt[ZigbeeAppCommandPayload].key)
+        config.entry["aps_transportkey_dstextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPayload].dest_addr)
+        config.entry["aps_transportkey_srcextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPayload].src_addr)
+        # TODO: Add to link keys
+        return
+    elif (config.entry["aps_transportkey_stdkeytype"]
+            == "Application Link Key"):
+        config.entry["aps_transportkey_key"] = binascii.hexlify(
+            pkt[ZigbeeAppCommandPayload].key)
+        logging.warning("Ignoring the Partner Address field")
+        logging.warning("Ignoring the Initiator Flag field")
+        # TODO: Add to link keys
+        return
+    else:
+        config.entry["error_msg"] = "Unknown Standard Key Type"
+        return
+
+
+def aps_updatedevice(pkt):
+    # Device Extended Address field
+    config.entry["aps_updatedevice_extendedaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].address)
+
+    # Device Short Address field
+    config.entry["aps_updatedevice_shortaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].short_address)
+
+    # Status field
+    config.entry["aps_updatedevice_status"] = get_aps_updatedevice_status(pkt)
+
+    return
+
+
+def aps_removedevice(pkt):
+    # Target Extended Address field
+    config.entry["aps_removedevice_extendedaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].address)
+
+    return
+
+
+def aps_requestkey(pkt):
+    # Request Key Type field
+    config.entry["aps_requestkey_reqkeytype"] = (
+        get_aps_requestkey_reqkeytype(pkt)
+    )
+
+    # Partner Extended Address field
+    if (config.entry["aps_requestkey_reqkeytype"]
+            == "Application Link Key"):
+        logging.warning("Ignoring the Partner Address field")
+        return
+    elif (config.entry["aps_requestkey_reqkeytype"]
+            == "Trust Center Link Key"):
+        # The Partner Extended Address field is not included
+        return
+    else:
+        config.entry["error_msg"] = "Unknown Request Key Type value"
+        return
+
+
+def aps_switchkey(pkt):
+    # Key Sequence Number field
+    config.entry["aps_switchkey_keyseqnum"] = (
+        pkt[ZigbeeAppCommandPayload].seqnum
+    )
+
+    return
+
+
+def aps_tunnel(pkt):
+    logging.warning("Packet #{} in {} cannot be processed"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["error_msg"] = "Unable to process APS Tunnel Commands"
+    return
+
+
+def aps_verifykey(pkt):
+    logging.warning("Packet #{} in {} cannot be processed"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["error_msg"] = "Unable to process APS Verify Key Commands"
+    return
+
+
+def aps_confirmkey(pkt):
+    logging.warning("Packet #{} in {} cannot be processed"
+                    "".format(config.entry["pkt_num"],
+                              config.entry["pcap_filename"]))
+    config.entry["error_msg"] = "Unable to process APS Confirm Key Commands"
+    return
+
+
+def aps_command_payload(pkt):
+    # Command Identifier field
+    config.entry["aps_cmd_id"] = get_aps_command(pkt)
+
+    # Command Payload field
+    if config.entry["aps_cmd_id"] == "APS Transport Key":
+        aps_transportkey(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Update Device":
+        aps_updatedevice(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Remove Device":
+        aps_removedevice(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Request Key":
+        aps_requestkey(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Switch Key":
+        aps_switchkey(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Tunnel":
+        aps_tunnel(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Verify Key":
+        aps_verifykey(pkt)
+        return
+    elif config.entry["aps_cmd_id"] == "APS Confirm Key":
+        aps_confirmkey(pkt)
+        return
+    return
 
 
 def aps_auxiliary(pkt):
@@ -169,7 +366,8 @@ def aps_auxiliary(pkt):
                     # TODO
                     return
                 elif config.entry["aps_frametype"] == "APS Command":
-                    # TODO
+                    aps_command_payload(
+                        ZigbeeAppCommandPayload(decrypted_payload))
                     return
                 elif config.entry["aps_frametype"] == "APS Acknowledgment":
                     # APS Acknowledgments do not contain any other fields
@@ -263,8 +461,14 @@ def aps_command_header(pkt):
             )
             return
     elif config.entry["aps_security"] == "APS Security Disabled":
-        # TODO: aps_command_payload(pkt)
-        return
+        if pkt.haslayer(ZigbeeAppCommandPayload):
+            aps_command_payload(pkt)
+            return
+        else:
+            config.entry["error_msg"] = (
+                "It does not contain APS Command fields"
+            )
+            return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
         return
