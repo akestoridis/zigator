@@ -322,6 +322,55 @@ def get_nwk_networkupdate_type(pkt):
     return update_types.get(update_type, "Unknown update type")
 
 
+def get_edtimeoutreq_reqtime(pkt):
+    timeout_values = {
+        0: "10 seconds",
+        1: "2 minutes",
+        2: "4 minutes",
+        3: "8 minutes",
+        4: "16 minutes",
+        5: "32 minutes",
+        6: "64 minutes",
+        7: "128 minutes",
+        8: "256 minutes",
+        9: "512 minutes",
+        10: "1024 minutes",
+        11: "2048 minutes",
+        12: "4096 minutes",
+        13: "8192 minutes",
+        14: "16384 minutes"
+    }
+    req_timeout = pkt[ZigbeeNWKCommandPayload].req_timeout
+    return timeout_values.get(req_timeout, "Unknown requested timeout value")
+
+
+def get_edtimeoutresp_status(pkt):
+    status_values = {
+        0: "Success",
+        1: "Incorrect Value"
+    }
+    status = pkt[ZigbeeNWKCommandPayload].status
+    return status_values.get(status, "Unknown status value")
+
+
+def get_edtimeoutresp_poll(pkt):
+    poll_states = {
+        0: "MAC Data Poll Keepalive is not supported",
+        1: "MAC Data Poll Keepalive is supported"
+    }
+    poll_state = pkt[ZigbeeNWKCommandPayload].mac_data_poll_keepalive
+    return poll_states.get(poll_state, "Unknown poll state")
+
+
+def get_edtimeoutresp_timeout(pkt):
+    timeout_states = {
+        0: "End Device Timeout Request Keepalive is not supported",
+        1: "End Device Timeout Request Keepalive is supported"
+    }
+    timeout_state = pkt[ZigbeeNWKCommandPayload].ed_timeout_req_keepalive
+    return timeout_states.get(timeout_state, "Unknown timeout state")
+
+
 def nwk_routerequest(pkt):
     # Command Options field
     config.entry["nwk_routerequest_mto"] = get_nwk_routerequest_mto(pkt)
@@ -545,22 +594,25 @@ def nwk_networkupdate(pkt):
 
 
 def nwk_edtimeoutreq(pkt):
-    logging.warning("Packet #{} in {} cannot be processed"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["error_msg"] = (
-        "Unable to process NWK End Device Timeout Request Commands"
+    # Requested Timeout field
+    config.entry["nwk_edtimeoutreq_reqtime"] = get_edtimeoutreq_reqtime(pkt)
+
+    # End Device Configuration field
+    config.entry["nwk_edtimeoutreq_edconf"] = (
+        pkt[ZigbeeNWKCommandPayload].ed_conf
     )
+
     return
 
 
 def nwk_edtimeoutresp(pkt):
-    logging.warning("Packet #{} in {} cannot be processed"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["error_msg"] = (
-        "Unable to process NWK End Device Timeout Response Commands"
-    )
+    # Status field
+    config.entry["nwk_edtimeoutresp_status"] = get_edtimeoutresp_status(pkt)
+
+    # Parent Information field
+    config.entry["nwk_edtimeoutresp_poll"] = get_edtimeoutresp_poll(pkt)
+    config.entry["nwk_edtimeoutresp_timeout"] = get_edtimeoutresp_timeout(pkt)
+
     return
 
 
