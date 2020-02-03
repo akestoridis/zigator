@@ -352,6 +352,31 @@ def get_aps_reqkeytype(pkt):
     return reqkey_types.get(reqkeytype_id, "Unknown Request Key Type value")
 
 
+def get_aps_confirmkey_status(pkt):
+    status_values = {
+        0x00: "SUCCESS",
+        0xa0: "ASDU_TOO_LONG",
+        0xa1: "DEFRAG_DEFERRED",
+        0xa2: "DEFRAG_UNSUPPORTED",
+        0xa3: "ILLEGAL_REQUEST",
+        0xa4: "INVALID_BINDING",
+        0xa5: "INVALID_GROUP",
+        0xa6: "INVALID_PARAMETER",
+        0xa7: "NO_ACK",
+        0xa8: "NO_BOUND_DEVICE",
+        0xa9: "NO_SHORT_ADDRESS",
+        0xaa: "NOT_SUPPORTED",
+        0xab: "SECURED_LINK_KEY",
+        0xac: "SECURED_NWK_KEY",
+        0xad: "SECURITY_FAIL",
+        0xae: "TABLE_FULL",
+        0xaf: "UNSECURED",
+        0xb0: "UNSUPPORTED_ATTRIBUTE"
+    }
+    status_value = pkt[ZigbeeAppCommandPayload].status
+    return status_values.get(status_value, "Unknown Status value")
+
+
 def aps_transportkey(pkt):
     # Standard Key Type field
     config.entry["aps_transportkey_stdkeytype"] = get_aps_stdkeytype(pkt)
@@ -476,10 +501,16 @@ def aps_verifykey(pkt):
 
 
 def aps_confirmkey(pkt):
-    logging.warning("Packet #{} in {} cannot be processed"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["error_msg"] = "Unable to process APS Confirm Key Commands"
+    # Status field
+    config.entry["aps_confirmkey_status"] = get_aps_confirmkey_status(pkt)
+
+    # Standard Key Type field
+    config.entry["aps_confirmkey_stdkeytype"] = get_aps_stdkeytype(pkt)
+
+    # Extended Destination Address field
+    config.entry["aps_confirmkey_extendedaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].address)
+
     return
 
 

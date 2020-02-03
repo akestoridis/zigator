@@ -254,6 +254,9 @@ columns = [
     ("aps_verifykey_stdkeytype", "TEXT"),
     ("aps_verifykey_extendedaddr", "TEXT"),
     ("aps_verifykey_keyhash", "TEXT"),
+    ("aps_confirmkey_status", "TEXT"),
+    ("aps_confirmkey_stdkeytype", "TEXT"),
+    ("aps_confirmkey_extendedaddr", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]
