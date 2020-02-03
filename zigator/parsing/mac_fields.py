@@ -264,13 +264,20 @@ def mac_realign(pkt):
         pkt[Dot15d4CmdCoordRealign].dev_address)
 
     # Channel Page field
-    logging.warning("Packet #{} in {} may contain a Channel Page field "
-                    "which was ignored"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["warning_msg"] = "Ignored the Channel Page field"
-
-    return
+    if len(pkt[Dot15d4CmdCoordRealign]) == 7:
+        # The channel page field was omitted
+        return
+    elif len(pkt[Dot15d4CmdCoordRealign]) == 8:
+        # TODO: Add it as a field in Scapy
+        config.entry["mac_realign_page"] = int.from_bytes(
+            pkt[Dot15d4CmdCoordRealign].payload, byteorder="big")
+        return
+    else:
+        logging.warning("Packet #{} in {} has unexpected length"
+                        "".format(config.entry["pkt_num"],
+                                  config.entry["pcap_filename"]))
+        config.entry["error_msg"] = "Unexpected length"
+        return
 
 
 def mac_gtsreq(pkt):

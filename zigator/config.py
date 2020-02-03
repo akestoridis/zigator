@@ -114,6 +114,7 @@ columns = [
     ("mac_realign_coordaddr", "TEXT"),
     ("mac_realign_channel", "INTEGER"),
     ("mac_realign_shortaddr", "TEXT"),
+    ("mac_realign_page", "INTEGER"),
     ("mac_gtsreq_length", "INTEGER"),
     ("mac_gtsreq_dir", "TEXT"),
     ("mac_gtsreq_chartype", "TEXT"),
