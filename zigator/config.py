@@ -251,6 +251,9 @@ columns = [
     ("aps_removedevice_extendedaddr", "TEXT"),
     ("aps_requestkey_reqkeytype", "TEXT"),
     ("aps_switchkey_keyseqnum", "INTEGER"),
+    ("aps_verifykey_stdkeytype", "TEXT"),
+    ("aps_verifykey_extendedaddr", "TEXT"),
+    ("aps_verifykey_keyhash", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]

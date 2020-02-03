@@ -322,7 +322,7 @@ def get_aps_command(pkt):
     return aps_commands.get(cmd_id, "Unknown APS command")
 
 
-def get_aps_transportkey_stdkeytype(pkt):
+def get_aps_stdkeytype(pkt):
     stdkey_types = {
         1: "Standard Network Key",
         3: "Application Link Key",
@@ -343,7 +343,7 @@ def get_aps_updatedevice_status(pkt):
     return status_values.get(status_value, "Unknown Status value")
 
 
-def get_aps_requestkey_reqkeytype(pkt):
+def get_aps_reqkeytype(pkt):
     reqkey_types = {
         2: "Application Link Key",
         4: "Trust Center Link Key"
@@ -354,9 +354,7 @@ def get_aps_requestkey_reqkeytype(pkt):
 
 def aps_transportkey(pkt):
     # Standard Key Type field
-    config.entry["aps_transportkey_stdkeytype"] = (
-        get_aps_transportkey_stdkeytype(pkt)
-    )
+    config.entry["aps_transportkey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
     # Key Descriptor field
     if (config.entry["aps_transportkey_stdkeytype"]
@@ -429,9 +427,7 @@ def aps_removedevice(pkt):
 
 def aps_requestkey(pkt):
     # Request Key Type field
-    config.entry["aps_requestkey_reqkeytype"] = (
-        get_aps_requestkey_reqkeytype(pkt)
-    )
+    config.entry["aps_requestkey_reqkeytype"] = get_aps_reqkeytype(pkt)
 
     # Partner Extended Address field
     if (config.entry["aps_requestkey_reqkeytype"]
@@ -465,10 +461,17 @@ def aps_tunnel(pkt):
 
 
 def aps_verifykey(pkt):
-    logging.warning("Packet #{} in {} cannot be processed"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["error_msg"] = "Unable to process APS Verify Key Commands"
+    # Standard Key Type field
+    config.entry["aps_verifykey_stdkeytype"] = get_aps_stdkeytype(pkt)
+
+    # Extended Source Address field
+    config.entry["aps_verifykey_extendedaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].address)
+
+    # Initiator Verify-Key Hash Value field
+    config.entry["aps_verifykey_keyhash"] = binascii.hexlify(
+        pkt[ZigbeeAppCommandPayload].key_hash)
+
     return
 
 
