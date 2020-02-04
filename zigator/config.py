@@ -29,16 +29,16 @@ from . import load
 
 
 # Define the path of the configuration directory
-config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")
+CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "zigator")
 
 # Define the filepaths of configuration files
-network_filepath = os.path.join(config_dir, "network_keys.tsv")
-link_filepath = os.path.join(config_dir, "link_keys.tsv")
-install_filepath = os.path.join(config_dir, "install_codes.tsv")
-db_filepath = os.path.join(config_dir, "traffic.db")
+NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network_keys.tsv")
+LINK_FILEPATH = os.path.join(CONFIG_DIR, "link_keys.tsv")
+INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
+DB_FILEPATH = os.path.join(CONFIG_DIR, "traffic.db")
 
 # Define the columns of the table in the database
-columns = [
+DB_COLUMNS = [
     ("pcap_directory", "TEXT"),
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
@@ -231,9 +231,9 @@ columns = [
 ]
 
 # Define sets that will be used to construct valid column definitions
-allowed_characters = set(string.ascii_letters + string.digits + "_")
-allowed_types = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-constrained_columns = set([
+ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
+ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
+CONSTRAINED_COLUMNS = set([
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
@@ -245,7 +245,7 @@ constrained_columns = set([
 network_keys = {}
 link_keys = {}
 install_codes = {}
-entry = {column[0]: None for column in columns}
+entry = {column[0]: None for column in DB_COLUMNS}
 db_connection = None
 db_cursor = None
 
@@ -260,18 +260,18 @@ def init():
                         level=logging.INFO)
 
     # Make sure that the configuration directory exists
-    os.makedirs(config_dir, exist_ok=True)
+    os.makedirs(CONFIG_DIR, exist_ok=True)
 
     # Load network keys
-    network_keys = load.encryption_keys(network_filepath, optional=True)
+    network_keys = load.encryption_keys(NETWORK_FILEPATH, optional=True)
     logging.info("Loaded {} network keys".format(len(network_keys)))
 
     # Load link keys
-    link_keys = load.encryption_keys(link_filepath, optional=True)
+    link_keys = load.encryption_keys(LINK_FILEPATH, optional=True)
     logging.info("Loaded {} link keys".format(len(link_keys)))
 
     # Load install codes and derive link keys from them
-    install_codes, derived_keys = load.install_codes(install_filepath,
+    install_codes, derived_keys = load.install_codes(INSTALL_FILEPATH,
                                                      optional=True)
     logging.info("Loaded {} install codes".format(len(install_codes)))
 
@@ -298,6 +298,8 @@ def init():
 
 
 def reset_entries(keep=[]):
+    global entry
+
     # Reset all data entries in the shared dictionary except
     # the ones that were requested to maintain their values
     if keep is None:
@@ -312,7 +314,7 @@ def initialize_db():
     global db_cursor
 
     # Open a connection with the database
-    db_connection = sqlite3.connect(db_filepath)
+    db_connection = sqlite3.connect(DB_FILEPATH)
     db_connection.text_factory = str
     db_cursor = db_connection.cursor()
 
@@ -324,7 +326,7 @@ def initialize_db():
     # Create a table for the parsed packets, if it doesn't already exist
     table_creation_command = "CREATE TABLE IF NOT EXISTS packets("
     delimiter_needed = False
-    for column in columns:
+    for column in DB_COLUMNS:
         if delimiter_needed:
             table_creation_command += ", "
         else:
@@ -334,7 +336,7 @@ def initialize_db():
         column_type = column[1]
 
         for i in range(len(column_name)):
-            if column_name[i] not in allowed_characters:
+            if column_name[i] not in ALLOWED_CHARACTERS:
                 raise ValueError("The character \"{}\" in the name of the "
                                  "column \"{}\" is not allowed"
                                  "".format(column_name[i], column_name))
@@ -346,14 +348,14 @@ def initialize_db():
 
         table_creation_command += column_name
 
-        if column_type not in allowed_types:
+        if column_type not in ALLOWED_TYPES:
             raise ValueError("The column type \"{}\" is not in the "
                              "set of allowed column types {}"
-                             "".format(column_type, allowed_types))
+                             "".format(column_type, ALLOWED_TYPES))
 
         table_creation_command += " " + column_type
 
-        if column_name in constrained_columns:
+        if column_name in CONSTRAINED_COLUMNS:
             table_creation_command += " NOT NULL"
     table_creation_command += ")"
 
@@ -367,8 +369,8 @@ def insert_pkt_into_database():
 
     # Insert the parsed data into the database
     db_cursor.execute("INSERT INTO packets VALUES ({})".format(
-                            ", ".join("?"*len(columns))),
-                      tuple(entry[column[0]] for column in columns))
+                            ", ".join("?"*len(DB_COLUMNS))),
+                      tuple(entry[column[0]] for column in DB_COLUMNS))
     db_connection.commit()
 
 
@@ -383,13 +385,16 @@ def finalize_db():
 
 
 def add_encryption_keys(filepath, key_type):
+    global network_keys
+    global link_keys
+
     # Distinguish network keys from link keys
     if key_type.lower() == "network":
         loaded_keys = network_keys
-        loaded_filepath = network_filepath
+        loaded_filepath = NETWORK_FILEPATH
     elif key_type.lower() == "link":
         loaded_keys = link_keys
-        loaded_filepath = link_filepath
+        loaded_filepath = LINK_FILEPATH
     else:
         raise ValueError("Unknown key type \"{}\"".format(key_type))
 
@@ -422,6 +427,8 @@ def add_encryption_keys(filepath, key_type):
 
 
 def add_install_codes(filepath):
+    global install_codes
+
     # Add the install codes that are not already loaded
     tmp_codes = load.install_codes(filepath, optional=False)
     added_codes = 0
@@ -443,7 +450,7 @@ def add_install_codes(filepath):
             added_codes += 1
 
             # Save the install code in a configuration file
-            with open(install_filepath, "a") as fp:
+            with open(INSTALL_FILEPATH, "a") as fp:
                 fp.write("{}\t{}\n".format(install_codes[code_name].hex(),
                                            code_name))
     logging.info("Added {} install codes from \"{}\""
@@ -451,6 +458,9 @@ def add_install_codes(filepath):
 
 
 def add_sniffed_key(key_bytes, key_type):
+    global network_keys
+    global link_keys
+
     # Distinguish network keys from link keys
     if key_type.lower() == "network":
         loaded_keys = network_keys
