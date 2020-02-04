@@ -478,10 +478,65 @@ def aps_switchkey(pkt):
 
 
 def aps_tunnel(pkt):
-    logging.warning("Packet #{} in {} cannot be processed"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
-    config.entry["error_msg"] = "Unable to process APS Tunnel Commands"
+    # Extended Destination Address field
+    config.entry["aps_tunnel_dstextendedaddr"] = hex(
+        pkt[ZigbeeAppCommandPayload].dest_addr)
+
+    # Tunneled Frame Control field
+    if pkt[ZigbeeAppCommandPayload].aps_frametype == 1:
+        config.entry["aps_tunnel_frametype"] = "APS Command"
+    else:
+        config.entry["error_msg"] = "Unexpected tunneled frame type"
+        return
+    if pkt[ZigbeeAppCommandPayload].delivery_mode == 0:
+        config.entry["aps_tunnel_delmode"] = "Normal unicast delivery"
+    else:
+        config.entry["error_msg"] = "Unexpected tunneled delivery mode"
+        return
+    if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
+        config.entry["error_msg"] = "Unexpected tunneled ACK format"
+        return
+    else:
+        config.entry["aps_tunnel_ackformat"] = "APS ACK Format Disabled"
+    if pkt[ZigbeeAppCommandPayload].frame_control.security:
+        config.entry["aps_tunnel_security"] = "APS Security Enabled"
+    else:
+        config.entry["error_msg"] = "Unexpected tunneled security state"
+        return
+    if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
+        config.entry["aps_tunnel_ackreq"] = (
+            "The sender requests an APS ACK"
+        )
+    else:
+        config.entry["aps_tunnel_ackreq"] = (
+            "The sender does not request an APS ACK"
+        )
+    if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
+        config.entry["error_msg"] = (
+            "Unexpected tunneled extended header state"
+        )
+        return
+    else:
+        config.entry["aps_tunnel_exthdr"] = (
+            "The extended header is not included"
+        )
+
+    # Tunneled APS Counter field
+    config.entry["aps_tunnel_counter"] = pkt[ZigbeeAppCommandPayload].counter
+
+    # Tunneled Auxiliary Header field
+    if config.entry["aps_security"] == "APS Security Enabled":
+        config.entry["error_msg"] = (
+            "An APS Auxiliary Header was already processed"
+        )
+        return
+    elif config.entry["aps_security"] == "APS Security Disabled":
+        aps_auxiliary(pkt)
+        return
+    else:
+        config.entry["error_msg"] = "Unknown APS security state"
+        return
+
     return
 
 
@@ -601,9 +656,25 @@ def aps_auxiliary(pkt):
         return
 
     # Attempt to decrypt the payload
-    aps_header = pkt[ZigbeeAppDataPayload].copy()
-    aps_header.remove_payload()
-    header = raw(aps_header)
+    if config.entry["aps_cmd_id"] == "APS Tunnel":
+        tunneled_framecontrol = (
+                pkt[ZigbeeAppCommandPayload].aps_frametype
+                + 4*pkt[ZigbeeAppCommandPayload].delivery_mode
+        )
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
+            tunneled_framecontrol += 16
+        if pkt[ZigbeeAppCommandPayload].frame_control.security:
+            tunneled_framecontrol += 32
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
+            tunneled_framecontrol += 64
+        if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
+            tunneled_framecontrol += 128
+        tunneled_counter = pkt[ZigbeeAppCommandPayload].counter
+        header = bytearray([tunneled_framecontrol, tunneled_counter])
+    else:
+        aps_header = pkt[ZigbeeAppDataPayload].copy()
+        aps_header.remove_payload()
+        header = raw(aps_header)
     security_control = raw(pkt[ZigbeeSecurityHeader])[0]
     encrypted_payload = pkt[ZigbeeSecurityHeader].data[:-4]
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
@@ -701,7 +772,7 @@ def aps_data_header(pkt):
             )
             return
     elif config.entry["aps_security"] == "APS Security Disabled":
-        # TODO: aps_data_payload(pkt)
+        # TODO
         return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
