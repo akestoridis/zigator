@@ -58,6 +58,8 @@ def main():
         parser.print_help()
         return
 
+    zigator.config.init()
+
     if args.network_filepath is not None:
         zigator.config.add_encryption_keys(args.network_filepath, "network")
 

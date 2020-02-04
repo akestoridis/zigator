@@ -28,53 +28,14 @@ from scapy.all import conf
 from . import load
 
 
-# Configure the logging system
-logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
-
-# Make sure that the configuration directory exists
+# Define the path of the configuration directory
 config_dir = os.path.join(os.path.expanduser("~"), ".config", "zigator")
-os.makedirs(config_dir, exist_ok=True)
 
 # Define the filepaths of configuration files
 network_filepath = os.path.join(config_dir, "network_keys.tsv")
 link_filepath = os.path.join(config_dir, "link_keys.tsv")
 install_filepath = os.path.join(config_dir, "install_codes.tsv")
 db_filepath = os.path.join(config_dir, "traffic.db")
-
-# Load network keys
-network_keys = load.encryption_keys(network_filepath, optional=True)
-logging.info("Loaded {} network keys".format(len(network_keys)))
-
-# Load link keys
-link_keys = load.encryption_keys(link_filepath, optional=True)
-logging.info("Loaded {} link keys".format(len(link_keys)))
-
-# Load install codes and derive link keys from them
-install_codes, derived_keys = load.install_codes(install_filepath,
-                                                 optional=True)
-logging.info("Loaded {} install codes".format(len(install_codes)))
-
-# Add link keys, derived from install codes, that are not already loaded
-added_keys = 0
-for key_name in derived_keys.keys():
-    if derived_keys[key_name] in link_keys.values():
-        logging.warning("The derived link key {} was already loaded"
-                        "".format(derived_keys[key_name].hex()))
-    elif key_name in link_keys.keys():
-        logging.warning("The derived link key {} was not added because "
-                        "its name \"{}\" is also used by the link key {}"
-                        "".format(derived_keys[key_name].hex(),
-                                  key_name,
-                                  link_keys[key_name].hex()))
-    else:
-        link_keys[key_name] = derived_keys[key_name]
-        added_keys += 1
-logging.info("Added {} link keys that were derived from install codes"
-             "".format(added_keys))
-
-
-# Configure Scapy to assume that Zigbee is above the MAC layer
-conf.dot15d4_protocol = "zigbee"
 
 # Define the columns of the table in the database
 columns = [
@@ -280,12 +241,60 @@ constrained_columns = set([
     "show_pkt"
 ])
 
-# Use a shared dictionary to set up data entries
+# Initialize the global variables
+network_keys = {}
+link_keys = {}
+install_codes = {}
 entry = {column[0]: None for column in columns}
-
-# Initialize global variables for interacting with the database
 db_connection = None
 db_cursor = None
+
+
+def init():
+    global network_keys
+    global link_keys
+    global install_codes
+
+    # Configure the logging system
+    logging.basicConfig(format="[%(levelname)s] %(message)s",
+                        level=logging.INFO)
+
+    # Make sure that the configuration directory exists
+    os.makedirs(config_dir, exist_ok=True)
+
+    # Load network keys
+    network_keys = load.encryption_keys(network_filepath, optional=True)
+    logging.info("Loaded {} network keys".format(len(network_keys)))
+
+    # Load link keys
+    link_keys = load.encryption_keys(link_filepath, optional=True)
+    logging.info("Loaded {} link keys".format(len(link_keys)))
+
+    # Load install codes and derive link keys from them
+    install_codes, derived_keys = load.install_codes(install_filepath,
+                                                     optional=True)
+    logging.info("Loaded {} install codes".format(len(install_codes)))
+
+    # Add link keys, derived from install codes, that are not already loaded
+    added_keys = 0
+    for key_name in derived_keys.keys():
+        if derived_keys[key_name] in link_keys.values():
+            logging.warning("The derived link key {} was already loaded"
+                            "".format(derived_keys[key_name].hex()))
+        elif key_name in link_keys.keys():
+            logging.warning("The derived link key {} was not added because "
+                            "its name \"{}\" is also used by the link key {}"
+                            "".format(derived_keys[key_name].hex(),
+                                      key_name,
+                                      link_keys[key_name].hex()))
+        else:
+            link_keys[key_name] = derived_keys[key_name]
+            added_keys += 1
+    logging.info("Added {} link keys that were derived from install codes"
+                 "".format(added_keys))
+
+    # Configure Scapy to assume that Zigbee is above the MAC layer
+    conf.dot15d4_protocol = "zigbee"
 
 
 def reset_entries(keep=[]):
