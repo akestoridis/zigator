@@ -23,8 +23,14 @@ from argparse import ArgumentParser
 import zigator
 
 
-parser = ArgumentParser(description="Zigator: Security analysis tool "
-                                    "for Zigbee networks")
+parser = ArgumentParser(prog="zigator",
+                        description="Zigator: Security analysis tool "
+                                    "for Zigbee networks",
+                        add_help=True)
+parser.add_argument("-v",
+                    "--version",
+                    action="version",
+                    version="%(prog)s {}".format(zigator.__version__))
 parser.add_argument("--pcap_directory",
                     dest="pcap_directory",
                     type=str,
