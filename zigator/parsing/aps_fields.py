@@ -708,9 +708,9 @@ def aps_auxiliary(pkt):
                     )
                     return
 
-    logging.warning("Unable to decrypt the APS payload of packet #{} in {}"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
+    logging.debug("Unable to decrypt the APS payload of packet #{} in {}"
+                  "".format(config.entry["pkt_num"],
+                            config.entry["pcap_filename"]))
     config.entry["warning_msg"] = "Unable to decrypt the APS payload"
     return
 
@@ -901,10 +901,10 @@ def aps_fields(pkt):
     elif config.entry["aps_frametype"] == "APS Acknowledgment":
         aps_ack_header(pkt)
     elif config.entry["aps_frametype"] == "APS Inter-PAN":
-        logging.warning("Packet #{} in {} contains Inter-PAN fields"
-                        "which were ignored"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} contains Inter-PAN fields"
+                      "which were ignored"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Ignored the Inter-PAN fields"
         return
     else:

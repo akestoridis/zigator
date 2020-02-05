@@ -250,14 +250,18 @@ db_connection = None
 db_cursor = None
 
 
-def init():
+def init(debug):
     global network_keys
     global link_keys
     global install_codes
 
     # Configure the logging system
-    logging.basicConfig(format="[%(levelname)s] %(message)s",
-                        level=logging.INFO)
+    if debug:
+        logging.basicConfig(format="[%(levelname)s] %(message)s",
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format="[%(levelname)s] %(message)s",
+                            level=logging.INFO)
 
     # Make sure that the configuration directory exists
     os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -279,8 +283,8 @@ def init():
     added_keys = 0
     for key_name in derived_keys.keys():
         if derived_keys[key_name] in link_keys.values():
-            logging.warning("The derived link key {} was already loaded"
-                            "".format(derived_keys[key_name].hex()))
+            logging.debug("The derived link key {} was already loaded"
+                          "".format(derived_keys[key_name].hex()))
         elif key_name in link_keys.keys():
             logging.warning("The derived link key {} was not added because "
                             "its name \"{}\" is also used by the link key {}"
@@ -403,9 +407,9 @@ def add_encryption_keys(filepath, key_type):
     added_keys = 0
     for key_name in tmp_keys.keys():
         if tmp_keys[key_name] in loaded_keys.values():
-            logging.warning("The encryption key {} from \"{}\" "
-                            "was already loaded"
-                            "".format(tmp_keys[key_name].hex(), filepath))
+            logging.debug("The encryption key {} from \"{}\" "
+                          "was already loaded"
+                          "".format(tmp_keys[key_name].hex(), filepath))
         elif key_name in loaded_keys.keys():
             logging.warning("The encryption key {} from \"{}\" "
                             "was not added because its name \"{}\" is "
@@ -434,9 +438,8 @@ def add_install_codes(filepath):
     added_codes = 0
     for code_name in tmp_codes.keys():
         if tmp_codes[code_name] in install_codes.values():
-            logging.warning("The install code {} from \"{}\" "
-                            "was already loaded"
-                            "".format(tmp_codes[code_name].hex(), filepath))
+            logging.debug("The install code {} from \"{}\" was already loaded"
+                          "".format(tmp_codes[code_name].hex(), filepath))
         elif code_name in install_codes.keys():
             logging.warning("The install code {} from \"{}\" "
                             "was not added because its name \"{}\" is "

@@ -31,29 +31,33 @@ parser.add_argument("-v",
                     "--version",
                     action="version",
                     version="%(prog)s {}".format(zigator.__version__))
+parser.add_argument("-d",
+                    "--debug",
+                    action="store_true",
+                    help="enable debug logging")
 parser.add_argument("--pcap_directory",
                     dest="pcap_directory",
                     type=str,
                     action="store",
-                    help="Directory with pcap files",
+                    help="directory with pcap files",
                     default=None)
 parser.add_argument("--network_keys",
                     dest="network_filepath",
                     type=str,
                     action="store",
-                    help="File with network keys",
+                    help="file with network keys",
                     default=None)
 parser.add_argument("--link_keys",
                     dest="link_filepath",
                     type=str,
                     action="store",
-                    help="File with link keys",
+                    help="file with link keys",
                     default=None)
 parser.add_argument("--install_codes",
                     dest="install_filepath",
                     type=str,
                     action="store",
-                    help="File with install codes",
+                    help="file with install codes",
                     default=None)
 args = parser.parse_args()
 
@@ -64,7 +68,7 @@ def main():
         parser.print_help()
         return
 
-    zigator.config.init()
+    zigator.config.init(args.debug)
 
     if args.network_filepath is not None:
         zigator.config.add_encryption_keys(args.network_filepath, "network")

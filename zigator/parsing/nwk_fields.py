@@ -516,12 +516,12 @@ def nwk_linkstatus(pkt):
     # Link Status List field
     linkstatus_list = pkt[ZigbeeNWKCommandPayload].link_status_list
     if config.entry["nwk_linkstatus_count"] != len(linkstatus_list):
-        logging.warning("Packet #{} in {} contains {} link status entries "
-                        "but read only {} link status entries"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"],
-                                  config.entry["nwk_linkstatus_count"],
-                                  len(linkstatus_list)))
+        logging.debug("Packet #{} in {} contains {} link status entries "
+                      "but read only {} link status entries"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"],
+                                config.entry["nwk_linkstatus_count"],
+                                len(linkstatus_list)))
         config.entry["error_msg"] = "Unable to process the Link Status List"
         return
     if config.entry["nwk_linkstatus_count"] > 0:
@@ -550,12 +550,12 @@ def nwk_networkreport(pkt):
     if config.entry["nwk_networkreport_type"] == "PAN Identifier Conflict":
         panid_list = pkt[ZigbeeNWKCommandPayload].PAN_ID_conflict_report
         if config.entry["nwk_networkreport_count"] != len(panid_list):
-            logging.warning("Packet #{} in {} contains {} PAN identifiers "
-                            "but read only {} PAN identifiers"
-                            "".format(config.entry["pkt_num"],
-                                      config.entry["pcap_filename"],
-                                      config.entry["nwk_network_count"],
-                                      len(panid_list)))
+            logging.debug("Packet #{} in {} contains {} PAN identifiers "
+                          "but read only {} PAN identifiers"
+                          "".format(config.entry["pkt_num"],
+                                    config.entry["pcap_filename"],
+                                    config.entry["nwk_network_count"],
+                                    len(panid_list)))
             config.entry["error_msg"] = "Unable to process the PAN IDs"
             return
         if config.entry["nwk_networkreport_count"] > 0:
@@ -750,9 +750,9 @@ def nwk_auxiliary(pkt):
                     )
                     return
 
-    logging.warning("Unable to decrypt the NWK payload of packet #{} in {}"
-                    "".format(config.entry["pkt_num"],
-                              config.entry["pcap_filename"]))
+    logging.debug("Unable to decrypt the NWK payload of packet #{} in {}"
+                  "".format(config.entry["pkt_num"],
+                            config.entry["pcap_filename"]))
     config.entry["warning_msg"] = "Unable to decrypt the NWK payload"
     return
 
@@ -763,9 +763,9 @@ def nwk_fields(pkt):
         nwk_beacon(pkt)
         return
     elif config.entry["mac_frametype"] != "MAC Data":
-        logging.warning("Packet #{} in {} contains unknown NWK fields"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} contains unknown NWK fields"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Unknown NWK fields"
         return
 
@@ -830,10 +830,10 @@ def nwk_fields(pkt):
 
     # Multicast Control field
     if config.entry["nwk_multicast"] == "NWK Multicast Enabled":
-        logging.warning("Packet #{} in {} contains a Multicast Control field "
-                        "which could not be processed"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} contains a Multicast Control field "
+                      "which could not be processed"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Could not process the Multicast Control"
         return
     elif config.entry["nwk_multicast"] != "NWK Multicast Disabled":
@@ -870,10 +870,10 @@ def nwk_fields(pkt):
                 )
                 return
         elif config.entry["nwk_frametype"] == "NWK Inter-PAN":
-            logging.warning("Packet #{} in {} contains Inter-PAN fields"
-                            "which were ignored"
-                            "".format(config.entry["pkt_num"],
-                                      config.entry["pcap_filename"]))
+            logging.debug("Packet #{} in {} contains Inter-PAN fields"
+                          "which were ignored"
+                          "".format(config.entry["pkt_num"],
+                                    config.entry["pcap_filename"]))
             config.entry["error_msg"] = "Ignored the Inter-PAN fields"
             return
         elif config.entry["nwk_frametype"] == "NWK Data":

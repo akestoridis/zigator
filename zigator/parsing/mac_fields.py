@@ -273,9 +273,9 @@ def mac_realign(pkt):
             pkt[Dot15d4CmdCoordRealign].payload, byteorder="big")
         return
     else:
-        logging.warning("Packet #{} in {} has unexpected length"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} has unexpected length"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Unexpected length"
         return
 
@@ -411,10 +411,10 @@ def mac_beacon(pkt):
 
     # GTS List field
     if config.entry["mac_beacon_gtsnum"] > 0:
-        logging.warning("Packet #{} in {} contains a GTS List field "
-                        "which could not be processed"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} contains a GTS List field "
+                      "which could not be processed"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Could not process the GTS List"
         return
 
@@ -425,10 +425,10 @@ def mac_beacon(pkt):
     # Address List field
     if (config.entry["mac_beacon_nsap"] > 0
             or config.entry["mac_beacon_neap"] > 0):
-        logging.warning("Packet #{} in {} contains an Address List field "
-                        "which could not be processed"
-                        "".format(config.entry["pkt_num"],
-                                  config.entry["pcap_filename"]))
+        logging.debug("Packet #{} in {} contains an Address List field "
+                      "which could not be processed"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
         config.entry["error_msg"] = "Could not process the Address List"
         return
 
@@ -529,10 +529,10 @@ def mac_fields(pkt):
     if config.entry["mac_security"] == "MAC Security Enabled":
         if pkt.haslayer(Dot15d4AuxSecurityHeader):
             # Zigbee does not utilize any security services on the MAC layer
-            logging.warning("The packet #{} in {} is utilizing "
-                            "security services on the MAC layer"
-                            "".format(config.entry["pkt_num"],
-                                      config.entry["pcap_filename"]))
+            logging.debug("The packet #{} in {} is utilizing "
+                          "security services on the MAC layer"
+                          "".format(config.entry["pkt_num"],
+                                    config.entry["pcap_filename"]))
             config.entry["warning_msg"] = (
                 "Ignored the MAC Auxiliary Security Header"
             )

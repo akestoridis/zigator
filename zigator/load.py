@@ -177,7 +177,7 @@ def install_codes(filepath, optional=False):
                 key_bytes = crypto.zigbee_mmo_hash(code_bytes)
                 key_name = "_derived_{}".format(code_bytes.hex())
                 derived_keys[key_name] = key_bytes
-                logging.info("Derived the link key {} from the install code "
-                             "{}".format(key_bytes.hex(), code_bytes.hex()))
+                logging.debug("Derived the link key {} from the install code "
+                              "{}".format(key_bytes.hex(), code_bytes.hex()))
 
     return loaded_codes, derived_keys
