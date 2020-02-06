@@ -332,6 +332,15 @@ def get_aps_stdkeytype(pkt):
     return stdkey_types.get(stdkeytype_id, "Unknown Standard Key Type value")
 
 
+def get_aps_initflag(pkt):
+    flag_values = {
+        0: "The receiver did not request this key",
+        1: "The receiver requested this key"
+    }
+    flag_value = pkt[ZigbeeAppCommandPayload].initiator_flag
+    return flag_values.get(flag_value, "Unknown Initiator Flag value")
+
+
 def get_aps_updatedevice_status(pkt):
     status_values = {
         0: "Standard device secured rejoin",
@@ -384,13 +393,20 @@ def aps_transportkey(pkt):
     # Key Descriptor field (25/32/33 bytes)
     if (config.entry["aps_transportkey_stdkeytype"]
             == "Standard Network Key"):
+        # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = binascii.hexlify(
             pkt[ZigbeeAppCommandPayload].key)
+
+        # Key Sequence Number field (1 byte)
         config.entry["aps_transportkey_keyseqnum"] = (
             pkt[ZigbeeAppCommandPayload].key_seqnum
         )
+
+        # Destination Extended Address field (8 bytes)
         config.entry["aps_transportkey_dstextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].dest_addr)
+
+        # Source Extended Address field (8 bytes)
         config.entry["aps_transportkey_srcextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].src_addr)
 
@@ -400,10 +416,15 @@ def aps_transportkey(pkt):
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Trust Center Link Key"):
+        # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = binascii.hexlify(
             pkt[ZigbeeAppCommandPayload].key)
+
+        # Destination Extended Address field (8 bytes)
         config.entry["aps_transportkey_dstextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].dest_addr)
+
+        # Source Extended Address field (8 bytes)
         config.entry["aps_transportkey_srcextendedaddr"] = hex(
             pkt[ZigbeeAppCommandPayload].src_addr)
 
@@ -413,11 +434,16 @@ def aps_transportkey(pkt):
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Application Link Key"):
+        # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = binascii.hexlify(
             pkt[ZigbeeAppCommandPayload].key)
-        # TODO: Add them as fields in Scapy
-        logging.warning("Ignoring the Partner Address field")
-        logging.warning("Ignoring the Initiator Flag field")
+
+        # Partner Extended Address field (8 bytes)
+        config.entry["aps_transportkey_prtextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPaylad].partner_addr)
+
+        # Initiator Flag field (1 byte)
+        config.entry["aps_transportkey_initflag"] = get_aps_initflag(pkt)
 
         # Store the sniffed link key
         config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")

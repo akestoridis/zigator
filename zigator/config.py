@@ -208,6 +208,8 @@ DB_COLUMNS = [
     ("aps_transportkey_keyseqnum", "INTEGER"),
     ("aps_transportkey_dstextendedaddr", "TEXT"),
     ("aps_transportkey_srcextendedaddr", "TEXT"),
+    ("aps_transportkey_prtextendedaddr", "TEXT"),
+    ("aps_transportkey_initflag", "TEXT"),
     ("aps_updatedevice_extendedaddr", "TEXT"),
     ("aps_updatedevice_shortaddr", "TEXT"),
     ("aps_updatedevice_status", "TEXT"),
