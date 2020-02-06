@@ -89,29 +89,47 @@ def zigbee_hmac(message, key):
     return zigbee_mmo_hash(outer_key + zigbee_mmo_hash(inner_key + message))
 
 
-def decrypt_payload(key, source_addr, frame_counter, security_control,
-                    header, key_seqnum, encrypted_payload, mic):
+def zigbee_decryption(key, source_addr, frame_counter, sec_control,
+                      header, key_seqnum, enc_payload, mic):
+    # The fields of the nonce are in little-endian byte order
     le_srcaddr = source_addr.to_bytes(8, byteorder="little")
     le_framecounter = frame_counter.to_bytes(4, byteorder="little")
-    fixed_securitycontrol = (security_control & 0b11111000) | 0b101
 
+    # Zigbee devices overwrite the security level field of their packets
+    # with zeros after securing them and before transmitting them.
+    # We have to restore the security level field in order to
+    # to successfully decrypt and authenticate Zigbee packets.
+    # The default security level of Zigbee networks utilizes
+    # AES-128 in CCM mode with 32-bit message integrity codes.
+    fixed_sec_control = (sec_control & 0b11111000) | 0b101
+
+    # Sanity check
+    if len(mic) != 4:
+        raise ValueError("Expected a 32-bit message integrity code, "
+                         "not a {}-bit one".format(8*len(mic)))
+
+    # Construct the nonce
     nonce = bytearray(le_srcaddr)
     nonce.extend(le_framecounter)
-    nonce.append(fixed_securitycontrol)
+    nonce.append(fixed_sec_control)
 
-    unencrypted_data = bytearray(header)
-    unencrypted_data.append(fixed_securitycontrol)
-    unencrypted_data.extend(le_framecounter)
-    if security_control & 0b00100000:
-        unencrypted_data.extend(le_srcaddr)
+    # Gather the unencrypted data that, along with the encrypted data,
+    # are protected by the message integrity code
+    auth_data = bytearray(header)
+    auth_data.append(fixed_sec_control)
+    auth_data.extend(le_framecounter)
+    if sec_control & 0b00100000:
+        auth_data.extend(le_srcaddr)
     if key_seqnum is not None:
-        unencrypted_data.append(key_seqnum)
+        auth_data.append(key_seqnum)
 
+    # Return the decrypted payload and a Boolean value that indicates
+    # whether the verification process was successful or not
     cipher = AES.new(key=key, mode=AES.MODE_CCM, nonce=nonce, mac_len=4)
-    cipher.update(unencrypted_data)
-    decrypted_payload = cipher.decrypt(encrypted_payload)
+    cipher.update(auth_data)
+    dec_payload = cipher.decrypt(enc_payload)
     try:
         cipher.verify(mic)
-        return decrypted_payload, True
+        return dec_payload, True
     except ValueError:
-        return decrypted_payload, False
+        return dec_payload, False

@@ -722,41 +722,38 @@ def nwk_auxiliary(pkt):
     nwk_header = pkt[ZigbeeNWK].copy()
     nwk_header.remove_payload()
     header = raw(nwk_header)
-    security_control = raw(pkt[ZigbeeSecurityHeader])[0]
-    encrypted_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    sec_control = raw(pkt[ZigbeeSecurityHeader])[0]
+    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
     for source_addr in potential_sources:
         for key in potential_keys:
-            decrypted_payload, authentic_payload = crypto.decrypt_payload(
-                key=key,
-                source_addr=source_addr,
-                frame_counter=frame_counter,
-                security_control=security_control,
-                header=header,
-                key_seqnum=key_seqnum,
-                encrypted_payload=encrypted_payload,
-                mic=mic)
-            if authentic_payload:
+            dec_payload, auth_payload = crypto.zigbee_decryption(
+                key, source_addr, frame_counter, sec_control,
+                header, key_seqnum, enc_payload, mic)
+            # Check whether the decrypted payload is authentic
+            if auth_payload:
+                config.entry["nwk_aux_deckey"] = binascii.hexlify(key)
+                config.entry["nwk_aux_decsrc"] = hex(source_addr)
+                config.entry["nwk_aux_decpayload"] = binascii.hexlify(
+                    dec_payload)
                 # NWK Payload field (variable)
-                config.entry["nwk_aux_decryptedpayload"] = binascii.hexlify(
-                    decrypted_payload)
                 if config.entry["nwk_frametype"] == "NWK Command":
-                    decrypted_pkt = ZigbeeNWKCommandPayload(decrypted_payload)
-                    config.entry["nwk_aux_decryptedshow"] = (
-                        decrypted_pkt.show(dump=True)
+                    dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
+                    config.entry["nwk_aux_decshow"] = (
+                        dec_pkt.show(dump=True)
                     )
-                    nwk_command(decrypted_pkt)
+                    nwk_command(dec_pkt)
                     return
                 elif config.entry["nwk_frametype"] == "NWK Data":
-                    decrypted_pkt = ZigbeeAppDataPayload(decrypted_payload)
-                    config.entry["nwk_aux_decryptedshow"] = (
-                        decrypted_pkt.show(dump=True)
+                    dec_pkt = ZigbeeAppDataPayload(dec_payload)
+                    config.entry["nwk_aux_decshow"] = (
+                        dec_pkt.show(dump=True)
                     )
-                    aps_fields(decrypted_pkt)
+                    aps_fields(dec_pkt)
                     return
                 else:
                     config.entry["error_msg"] = (
-                        "Unexpected format of decrypted NWK payload"
+                        "Unexpected format of the decrypted NWK payload"
                     )
                     return
 

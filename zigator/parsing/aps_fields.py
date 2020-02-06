@@ -704,40 +704,37 @@ def aps_auxiliary(pkt):
         aps_header = pkt[ZigbeeAppDataPayload].copy()
         aps_header.remove_payload()
         header = raw(aps_header)
-    security_control = raw(pkt[ZigbeeSecurityHeader])[0]
-    encrypted_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    sec_control = raw(pkt[ZigbeeSecurityHeader])[0]
+    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
     for source_addr in potential_sources:
         for key in potential_keys:
-            decrypted_payload, authentic_payload = crypto.decrypt_payload(
-                key=key,
-                source_addr=source_addr,
-                frame_counter=frame_counter,
-                security_control=security_control,
-                header=header,
-                key_seqnum=key_seqnum,
-                encrypted_payload=encrypted_payload,
-                mic=mic)
-            if authentic_payload:
+            dec_payload, auth_payload = crypto.zigbee_decryption(
+                key, source_addr, frame_counter, sec_control,
+                header, key_seqnum, enc_payload, mic)
+            # Check whether the decrypted payload is authentic
+            if auth_payload:
+                config.entry["aps_aux_deckey"] = binascii.hexlify(key)
+                config.entry["aps_aux_decsrc"] = hex(source_addr)
+                config.entry["aps_aux_decpayload"] = binascii.hexlify(
+                    dec_payload)
                 # APS Payload field (variable)
-                config.entry["aps_aux_decryptedpayload"] = binascii.hexlify(
-                    decrypted_payload)
                 if config.entry["aps_frametype"] == "APS Data":
                     # TODO: APS Data fields (variable)
                     return
                 elif config.entry["aps_frametype"] == "APS Command":
-                    decrypted_pkt = ZigbeeAppCommandPayload(decrypted_payload)
-                    config.entry["aps_aux_decryptedshow"] = (
-                        decrypted_pkt.show(dump=True)
+                    dec_pkt = ZigbeeAppCommandPayload(dec_payload)
+                    config.entry["aps_aux_decshow"] = (
+                        dec_pkt.show(dump=True)
                     )
-                    aps_command_payload(decrypted_pkt)
+                    aps_command_payload(dec_pkt)
                     return
                 elif config.entry["aps_frametype"] == "APS Acknowledgment":
                     # APS Acknowledgments do not contain any other fields
                     return
                 else:
                     config.entry["error_msg"] = (
-                        "Unexpected format of decrypted APS payload"
+                        "Unexpected format of the decrypted APS payload"
                     )
                     return
 
