@@ -17,7 +17,6 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import sys
-
 from argparse import ArgumentParser
 
 import zigator

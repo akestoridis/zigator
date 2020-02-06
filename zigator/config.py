@@ -20,8 +20,8 @@ Configuration script for the zigator package
 
 import logging
 import os
-import string
 import sqlite3
+import string
 
 from scapy.all import conf
 

@@ -17,8 +17,8 @@
 import binascii
 import logging
 
-from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigBeeBeacon
+from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigbeeNWK
 from scapy.all import ZigbeeNWKCommandPayload
 from scapy.all import ZigbeeSecurityHeader
