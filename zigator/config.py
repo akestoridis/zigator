@@ -235,6 +235,14 @@ DB_COLUMNS = [
     ("aps_confirmkey_status", "TEXT"),
     ("aps_confirmkey_stdkeytype", "TEXT"),
     ("aps_confirmkey_extendedaddr", "TEXT"),
+    ("zdp_seqnum", "INTEGER"),
+    ("zcl_frametype", "TEXT"),
+    ("zcl_manufspecific", "TEXT"),
+    ("zcl_direction", "TEXT"),
+    ("zcl_disdefrsp", "TEXT"),
+    ("zcl_manufcode", "TEXT"),
+    ("zcl_seqnum", "INTEGER"),
+    ("zcl_cmd_id", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT")
 ]

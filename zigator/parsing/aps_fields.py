@@ -19,10 +19,14 @@ import logging
 
 from scapy.all import ZigbeeAppCommandPayload
 from scapy.all import ZigbeeAppDataPayload
+from scapy.all import ZigbeeClusterLibrary
+from scapy.all import ZigbeeDeviceProfile
 from scapy.all import ZigbeeSecurityHeader
 
 from .. import config
 from .. import crypto
+from .zcl_fields import zcl_fields
+from .zdp_fields import zdp_fields
 
 
 def get_aps_frametype(pkt):
@@ -720,8 +724,28 @@ def aps_auxiliary(pkt):
                     dec_payload)
                 # APS Payload field (variable)
                 if config.entry["aps_frametype"] == "APS Data":
-                    # TODO: APS Data fields (variable)
-                    return
+                    if (config.entry["aps_profilename"]
+                            == "Zigbee Device Profile (ZDP)"):
+                        dec_pkt = ZigbeeDeviceProfile(dec_payload)
+                        config.entry["aps_aux_decshow"] = (
+                            dec_pkt.show(dump=True)
+                        )
+                        zdp_fields(dec_pkt)
+                        return
+                    elif (config.entry["aps_profilename"].split()[0]
+                            != "Unknown"):
+                        dec_pkt = ZigbeeClusterLibrary(dec_payload)
+                        config.entry["aps_aux_decshow"] = (
+                            dec_pkt.show(dump=True)
+                        )
+                        zcl_fields(dec_pkt)
+                        return
+                    else:
+                        config.entry["error_msg"] = (
+                            "Unknown APS profile with ID {}"
+                            "".format(config.entry["aps_profileid"])
+                        )
+                        return
                 elif config.entry["aps_frametype"] == "APS Command":
                     dec_pkt = ZigbeeAppCommandPayload(dec_payload)
                     config.entry["aps_aux_decshow"] = (
@@ -803,8 +827,27 @@ def aps_data_header(pkt):
             )
             return
     elif config.entry["aps_security"] == "APS Security Disabled":
-        # TODO: APS Data fields (variable)
-        return
+        # APS Data fields (variable)
+        if config.entry["aps_profilename"] == "Zigbee Device Profile (ZDP)":
+            if pkt.haslayer(ZigbeeDeviceProfile):
+                zdp_fields(pkt)
+                return
+            else:
+                config.entry["error_msg"] = "There are no ZDP fields"
+                return
+        elif config.entry["aps_profilename"].split()[0] != "Unknown":
+            if pkt.haslayer(ZigbeeClusterLibrary):
+                zcl_fields(pkt)
+                return
+            else:
+                config.entry["error_msg"] = "There are no ZCL fields"
+                return
+        else:
+            config.entry["error_msg"] = (
+                "Unknown APS profile with ID {}"
+                "".format(config.entry["aps_profileid"])
+            )
+            return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
         return
