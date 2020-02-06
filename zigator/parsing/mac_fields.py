@@ -181,7 +181,7 @@ def get_mac_assocreq_allocaddr(pkt):
     return allocaddr_states.get(allocaddr_state, "Unknown address allocation")
 
 
-def get_mac_assocresp_status(pkt):
+def get_mac_assocrsp_status(pkt):
     assoc_statuses = {
         0: "Association successful",
         1: "PAN at capacity",
@@ -230,13 +230,13 @@ def mac_assocreq(pkt):
     return
 
 
-def mac_assocresp(pkt):
+def mac_assocrsp(pkt):
     # Short Address field (2 bytes)
-    config.entry["mac_assocresp_shortaddr"] = hex(
+    config.entry["mac_assocrsp_shortaddr"] = hex(
         pkt[Dot15d4CmdAssocResp].short_address)
 
     # Association Status field (1 byte)
-    config.entry["mac_assocresp_status"] = get_mac_assocresp_status(pkt)
+    config.entry["mac_assocrsp_status"] = get_mac_assocrsp_status(pkt)
 
     return
 
@@ -338,7 +338,7 @@ def mac_command(pkt):
         mac_assocreq(pkt)
         return
     elif config.entry["mac_cmd_id"] == "MAC Association Response":
-        mac_assocresp(pkt)
+        mac_assocrsp(pkt)
         return
     elif config.entry["mac_cmd_id"] == "MAC Disassociation Notification":
         mac_disassoc(pkt)

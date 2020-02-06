@@ -278,7 +278,7 @@ def get_nwk_rejoinreq_allocaddr(pkt):
     return allocaddr_states.get(allocaddr_state, "Unknown address allocation")
 
 
-def get_nwk_rejoinresp_status(pkt):
+def get_nwk_rejoinrsp_status(pkt):
     rejoin_statuses = {
         0: "Rejoin successful",
         1: "PAN at capacity",
@@ -344,7 +344,7 @@ def get_edtimeoutreq_reqtime(pkt):
     return timeout_values.get(req_timeout, "Unknown requested timeout value")
 
 
-def get_edtimeoutresp_status(pkt):
+def get_edtimeoutrsp_status(pkt):
     status_values = {
         0: "Success",
         1: "Incorrect Value"
@@ -353,7 +353,7 @@ def get_edtimeoutresp_status(pkt):
     return status_values.get(status, "Unknown status value")
 
 
-def get_edtimeoutresp_poll(pkt):
+def get_edtimeoutrsp_poll(pkt):
     poll_states = {
         0: "MAC Data Poll Keepalive is not supported",
         1: "MAC Data Poll Keepalive is supported"
@@ -362,7 +362,7 @@ def get_edtimeoutresp_poll(pkt):
     return poll_states.get(poll_state, "Unknown poll state")
 
 
-def get_edtimeoutresp_timeout(pkt):
+def get_edtimeoutrsp_timeout(pkt):
     timeout_states = {
         0: "End Device Timeout Request Keepalive is not supported",
         1: "End Device Timeout Request Keepalive is supported"
@@ -494,13 +494,13 @@ def nwk_rejoinreq(pkt):
     return
 
 
-def nwk_rejoinresp(pkt):
+def nwk_rejoinrsp(pkt):
     # Network Address field (2 bytes)
-    config.entry["nwk_rejoinresp_shortaddr"] = hex(
+    config.entry["nwk_rejoinrsp_shortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].network_address)
 
     # Rejoin Status field (1 byte)
-    config.entry["nwk_rejoinresp_status"] = get_nwk_rejoinresp_status(pkt)
+    config.entry["nwk_rejoinrsp_status"] = get_nwk_rejoinrsp_status(pkt)
 
     return
 
@@ -606,13 +606,13 @@ def nwk_edtimeoutreq(pkt):
     return
 
 
-def nwk_edtimeoutresp(pkt):
+def nwk_edtimeoutrsp(pkt):
     # Status field (1 byte)
-    config.entry["nwk_edtimeoutresp_status"] = get_edtimeoutresp_status(pkt)
+    config.entry["nwk_edtimeoutrsp_status"] = get_edtimeoutrsp_status(pkt)
 
     # Parent Information field (1 byte)
-    config.entry["nwk_edtimeoutresp_poll"] = get_edtimeoutresp_poll(pkt)
-    config.entry["nwk_edtimeoutresp_timeout"] = get_edtimeoutresp_timeout(pkt)
+    config.entry["nwk_edtimeoutrsp_poll"] = get_edtimeoutrsp_poll(pkt)
+    config.entry["nwk_edtimeoutrsp_timeout"] = get_edtimeoutrsp_timeout(pkt)
 
     return
 
@@ -641,7 +641,7 @@ def nwk_command(pkt):
         nwk_rejoinreq(pkt)
         return
     elif config.entry["nwk_cmd_id"] == "NWK Rejoin Response":
-        nwk_rejoinresp(pkt)
+        nwk_rejoinrsp(pkt)
         return
     elif config.entry["nwk_cmd_id"] == "NWK Link Status":
         nwk_linkstatus(pkt)
@@ -656,7 +656,7 @@ def nwk_command(pkt):
         nwk_edtimeoutreq(pkt)
         return
     elif config.entry["nwk_cmd_id"] == "NWK End Device Timeout Response":
-        nwk_edtimeoutresp(pkt)
+        nwk_edtimeoutrsp(pkt)
         return
     else:
         config.entry["error_msg"] = "Unknown NWK command"
