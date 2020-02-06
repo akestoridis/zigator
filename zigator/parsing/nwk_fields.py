@@ -372,26 +372,26 @@ def get_edtimeoutresp_timeout(pkt):
 
 
 def nwk_routerequest(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_routerequest_mto"] = get_nwk_routerequest_mto(pkt)
     config.entry["nwk_routerequest_ed"] = get_nwk_routerequest_ed(pkt)
     config.entry["nwk_routerequest_mc"] = get_nwk_routerequest_mc(pkt)
 
-    # Route Request Identifier field
+    # Route Request Identifier field (1 byte)
     config.entry["nwk_routerequest_id"] = (
         pkt[ZigbeeNWKCommandPayload].route_request_identifier
     )
 
-    # Short Destination Address field
+    # Short Destination Address field (2 bytes)
     config.entry["nwk_routerequest_dstshortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].destination_address)
 
-    # Path Cost field
+    # Path Cost field (1 byte)
     config.entry["nwk_routerequest_pathcost"] = (
         pkt[ZigbeeNWKCommandPayload].path_cost
     )
 
-    # Extended Destination Address field
+    # Extended Destination Address field (0/8 bytes)
     if (config.entry["nwk_routerequest_ed"]
             == "The extended destination address is present"):
         config.entry["nwk_routerequest_dstextendedaddr"] = hex(
@@ -404,30 +404,30 @@ def nwk_routerequest(pkt):
 
 
 def nwk_routereply(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_routereply_eo"] = get_nwk_routereply_eo(pkt)
     config.entry["nwk_routereply_er"] = get_nwk_routereply_er(pkt)
     config.entry["nwk_routereply_mc"] = get_nwk_routereply_mc(pkt)
 
-    # Route Request Identifier field
+    # Route Request Identifier field (1 byte)
     config.entry["nwk_routereply_id"] = (
         pkt[ZigbeeNWKCommandPayload].route_request_identifier
     )
 
-    # Originator Short Address field
+    # Originator Short Address field (2 bytes)
     config.entry["nwk_routereply_origshortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].originator_address)
 
-    # Responder Short Address field
+    # Responder Short Address field (2 bytes)
     config.entry["nwk_routereply_respshortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].responder_address)
 
-    # Path Cost field
+    # Path Cost field (1 byte)
     config.entry["nwk_routereply_pathcost"] = (
         pkt[ZigbeeNWKCommandPayload].path_cost
     )
 
-    # Originator Extended Address field
+    # Originator Extended Address field (0/8 bytes)
     if (config.entry["nwk_routereply_eo"]
             == "The extended originator address is present"):
         config.entry["nwk_routereply_origextendedaddr"] = hex(
@@ -436,7 +436,7 @@ def nwk_routereply(pkt):
             != "The extended originator address is not present"):
         config.entry["error_msg"] = "Unknown Extended Originator state"
 
-    # Responder Extended Address field
+    # Responder Extended Address field (0/8 bytes)
     if (config.entry["nwk_routereply_er"]
             == "The extended responder address is present"):
         config.entry["nwk_routereply_respextendedaddr"] = hex(
@@ -449,10 +449,10 @@ def nwk_routereply(pkt):
 
 
 def nwk_networkstatus(pkt):
-    # Status Code field
+    # Status Code field (1 byte)
     config.entry["nwk_networkstatus_code"] = get_nwk_networkstatus_code(pkt)
 
-    # Short Destination Address field
+    # Short Destination Address field (2 bytes)
     config.entry["nwk_networkstatus_dstshortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].destination_address)
 
@@ -460,7 +460,7 @@ def nwk_networkstatus(pkt):
 
 
 def nwk_leave(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_leave_rejoin"] = get_nwk_leave_rejoin(pkt)
     config.entry["nwk_leave_request"] = get_nwk_leave_request(pkt)
     config.entry["nwk_leave_rmch"] = get_nwk_leave_rmch(pkt)
@@ -469,12 +469,12 @@ def nwk_leave(pkt):
 
 
 def nwk_routerecord(pkt):
-    # Relay Count field
+    # Relay Count field (1 byte)
     config.entry["nwk_routerecord_relaycount"] = (
         pkt[ZigbeeNWKCommandPayload].rr_relay_count
     )
 
-    # Relay List field
+    # Relay List field (variable)
     config.entry["nwk_routerecord_relaylist"] = ",".join(
         "0x{:04X}".format(addr)
         for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
@@ -483,7 +483,7 @@ def nwk_routerecord(pkt):
 
 
 def nwk_rejoinreq(pkt):
-    # Capability Information field
+    # Capability Information field (1 byte)
     config.entry["nwk_rejoinreq_apc"] = get_nwk_rejoinreq_apc(pkt)
     config.entry["nwk_rejoinreq_devtype"] = get_nwk_rejoinreq_devtype(pkt)
     config.entry["nwk_rejoinreq_powsrc"] = get_nwk_rejoinreq_powsrc(pkt)
@@ -495,25 +495,25 @@ def nwk_rejoinreq(pkt):
 
 
 def nwk_rejoinresp(pkt):
-    # Network Address field
+    # Network Address field (2 bytes)
     config.entry["nwk_rejoinresp_shortaddr"] = hex(
         pkt[ZigbeeNWKCommandPayload].network_address)
 
-    # Rejoin Status field
+    # Rejoin Status field (1 byte)
     config.entry["nwk_rejoinresp_status"] = get_nwk_rejoinresp_status(pkt)
 
     return
 
 
 def nwk_linkstatus(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_linkstatus_count"] = (
         pkt[ZigbeeNWKCommandPayload].entry_count
     )
     config.entry["nwk_linkstatus_first"] = get_nwk_linkstatus_first(pkt)
     config.entry["nwk_linkstatus_last"] = get_nwk_linkstatus_last(pkt)
 
-    # Link Status List field
+    # Link Status List field (variable)
     linkstatus_list = pkt[ZigbeeNWKCommandPayload].link_status_list
     if config.entry["nwk_linkstatus_count"] != len(linkstatus_list):
         logging.debug("Packet #{} in {} contains {} link status entries "
@@ -536,17 +536,17 @@ def nwk_linkstatus(pkt):
 
 
 def nwk_networkreport(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_networkreport_count"] = (
         pkt[ZigbeeNWKCommandPayload].report_information_count
     )
     config.entry["nwk_networkreport_type"] = get_nwk_networkreport_type(pkt)
 
-    # EPID field
+    # EPID field (8 bytes)
     config.entry["nwk_networkreport_epid"] = hex(
         pkt[ZigbeeNWKCommandPayload].epid)
 
-    # Report Information field
+    # Report Information field (variable)
     if config.entry["nwk_networkreport_type"] == "PAN Identifier Conflict":
         panid_list = pkt[ZigbeeNWKCommandPayload].PAN_ID_conflict_report
         if config.entry["nwk_networkreport_count"] != len(panid_list):
@@ -568,23 +568,24 @@ def nwk_networkreport(pkt):
 
 
 def nwk_networkupdate(pkt):
-    # Command Options field
+    # Command Options field (1 byte)
     config.entry["nwk_networkupdate_count"] = (
         pkt[ZigbeeNWKCommandPayload].update_information_count
     )
     config.entry["nwk_networkupdate_type"] = get_nwk_networkupdate_type(pkt)
 
-    # EPID field
+    # EPID field (8 bytes)
     config.entry["nwk_networkupdate_epid"] = hex(
         pkt[ZigbeeNWKCommandPayload].epid)
 
-    # Update ID field
+    # Update ID field (1 byte)
     config.entry["nwk_networkupdate_updateid"] = (
         pkt[ZigbeeNWKCommandPayload].update_id
     )
 
-    # Update Information field
+    # Update Information field (variable)
     if config.entry["nwk_networkupdate_type"] == "PAN Identifier Update":
+        # New PAN ID (2 bytes)
         config.entry["nwk_networkupdate_newpanid"] = hex(
             pkt[ZigbeeNWKCommandPayload].new_PAN_ID)
         return
@@ -594,10 +595,10 @@ def nwk_networkupdate(pkt):
 
 
 def nwk_edtimeoutreq(pkt):
-    # Requested Timeout field
+    # Requested Timeout field (1 byte)
     config.entry["nwk_edtimeoutreq_reqtime"] = get_edtimeoutreq_reqtime(pkt)
 
-    # End Device Configuration field
+    # End Device Configuration field (1 byte)
     config.entry["nwk_edtimeoutreq_edconf"] = (
         pkt[ZigbeeNWKCommandPayload].ed_conf
     )
@@ -606,10 +607,10 @@ def nwk_edtimeoutreq(pkt):
 
 
 def nwk_edtimeoutresp(pkt):
-    # Status field
+    # Status field (1 byte)
     config.entry["nwk_edtimeoutresp_status"] = get_edtimeoutresp_status(pkt)
 
-    # Parent Information field
+    # Parent Information field (1 byte)
     config.entry["nwk_edtimeoutresp_poll"] = get_edtimeoutresp_poll(pkt)
     config.entry["nwk_edtimeoutresp_timeout"] = get_edtimeoutresp_timeout(pkt)
 
@@ -617,10 +618,10 @@ def nwk_edtimeoutresp(pkt):
 
 
 def nwk_command(pkt):
-    # Command Identifier field
+    # Command Identifier field (1 byte)
     config.entry["nwk_cmd_id"] = get_nwk_command(pkt)
 
-    # Command Payload field
+    # Command Payload field (variable)
     if config.entry["nwk_cmd_id"] == "NWK Route Request":
         nwk_routerequest(pkt)
         return
@@ -663,7 +664,7 @@ def nwk_command(pkt):
 
 
 def nwk_beacon(pkt):
-    # Beacon Payload field
+    # Beacon Payload field (15 bytes)
     config.entry["nwk_beacon_protocolid"] = pkt[ZigBeeBeacon].proto_id
     config.entry["nwk_beacon_stackprofile"] = pkt[ZigBeeBeacon].stack_profile
     config.entry["nwk_beacon_protocolversion"] = get_nwk_protocolversion(pkt)
@@ -678,16 +679,16 @@ def nwk_beacon(pkt):
 
 
 def nwk_auxiliary(pkt):
-    # Security Control field
+    # Security Control field (1 byte)
     config.entry["nwk_aux_seclevel"] = get_nwk_aux_seclevel(pkt)
     config.entry["nwk_aux_keytype"] = get_nwk_aux_keytype(pkt)
     config.entry["nwk_aux_extnonce"] = get_nwk_aux_extnonce(pkt)
 
-    # Frame Counter field
+    # Frame Counter field (4 bytes)
     config.entry["nwk_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
     frame_counter = pkt[ZigbeeSecurityHeader].fc
 
-    # Source Address field
+    # Source Address field (0/8 bytes)
     if (config.entry["nwk_aux_extnonce"]
             == "The source address is present"):
         config.entry["nwk_aux_srcaddr"] = hex(
@@ -706,7 +707,7 @@ def nwk_auxiliary(pkt):
         config.entry["error_msg"] = "Unknown NWK EN state"
         return
 
-    # Key Sequence Number field
+    # Key Sequence Number field (1 byte)
     if config.entry["nwk_aux_keytype"] == "Network Key":
         config.entry["nwk_aux_keyseqnum"] = (
             pkt[ZigbeeSecurityHeader].key_seqnum
@@ -769,7 +770,7 @@ def nwk_fields(pkt):
         config.entry["error_msg"] = "Unknown NWK fields"
         return
 
-    # Frame Control field
+    # Frame Control field (2 bytes)
     config.entry["nwk_frametype"] = get_nwk_frametype(pkt)
     config.entry["nwk_protocolversion"] = get_nwk_protocolversion(pkt)
     config.entry["nwk_discroute"] = get_nwk_discroute(pkt)
@@ -798,19 +799,19 @@ def nwk_fields(pkt):
     else:
         config.entry["nwk_edinitiator"] = "NWK Not End Device Initiator"
 
-    # Short Destination Address field
+    # Short Destination Address field (2 bytes)
     config.entry["nwk_dstshortaddr"] = hex(pkt[ZigbeeNWK].destination)
 
-    # Short Source Address field
+    # Short Source Address field (2 bytes)
     config.entry["nwk_srcshortaddr"] = hex(pkt[ZigbeeNWK].source)
 
-    # Radius field
+    # Radius field (1 byte)
     config.entry["nwk_radius"] = pkt[ZigbeeNWK].radius
 
-    # Sequence Number field
+    # Sequence Number field (1 byte)
     config.entry["nwk_seqnum"] = pkt[ZigbeeNWK].seqnum
 
-    # Extended Destination Address field
+    # Extended Destination Address field (0/8 bytes)
     if (config.entry["nwk_extendeddst"]
             == "NWK Extended Destination Included"):
         config.entry["nwk_dstextendedaddr"] = hex(pkt[ZigbeeNWK].ext_dst)
@@ -819,7 +820,7 @@ def nwk_fields(pkt):
         config.entry["error_msg"] = "Unknown Extended Destination state"
         return
 
-    # Extended Source Address field
+    # Extended Source Address field (0/8 bytes)
     if (config.entry["nwk_extendedsrc"]
             == "NWK Extended Source Included"):
         config.entry["nwk_srcextendedaddr"] = hex(pkt[ZigbeeNWK].ext_src)
@@ -828,7 +829,7 @@ def nwk_fields(pkt):
         config.entry["error_msg"] = "Unknown Extended Source state"
         return
 
-    # Multicast Control field
+    # Multicast Control field (0/1 byte)
     if config.entry["nwk_multicast"] == "NWK Multicast Enabled":
         logging.debug("Packet #{} in {} contains a Multicast Control field "
                       "which could not be processed"
@@ -840,7 +841,7 @@ def nwk_fields(pkt):
         config.entry["error_msg"] = "Unknown Multicast state"
         return
 
-    # Source Route Subframe field
+    # Source Route Subframe field (variable)
     if config.entry["nwk_srcroute"] == "NWK Source Route Included":
         config.entry["nwk_srcroute_relaycount"] = pkt[ZigbeeNWK].relay_count
         config.entry["nwk_srcroute_relayindex"] = pkt[ZigbeeNWK].relay_index
@@ -851,6 +852,7 @@ def nwk_fields(pkt):
         return
 
     if config.entry["nwk_security"] == "NWK Security Enabled":
+        # NWK Auxiliary Header field (6/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
             nwk_auxiliary(pkt)
             return
@@ -860,14 +862,13 @@ def nwk_fields(pkt):
             )
             return
     elif config.entry["nwk_security"] == "NWK Security Disabled":
+        # NWK Payload field (variable)
         if config.entry["nwk_frametype"] == "NWK Command":
             if pkt.haslayer(ZigbeeNWKCommandPayload):
                 nwk_command(pkt)
                 return
             else:
-                config.entry["error_msg"] = (
-                    "It does not contain NWK Command fields"
-                )
+                config.entry["error_msg"] = "There are no NWK Command fields"
                 return
         elif config.entry["nwk_frametype"] == "NWK Inter-PAN":
             logging.debug("Packet #{} in {} contains Inter-PAN fields"
@@ -881,9 +882,7 @@ def nwk_fields(pkt):
                 aps_fields(pkt)
                 return
             else:
-                config.entry["error_msg"] = (
-                    "It does not contain Zigbee APS fields"
-                )
+                config.entry["error_msg"] = "There are no Zigbee APS fields"
                 return
         else:
             config.entry["error_msg"] = "Unknown NWK frame type"

@@ -378,10 +378,10 @@ def get_aps_confirmkey_status(pkt):
 
 
 def aps_transportkey(pkt):
-    # Standard Key Type field
+    # Standard Key Type field (1 byte)
     config.entry["aps_transportkey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
-    # Key Descriptor field
+    # Key Descriptor field (25/32/33 bytes)
     if (config.entry["aps_transportkey_stdkeytype"]
             == "Standard Network Key"):
         config.entry["aps_transportkey_key"] = binascii.hexlify(
@@ -415,6 +415,7 @@ def aps_transportkey(pkt):
             == "Application Link Key"):
         config.entry["aps_transportkey_key"] = binascii.hexlify(
             pkt[ZigbeeAppCommandPayload].key)
+        # TODO: Add them as fields in Scapy
         logging.warning("Ignoring the Partner Address field")
         logging.warning("Ignoring the Initiator Flag field")
 
@@ -428,22 +429,22 @@ def aps_transportkey(pkt):
 
 
 def aps_updatedevice(pkt):
-    # Device Extended Address field
+    # Device Extended Address field (8 bytes)
     config.entry["aps_updatedevice_extendedaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].address)
 
-    # Device Short Address field
+    # Device Short Address field (2 bytes)
     config.entry["aps_updatedevice_shortaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].short_address)
 
-    # Status field
+    # Status field (1 byte)
     config.entry["aps_updatedevice_status"] = get_aps_updatedevice_status(pkt)
 
     return
 
 
 def aps_removedevice(pkt):
-    # Target Extended Address field
+    # Target Extended Address field (8 bytes)
     config.entry["aps_removedevice_extendedaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].address)
 
@@ -451,12 +452,13 @@ def aps_removedevice(pkt):
 
 
 def aps_requestkey(pkt):
-    # Request Key Type field
+    # Request Key Type field (1 byte)
     config.entry["aps_requestkey_reqkeytype"] = get_aps_reqkeytype(pkt)
 
-    # Partner Extended Address field
+    # Partner Extended Address field (0/8 bytes)
     if (config.entry["aps_requestkey_reqkeytype"]
             == "Application Link Key"):
+        # TODO: Add it as a field in Scapy
         logging.warning("Ignoring the Partner Address field")
         return
     elif (config.entry["aps_requestkey_reqkeytype"]
@@ -469,7 +471,7 @@ def aps_requestkey(pkt):
 
 
 def aps_switchkey(pkt):
-    # Key Sequence Number field
+    # Key Sequence Number field (1 byte)
     config.entry["aps_switchkey_keyseqnum"] = (
         pkt[ZigbeeAppCommandPayload].seqnum
     )
@@ -478,11 +480,11 @@ def aps_switchkey(pkt):
 
 
 def aps_tunnel(pkt):
-    # Extended Destination Address field
+    # Extended Destination Address field (8 bytes)
     config.entry["aps_tunnel_dstextendedaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].dest_addr)
 
-    # Tunneled Frame Control field
+    # Tunneled Frame Control field (1 byte)
     if pkt[ZigbeeAppCommandPayload].aps_frametype == 1:
         config.entry["aps_tunnel_frametype"] = "APS Command"
     else:
@@ -521,10 +523,10 @@ def aps_tunnel(pkt):
             "The extended header is not included"
         )
 
-    # Tunneled APS Counter field
+    # Tunneled APS Counter field (1 byte)
     config.entry["aps_tunnel_counter"] = pkt[ZigbeeAppCommandPayload].counter
 
-    # Tunneled Auxiliary Header field
+    # Tunneled Auxiliary Header field (13 bytes)
     if config.entry["aps_security"] == "APS Security Enabled":
         config.entry["error_msg"] = (
             "An APS Auxiliary Header was already processed"
@@ -541,14 +543,14 @@ def aps_tunnel(pkt):
 
 
 def aps_verifykey(pkt):
-    # Standard Key Type field
+    # Standard Key Type field (1 byte)
     config.entry["aps_verifykey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
-    # Extended Source Address field
+    # Extended Source Address field (8 bytes)
     config.entry["aps_verifykey_extendedaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].address)
 
-    # Initiator Verify-Key Hash Value field
+    # Initiator Verify-Key Hash Value field (16 bytes)
     config.entry["aps_verifykey_keyhash"] = binascii.hexlify(
         pkt[ZigbeeAppCommandPayload].key_hash)
 
@@ -556,13 +558,13 @@ def aps_verifykey(pkt):
 
 
 def aps_confirmkey(pkt):
-    # Status field
+    # Status field (1 byte)
     config.entry["aps_confirmkey_status"] = get_aps_confirmkey_status(pkt)
 
-    # Standard Key Type field
+    # Standard Key Type field (1 byte)
     config.entry["aps_confirmkey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
-    # Extended Destination Address field
+    # Extended Destination Address field (8 bytes)
     config.entry["aps_confirmkey_extendedaddr"] = hex(
         pkt[ZigbeeAppCommandPayload].address)
 
@@ -570,10 +572,10 @@ def aps_confirmkey(pkt):
 
 
 def aps_command_payload(pkt):
-    # Command Identifier field
+    # Command Identifier field (1 byte)
     config.entry["aps_cmd_id"] = get_aps_command(pkt)
 
-    # Command Payload field
+    # Command Payload field (variable)
     if config.entry["aps_cmd_id"] == "APS Transport Key":
         aps_transportkey(pkt)
         return
@@ -602,16 +604,16 @@ def aps_command_payload(pkt):
 
 
 def aps_auxiliary(pkt):
-    # Security Control field
+    # Security Control field (1 byte)
     config.entry["aps_aux_seclevel"] = get_aps_aux_seclevel(pkt)
     config.entry["aps_aux_keytype"] = get_aps_aux_keytype(pkt)
     config.entry["aps_aux_extnonce"] = get_aps_aux_extnonce(pkt)
 
-    # Frame Counter field
+    # Frame Counter field (4 bytes)
     config.entry["aps_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
     frame_counter = pkt[ZigbeeSecurityHeader].fc
 
-    # Source Address field
+    # Source Address field (0/8 bytes)
     if (config.entry["aps_aux_extnonce"]
             == "The source address is present"):
         config.entry["aps_aux_srcaddr"] = hex(
@@ -633,7 +635,7 @@ def aps_auxiliary(pkt):
         config.entry["error_msg"] = "Unknown APS EN state"
         return
 
-    # Key Sequence Number field
+    # Key Sequence Number field (0/1 byte)
     if config.entry["aps_aux_keytype"] == "Network Key":
         config.entry["aps_aux_keyseqnum"] = (
             pkt[ZigbeeSecurityHeader].key_seqnum
@@ -693,7 +695,7 @@ def aps_auxiliary(pkt):
                 config.entry["aps_aux_decryptedpayload"] = binascii.hexlify(
                     decrypted_payload)
                 if config.entry["aps_frametype"] == "APS Data":
-                    # TODO
+                    # TODO: APS Data fields (variable)
                     return
                 elif config.entry["aps_frametype"] == "APS Command":
                     aps_command_payload(
@@ -718,38 +720,38 @@ def aps_auxiliary(pkt):
 def aps_data_header(pkt):
     if (config.entry["aps_delmode"] == "Normal unicast delivery"
             or config.entry["aps_delmode"] == "Broadcast"):
-        # Destination Endpoint field
+        # Destination Endpoint field (1 byte)
         config.entry["aps_dstendpoint"] = (
             pkt[ZigbeeAppDataPayload].dst_endpoint
         )
     elif config.entry["aps_delmode"] == "Group addressing":
-        # Group Address field
+        # Group Address field (2 bytes)
         config.entry["aps_groupaddr"] = hex(
             pkt[ZigbeeAppDataPayload].group_addr)
     else:
         config.entry["error_msg"] = "Unknown APS delivery mode"
         return
 
-    # Cluster Identifier field
+    # Cluster Identifier field (2 bytes)
     config.entry["aps_clusterid"] = hex(pkt[ZigbeeAppDataPayload].cluster)
     config.entry["aps_clustername"] = get_aps_clustername(pkt)
 
-    # Profile Identifier field
+    # Profile Identifier field (2 bytes)
     config.entry["aps_profileid"] = hex(pkt[ZigbeeAppDataPayload].profile)
     config.entry["aps_profilename"] = get_aps_profilename(pkt)
 
-    # Source Endpoint field
+    # Source Endpoint field (1 byte)
     config.entry["aps_srcendpoint"] = pkt[ZigbeeAppDataPayload].src_endpoint
 
-    # APS Counter field
+    # APS Counter field (1 byte)
     config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
 
-    # Extended Header field
+    # Extended Header field (0/1/2 bytes)
     if config.entry["aps_exthdr"] == "The extended header is included":
-        # Extended Frame Control field
+        # Extended Frame Control field (1 byte)
         config.entry["aps_fragmentation"] = get_aps_fragmentation(pkt)
 
-        # Block Number field
+        # Block Number field (0/1 byte)
         if (config.entry["aps_fragmentation"] == "First fragment"
                 or config.entry["aps_fragmentation"] == "Continued fragment"):
             config.entry["aps_blocknumber"] = (
@@ -763,6 +765,7 @@ def aps_data_header(pkt):
         return
 
     if config.entry["aps_security"] == "APS Security Enabled":
+        # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
             aps_auxiliary(pkt)
             return
@@ -772,7 +775,7 @@ def aps_data_header(pkt):
             )
             return
     elif config.entry["aps_security"] == "APS Security Disabled":
-        # TODO
+        # TODO: APS Data fields (variable)
         return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
@@ -780,10 +783,11 @@ def aps_data_header(pkt):
 
 
 def aps_command_header(pkt):
-    # APS Counter field
+    # APS Counter field (1 byte)
     config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
 
     if config.entry["aps_security"] == "APS Security Enabled":
+        # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
             aps_auxiliary(pkt)
             return
@@ -793,13 +797,12 @@ def aps_command_header(pkt):
             )
             return
     elif config.entry["aps_security"] == "APS Security Disabled":
+        # APS Command fields (variable)
         if pkt.haslayer(ZigbeeAppCommandPayload):
             aps_command_payload(pkt)
             return
         else:
-            config.entry["error_msg"] = (
-                "It does not contain APS Command fields"
-            )
+            config.entry["error_msg"] = "There are no APS Command fields"
             return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
@@ -808,20 +811,20 @@ def aps_command_header(pkt):
 
 def aps_ack_header(pkt):
     if config.entry["aps_ackformat"] == "APS ACK Format Disabled":
-        # Destination Endpoint field
+        # Destination Endpoint field (1 byte)
         config.entry["aps_dstendpoint"] = (
             pkt[ZigbeeAppDataPayload].dst_endpoint
         )
 
-        # Cluster Identifier field
+        # Cluster Identifier field (2 bytes)
         config.entry["aps_clusterid"] = hex(pkt[ZigbeeAppDataPayload].cluster)
         config.entry["aps_clustername"] = get_aps_clustername(pkt)
 
-        # Profile Identifier field
+        # Profile Identifier field (2 bytes)
         config.entry["aps_profileid"] = hex(pkt[ZigbeeAppDataPayload].profile)
         config.entry["aps_profilename"] = get_aps_profilename(pkt)
 
-        # Source Endpoint field
+        # Source Endpoint field (1 byte)
         config.entry["aps_srcendpoint"] = (
             pkt[ZigbeeAppDataPayload].src_endpoint
         )
@@ -829,22 +832,22 @@ def aps_ack_header(pkt):
         config.entry["error_msg"] = "Unknown ACK Format state"
         return
 
-    # APS Counter field
+    # APS Counter field (1 byte)
     config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
 
-    # Extended Header field
+    # Extended Header field (0/1/3 bytes)
     if config.entry["aps_exthdr"] == "The extended header is included":
-        # Extended Frame Control field
+        # Extended Frame Control field (1 byte)
         config.entry["aps_fragmentation"] = get_aps_fragmentation(pkt)
 
-        # Block Number field
+        # Block Number field (0/1 byte)
         if (config.entry["aps_fragmentation"] == "First fragment"
                 or config.entry["aps_fragmentation"] == "Continued fragment"):
             config.entry["aps_blocknumber"] = (
                 pkt[ZigbeeAppDataPayload].block_number
             )
 
-            # ACK Bitfield
+            # ACK Bitfield (1 byte)
             config.entry["aps_ackbitfield"] = (
                 pkt[ZigbeeAppDataPayload].ack_bitfield
             )
@@ -856,6 +859,7 @@ def aps_ack_header(pkt):
         return
 
     if config.entry["aps_security"] == "APS Security Enabled":
+        # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
             aps_auxiliary(pkt)
             return
@@ -874,7 +878,7 @@ def aps_ack_header(pkt):
 
 def aps_fields(pkt):
     """Parse Zigbee APS fields."""
-    # Frame Control field
+    # Frame Control field (1 byte)
     config.entry["aps_frametype"] = get_aps_frametype(pkt)
     config.entry["aps_delmode"] = get_aps_delmode(pkt)
     if pkt[ZigbeeAppDataPayload].frame_control.ack_format:
@@ -894,6 +898,7 @@ def aps_fields(pkt):
     else:
         config.entry["aps_exthdr"] = "The extended header is not included"
 
+    # The APS Header fields vary significantly between different frame types
     if config.entry["aps_frametype"] == "APS Data":
         aps_data_header(pkt)
     elif config.entry["aps_frametype"] == "APS Command":

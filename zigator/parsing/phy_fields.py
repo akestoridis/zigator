@@ -23,18 +23,16 @@ from .mac_fields import mac_fields
 def phy_fields(pkt):
     """Parse IEEE 802.15.4 PHY fields."""
     if (len(pkt) != 5 and len(pkt) < 9) or len(pkt) > 127:
-        config.entry["error_msg"] = (
-            "Invalid frame length: {}".format(len(pkt))
-        )
+        config.entry["error_msg"] = "Invalid packet length"
         return
 
+    # Frame Length field (7 bits)
     config.entry["phy_length"] = len(pkt)
 
+    # PHY Payload field (variable)
     if pkt.haslayer(Dot15d4FCS):
         mac_fields(pkt)
         return
     else:
-        config.entry["error_msg"] = (
-            "It does not contain IEEE 802.15.4 MAC fields"
-        )
+        config.entry["error_msg"] = "There are no IEEE 802.15.4 MAC fields"
         return

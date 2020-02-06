@@ -219,7 +219,7 @@ def get_mac_gtsreq_chartype(pkt):
 
 
 def mac_assocreq(pkt):
-    # Capability Information field
+    # Capability Information field (1 byte)
     config.entry["mac_assocreq_apc"] = get_mac_assocreq_apc(pkt)
     config.entry["mac_assocreq_devtype"] = get_mac_assocreq_devtype(pkt)
     config.entry["mac_assocreq_powsrc"] = get_mac_assocreq_powsrc(pkt)
@@ -231,39 +231,39 @@ def mac_assocreq(pkt):
 
 
 def mac_assocresp(pkt):
-    # Short Address field
+    # Short Address field (2 bytes)
     config.entry["mac_assocresp_shortaddr"] = hex(
         pkt[Dot15d4CmdAssocResp].short_address)
 
-    # Association Status field
+    # Association Status field (1 byte)
     config.entry["mac_assocresp_status"] = get_mac_assocresp_status(pkt)
 
     return
 
 
 def mac_disassoc(pkt):
-    # Disassociation Reason field
+    # Disassociation Reason field (1 byte)
     config.entry["mac_disassoc_reason"] = get_mac_disassoc_reason(pkt)
 
     return
 
 
 def mac_realign(pkt):
-    # PAN Identifier field
+    # PAN Identifier field (2 bytes)
     config.entry["mac_realign_panid"] = hex(pkt[Dot15d4CmdCoordRealign].panid)
 
-    # Coordinator Short Address field
+    # Coordinator Short Address field (2 bytes)
     config.entry["mac_realign_coordaddr"] = hex(
         pkt[Dot15d4CmdCoordRealign].coord_address)
 
-    # Channel Number field
+    # Channel Number field (1 byte)
     config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
 
-    # Short Address field
+    # Short Address field (2 bytes)
     config.entry["mac_realign_shortaddr"] = hex(
         pkt[Dot15d4CmdCoordRealign].dev_address)
 
-    # Channel Page field
+    # Channel Page field (0/1 byte)
     if len(pkt[Dot15d4CmdCoordRealign]) == 7:
         # The channel page field was omitted
         return
@@ -281,7 +281,7 @@ def mac_realign(pkt):
 
 
 def mac_gtsreq(pkt):
-    # GTS Characteristics field
+    # GTS Characteristics field (1 byte)
     config.entry["mac_gtsreq_length"] = pkt[Dot15d4CmdGTSReq].gts_len
     config.entry["mac_gtsreq_dir"] = get_mac_gtsreq_dir(pkt)
     config.entry["mac_gtsreq_chartype"] = get_mac_gtsreq_chartype(pkt)
@@ -290,7 +290,7 @@ def mac_gtsreq(pkt):
 
 
 def mac_command(pkt):
-    # Destination Addressing fields
+    # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
         config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Cmd].dest_panid)
@@ -304,7 +304,7 @@ def mac_command(pkt):
         config.entry["error_msg"] = "Unknown MAC DA mode"
         return
 
-    # Source Addressing fields
+    # Source Addressing fields (0/2/4/8/10 bytes)
     if (config.entry["mac_srcaddrmode"]
             == "Short source MAC address"):
         if (config.entry["mac_panidcomp"]
@@ -330,10 +330,10 @@ def mac_command(pkt):
         config.entry["error_msg"] = "Unknown MAC SA mode"
         return
 
-    # Command Frame Identifier field
+    # Command Frame Identifier field (1 byte)
     config.entry["mac_cmd_id"] = get_mac_command(pkt)
 
-    # Command Payload field
+    # Command Payload field (variable)
     if config.entry["mac_cmd_id"] == "MAC Association Request":
         mac_assocreq(pkt)
         return
@@ -378,7 +378,7 @@ def mac_beacon(pkt):
         )
         return
 
-    # Addressing fields
+    # Addressing fields (4/10 bytes)
     config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Beacon].src_panid)
     if config.entry["mac_srcaddrmode"] == "Short source MAC address":
         config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Beacon].src_addr)
@@ -393,7 +393,7 @@ def mac_beacon(pkt):
         config.entry["error_msg"] = "Unknown MAC SA mode"
         return
 
-    # Superframe Specification field
+    # Superframe Specification field (2 bytes)
     config.entry["mac_beacon_beaconorder"] = pkt[Dot15d4Beacon].sf_beaconorder
     config.entry["mac_beacon_sforder"] = pkt[Dot15d4Beacon].sf_sforder
     config.entry["mac_beacon_finalcap"] = pkt[Dot15d4Beacon].sf_finalcapslot
@@ -401,15 +401,15 @@ def mac_beacon(pkt):
     config.entry["mac_beacon_pancoord"] = pkt[Dot15d4Beacon].sf_pancoord
     config.entry["mac_beacon_assocpermit"] = pkt[Dot15d4Beacon].sf_assocpermit
 
-    # GTS Specification field
+    # GTS Specification field (1 byte)
     config.entry["mac_beacon_gtsnum"] = pkt[Dot15d4Beacon].gts_spec_desccount
     config.entry["mac_beacon_gtspermit"] = pkt[Dot15d4Beacon].gts_spec_permit
 
-    # GTS Directions Mask field
+    # GTS Directions Mask field (0/1 byte)
     if config.entry["mac_beacon_gtsnum"] > 0:
         config.entry["mac_beacon_gtsmask"] = pkt[Dot15d4Beacon].gts_dir_mask
 
-    # GTS List field
+    # GTS List field (variable)
     if config.entry["mac_beacon_gtsnum"] > 0:
         logging.debug("Packet #{} in {} contains a GTS List field "
                       "which could not be processed"
@@ -418,11 +418,11 @@ def mac_beacon(pkt):
         config.entry["error_msg"] = "Could not process the GTS List"
         return
 
-    # Pending Address Specification field
+    # Pending Address Specification field (1 byte)
     config.entry["mac_beacon_nsap"] = pkt[Dot15d4Beacon].pa_num_short
     config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
 
-    # Address List field
+    # Address List field (variable)
     if (config.entry["mac_beacon_nsap"] > 0
             or config.entry["mac_beacon_neap"] > 0):
         logging.debug("Packet #{} in {} contains an Address List field "
@@ -432,19 +432,19 @@ def mac_beacon(pkt):
         config.entry["error_msg"] = "Could not process the Address List"
         return
 
-    # Beacon Payload field
+    # Beacon Payload field (variable)
     if pkt.haslayer(ZigBeeBeacon):
         nwk_fields(pkt)
         return
     else:
         config.entry["error_msg"] = (
-            "It does not contain the payload of a Zigbee Beacon"
+            "There is no beacon payload from the Zigbee NWK layer"
         )
         return
 
 
 def mac_data(pkt):
-    # Destination Addressing fields
+    # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
         config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Data].dest_panid)
@@ -458,7 +458,7 @@ def mac_data(pkt):
         config.entry["error_msg"] = "Unknown MAC DA mode"
         return
 
-    # Source Addressing fields
+    # Source Addressing fields (0/2/4/8/10 bytes)
     if (config.entry["mac_srcaddrmode"]
             == "Short source MAC address"):
         if (config.entry["mac_panidcomp"]
@@ -484,14 +484,12 @@ def mac_data(pkt):
         config.entry["error_msg"] = "Unknown MAC SA mode"
         return
 
-    # Data Payload field
+    # Data Payload field (variable)
     if pkt.haslayer(ZigbeeNWK):
         nwk_fields(pkt)
         return
     else:
-        config.entry["error_msg"] = (
-            "It does not contain Zigbee NWK fields"
-        )
+        config.entry["error_msg"] = "There are no Zigbee NWK fields"
         return
 
 
@@ -505,15 +503,19 @@ def mac_fields(pkt):
 
     comp_fcs = struct.unpack("<H", pkt.compute_fcs(raw(pkt)[:-2]))[0]
     if pkt[Dot15d4FCS].fcs != comp_fcs:
-        config.entry["error_msg"] = (
-            "The received FCS ({}) does not match the computed FCS ({})"
-            "".format(hex(pkt[Dot15d4FCS].fcs), hex(comp_fcs))
-        )
+        logging.debug("The received FCS ({}), for packet #{} in {}, "
+                      "does not match the computed FCS ({})"
+                      "".format(hex(pkt[Dot15d4FCS].fcs),
+                                config.entry["pkt_num"],
+                                config.entry["pcap_filename"],
+                                hex(comp_fcs)))
+        config.entry["error_msg"] = "Incorrect frame check sequence (FCS)"
         return
 
+    # Frame Check Sequence field (2 bytes)
     config.entry["mac_fcs"] = hex(pkt[Dot15d4FCS].fcs)
 
-    # Frame Control field
+    # Frame Control field (2 bytes)
     config.entry["mac_frametype"] = get_mac_frametype(pkt)
     config.entry["mac_security"] = get_mac_security(pkt)
     config.entry["mac_framepending"] = get_mac_framepending(pkt)
@@ -523,17 +525,18 @@ def mac_fields(pkt):
     config.entry["mac_frameversion"] = get_mac_frameversion(pkt)
     config.entry["mac_srcaddrmode"] = get_mac_srcaddrmode(pkt)
 
-    # Sequence Number field
+    # Sequence Number field (1 byte)
     config.entry["mac_seqnum"] = pkt[Dot15d4FCS].seqnum
 
     if config.entry["mac_security"] == "MAC Security Enabled":
+        # Auxiliary Security Header field (0/5/6/10/14 bytes)
         if pkt.haslayer(Dot15d4AuxSecurityHeader):
             # Zigbee does not utilize any security services on the MAC layer
             logging.debug("The packet #{} in {} is utilizing "
                           "security services on the MAC layer"
                           "".format(config.entry["pkt_num"],
                                     config.entry["pcap_filename"]))
-            config.entry["warning_msg"] = (
+            config.entry["error_msg"] = (
                 "Ignored the MAC Auxiliary Security Header"
             )
             return
@@ -543,6 +546,7 @@ def mac_fields(pkt):
             )
             return
     elif config.entry["mac_security"] == "MAC Security Disabled":
+        # MAC Payload field (variable)
         if config.entry["mac_frametype"] == "MAC Acknowledgment":
             # MAC Acknowledgments do not contain any other fields
             return
@@ -552,7 +556,7 @@ def mac_fields(pkt):
                 return
             else:
                 config.entry["error_msg"] = (
-                    "It does not contain MAC Command fields"
+                    "There are no MAC Command fields"
                 )
                 return
         elif config.entry["mac_frametype"] == "MAC Beacon":
@@ -561,7 +565,7 @@ def mac_fields(pkt):
                 return
             else:
                 config.entry["error_msg"] = (
-                    "It does not contain MAC Beacon fields"
+                    "There are no MAC Beacon fields"
                 )
                 return
         elif config.entry["mac_frametype"] == "MAC Data":
@@ -570,7 +574,7 @@ def mac_fields(pkt):
                 return
             else:
                 config.entry["error_msg"] = (
-                    "It does not contain MAC Data fields"
+                    "There are no MAC Data fields"
                 )
                 return
         else:
