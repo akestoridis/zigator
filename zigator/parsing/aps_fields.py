@@ -692,14 +692,18 @@ def aps_auxiliary(pkt):
                 encrypted_payload=encrypted_payload,
                 mic=mic)
             if authentic_payload:
+                # APS Payload field (variable)
                 config.entry["aps_aux_decryptedpayload"] = binascii.hexlify(
                     decrypted_payload)
                 if config.entry["aps_frametype"] == "APS Data":
                     # TODO: APS Data fields (variable)
                     return
                 elif config.entry["aps_frametype"] == "APS Command":
-                    aps_command_payload(
-                        ZigbeeAppCommandPayload(decrypted_payload))
+                    decrypted_pkt = ZigbeeAppCommandPayload(decrypted_payload)
+                    config.entry["aps_aux_decryptedshow"] = (
+                        decrypted_pkt.show(dump=True)
+                    )
+                    aps_command_payload(decrypted_pkt)
                     return
                 elif config.entry["aps_frametype"] == "APS Acknowledgment":
                     # APS Acknowledgments do not contain any other fields

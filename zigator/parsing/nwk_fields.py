@@ -737,13 +737,22 @@ def nwk_auxiliary(pkt):
                 encrypted_payload=encrypted_payload,
                 mic=mic)
             if authentic_payload:
+                # NWK Payload field (variable)
                 config.entry["nwk_aux_decryptedpayload"] = binascii.hexlify(
                     decrypted_payload)
                 if config.entry["nwk_frametype"] == "NWK Command":
-                    nwk_command(ZigbeeNWKCommandPayload(decrypted_payload))
+                    decrypted_pkt = ZigbeeNWKCommandPayload(decrypted_payload)
+                    config.entry["nwk_aux_decryptedshow"] = (
+                        decrypted_pkt.show(dump=True)
+                    )
+                    nwk_command(decrypted_pkt)
                     return
                 elif config.entry["nwk_frametype"] == "NWK Data":
-                    aps_fields(ZigbeeAppDataPayload(decrypted_payload))
+                    decrypted_pkt = ZigbeeAppDataPayload(decrypted_payload)
+                    config.entry["nwk_aux_decryptedshow"] = (
+                        decrypted_pkt.show(dump=True)
+                    )
+                    aps_fields(decrypted_pkt)
                     return
                 else:
                     config.entry["error_msg"] = (
