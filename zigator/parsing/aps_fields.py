@@ -481,11 +481,12 @@ def aps_requestkey(pkt):
     # Request Key Type field (1 byte)
     config.entry["aps_requestkey_reqkeytype"] = get_aps_reqkeytype(pkt)
 
-    # Partner Extended Address field (0/8 bytes)
     if (config.entry["aps_requestkey_reqkeytype"]
             == "Application Link Key"):
-        # TODO: Add it as a field in Scapy
-        logging.warning("Ignoring the Partner Address field")
+        # Partner Extended Address field (8 bytes)
+        config.entry["aps_requestkey_prtextendedaddr"] = hex(
+            pkt[ZigbeeAppCommandPaylad].partner_addr)
+
         return
     elif (config.entry["aps_requestkey_reqkeytype"]
             == "Trust Center Link Key"):

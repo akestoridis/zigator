@@ -215,6 +215,7 @@ DB_COLUMNS = [
     ("aps_updatedevice_status", "TEXT"),
     ("aps_removedevice_extendedaddr", "TEXT"),
     ("aps_requestkey_reqkeytype", "TEXT"),
+    ("aps_requestkey_prtextendedaddr", "TEXT"),
     ("aps_switchkey_keyseqnum", "INTEGER"),
     ("aps_tunnel_dstextendedaddr", "TEXT"),
     ("aps_tunnel_frametype", "TEXT"),
