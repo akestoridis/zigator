@@ -42,8 +42,8 @@ DB_COLUMNS = [
     ("pcap_directory", "TEXT"),
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
-    ("raw_pkt", "TEXT"),
-    ("show_pkt", "TEXT"),
+    ("pkt_raw", "TEXT"),
+    ("pkt_show", "TEXT"),
     ("phy_length", "INTEGER"),
     ("mac_fcs", "TEXT"),
     ("mac_frametype", "TEXT"),
@@ -239,8 +239,8 @@ CONSTRAINED_COLUMNS = set([
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
-    "raw_pkt",
-    "show_pkt"
+    "pkt_raw",
+    "pkt_show"
 ])
 
 # Initialize the global variables

@@ -40,8 +40,8 @@ def pcap_file(filepath):
     for pkt in PcapReader(filepath):
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
-        config.entry["raw_pkt"] = binascii.hexlify(raw(pkt))
-        config.entry["show_pkt"] = pkt.show(dump=True)
+        config.entry["pkt_raw"] = binascii.hexlify(raw(pkt))
+        config.entry["pkt_show"] = pkt.show(dump=True)
 
         # Collect more data about the packet from the PHY layer and onward
         phy_fields(pkt)
