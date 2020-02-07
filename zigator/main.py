@@ -22,48 +22,74 @@ from argparse import ArgumentParser
 import zigator
 
 
-parser = ArgumentParser(prog="zigator",
-                        description="Zigator: Security analysis tool "
-                                    "for Zigbee networks",
-                        add_help=True)
-parser.add_argument("-v",
-                    "--version",
-                    action="version",
-                    version="%(prog)s {}".format(zigator.__version__))
-parser.add_argument("-d",
-                    "--debug",
-                    action="store_true",
-                    help="enable debug logging")
-parser.add_argument("--pcap_directory",
-                    dest="pcap_directory",
-                    type=str,
-                    action="store",
-                    help="directory with pcap files",
-                    required=True)
-parser.add_argument("--database_filepath",
-                    dest="database_filepath",
-                    type=str,
-                    action="store",
-                    help="path for the database file",
-                    required=True)
-parser.add_argument("--network_keys",
-                    dest="network_filepath",
-                    type=str,
-                    action="store",
-                    help="file with network keys",
-                    default=None)
-parser.add_argument("--link_keys",
-                    dest="link_filepath",
-                    type=str,
-                    action="store",
-                    help="file with link keys",
-                    default=None)
-parser.add_argument("--install_codes",
-                    dest="install_filepath",
-                    type=str,
-                    action="store",
-                    help="file with install codes",
-                    default=None)
+parser = ArgumentParser(
+    prog="zigator",
+    description="Zigator: Security analysis tool for Zigbee networks",
+    add_help=True)
+parser.add_argument(
+    "-v",
+    "--version",
+    action="version",
+    version="%(prog)s {}".format(zigator.__version__))
+parser.add_argument(
+    "-d",
+    "--debug",
+    action="store_true",
+    help="enable debug logging")
+subparsers = parser.add_subparsers(
+    title="subcommands",
+    dest="subcommand",
+    help="set of valid subcommands")
+
+parser_parse = subparsers.add_parser(
+    "parse",
+    help="parse pcap files")
+parser_parse.add_argument(
+    "PCAP_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory with pcap files")
+parser_parse.add_argument(
+    "DATABASE_FILEPATH",
+    type=str,
+    action="store",
+    help="path for the database file")
+parser_parse.add_argument(
+    "--network_keys",
+    dest="network_filepath",
+    type=str,
+    action="store",
+    help="file with network keys",
+    default=None)
+parser_parse.add_argument(
+    "--link_keys",
+    dest="link_filepath",
+    type=str,
+    action="store",
+    help="file with link keys",
+    default=None)
+parser_parse.add_argument(
+    "--install_codes",
+    dest="install_filepath",
+    type=str,
+    action="store",
+    help="file with install codes",
+    default=None)
+
+parser_analyze = subparsers.add_parser(
+    "analyze",
+    help="analyze a database")
+parser_analyze.add_argument(
+    "DATABASE_FILEPATH",
+    type=str,
+    action="store",
+    help="path of the database file")
+parser_analyze.add_argument(
+    "OUTPUT_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory for the output files")
+
 args = parser.parse_args()
 
 
@@ -75,16 +101,23 @@ def main():
 
     zigator.config.init(args.debug)
 
-    if args.network_filepath is not None:
-        zigator.config.add_encryption_keys(args.network_filepath, "network")
+    if args.subcommand == "parse":
+        if args.network_filepath is not None:
+            zigator.config.add_encryption_keys(args.network_filepath,
+                                               "network")
 
-    if args.link_filepath is not None:
-        zigator.config.add_encryption_keys(args.link_filepath, "link")
+        if args.link_filepath is not None:
+            zigator.config.add_encryption_keys(args.link_filepath, "link")
 
-    if args.install_filepath is not None:
-        zigator.config.add_install_codes(args.install_filepath)
+        if args.install_filepath is not None:
+            zigator.config.add_install_codes(args.install_filepath)
 
-    zigator.parsing.main(args.pcap_directory, args.database_filepath)
+        zigator.parsing.main(args.PCAP_DIRECTORY, args.DATABASE_FILEPATH)
+    elif args.subcommand == "analyze":
+        print(args.DATABASE_FILEPATH)
+        print(args.OUTPUT_DIRECTORY)
+    else:
+        raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
 
 if __name__ == "__main__":
