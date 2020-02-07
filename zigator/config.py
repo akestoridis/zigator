@@ -35,7 +35,6 @@ CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "zigator")
 NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network_keys.tsv")
 LINK_FILEPATH = os.path.join(CONFIG_DIR, "link_keys.tsv")
 INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
-DB_FILEPATH = os.path.join(CONFIG_DIR, "traffic.db")
 
 # Define the columns of the table in the database
 DB_COLUMNS = [
@@ -330,12 +329,12 @@ def reset_entries(keep=[]):
             entry[column_name] = None
 
 
-def initialize_db():
+def initialize_db(db_filepath):
     global db_connection
     global db_cursor
 
     # Open a connection with the database
-    db_connection = sqlite3.connect(DB_FILEPATH)
+    db_connection = sqlite3.connect(db_filepath)
     db_connection.text_factory = str
     db_cursor = db_connection.cursor()
 

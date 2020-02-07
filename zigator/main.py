@@ -39,7 +39,13 @@ parser.add_argument("--pcap_directory",
                     type=str,
                     action="store",
                     help="directory with pcap files",
-                    default=None)
+                    required=True)
+parser.add_argument("--database_filepath",
+                    dest="database_filepath",
+                    type=str,
+                    action="store",
+                    help="path for the database file",
+                    required=True)
 parser.add_argument("--network_keys",
                     dest="network_filepath",
                     type=str,
@@ -78,8 +84,7 @@ def main():
     if args.install_filepath is not None:
         zigator.config.add_install_codes(args.install_filepath)
 
-    if args.pcap_directory is not None:
-        zigator.parsing.main(args.pcap_directory)
+    zigator.parsing.main(args.pcap_directory, args.database_filepath)
 
 
 if __name__ == "__main__":

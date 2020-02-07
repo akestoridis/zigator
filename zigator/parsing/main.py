@@ -22,7 +22,7 @@ from .. import config
 from .pcap_file import pcap_file
 
 
-def main(dirpath):
+def main(dirpath, db_filepath):
     """Parse all pcap files in the provided directory."""
     # Sanity check
     if not os.path.isdir(dirpath):
@@ -30,7 +30,7 @@ def main(dirpath):
                          "does not exist".format(dirpath))
 
     # Initialize the database that will store the parsed data
-    config.initialize_db()
+    config.initialize_db(db_filepath)
 
     # Get a sorted list of pcap filepaths
     filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))
