@@ -101,7 +101,7 @@ def zcl_fields(pkt):
     if (config.entry["zcl_manufspecific"]
             == "The command is manufacturer-specific"):
         # Manufacturer Code field (2 bytes)
-        config.entry["zcl_manufcode"] = hex(
+        config.entry["zcl_manufcode"] = "0x{:04x}".format(
             pkt[ZigbeeClusterLibrary].manufacturer_code)
     elif (config.entry["zcl_manufspecific"]
             != "The command is not manufacturer-specific"):

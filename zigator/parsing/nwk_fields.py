@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import binascii
 import logging
 
 from scapy.all import ZigBeeBeacon
@@ -382,8 +381,8 @@ def nwk_routerequest(pkt):
         pkt[ZigbeeNWKCommandPayload].route_request_identifier
     )
 
-    # Short Destination Address field (2 bytes)
-    config.entry["nwk_routerequest_dstshortaddr"] = hex(
+    # Destination Short Address field (2 bytes)
+    config.entry["nwk_routerequest_dstshortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].destination_address)
 
     # Path Cost field (1 byte)
@@ -391,11 +390,11 @@ def nwk_routerequest(pkt):
         pkt[ZigbeeNWKCommandPayload].path_cost
     )
 
-    # Extended Destination Address field (0/8 bytes)
+    # Destination Extended Address field (0/8 bytes)
     if (config.entry["nwk_routerequest_ed"]
             == "The extended destination address is present"):
-        config.entry["nwk_routerequest_dstextendedaddr"] = hex(
-            pkt[ZigbeeNWKCommandPayload].ext_dst)
+        config.entry["nwk_routerequest_dstextendedaddr"] = format(
+            pkt[ZigbeeNWKCommandPayload].ext_dst, "016x")
     elif (config.entry["nwk_routerequest_ed"]
             != "The extended destination address is not present"):
         config.entry["error_msg"] = "Unknown Extended Destination state"
@@ -415,11 +414,11 @@ def nwk_routereply(pkt):
     )
 
     # Originator Short Address field (2 bytes)
-    config.entry["nwk_routereply_origshortaddr"] = hex(
+    config.entry["nwk_routereply_origshortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].originator_address)
 
     # Responder Short Address field (2 bytes)
-    config.entry["nwk_routereply_respshortaddr"] = hex(
+    config.entry["nwk_routereply_respshortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].responder_address)
 
     # Path Cost field (1 byte)
@@ -430,8 +429,8 @@ def nwk_routereply(pkt):
     # Originator Extended Address field (0/8 bytes)
     if (config.entry["nwk_routereply_eo"]
             == "The extended originator address is present"):
-        config.entry["nwk_routereply_origextendedaddr"] = hex(
-            pkt[ZigbeeNWKCommandPayload].originator_addr)
+        config.entry["nwk_routereply_origextendedaddr"] = format(
+            pkt[ZigbeeNWKCommandPayload].originator_addr, "016x")
     elif (config.entry["nwk_routereply_eo"]
             != "The extended originator address is not present"):
         config.entry["error_msg"] = "Unknown Extended Originator state"
@@ -439,8 +438,8 @@ def nwk_routereply(pkt):
     # Responder Extended Address field (0/8 bytes)
     if (config.entry["nwk_routereply_er"]
             == "The extended responder address is present"):
-        config.entry["nwk_routereply_respextendedaddr"] = hex(
-            pkt[ZigbeeNWKCommandPayload].responder_addr)
+        config.entry["nwk_routereply_respextendedaddr"] = format(
+            pkt[ZigbeeNWKCommandPayload].responder_addr, "016x")
     elif (config.entry["nwk_routereply_er"]
             != "Unknown Extended Responder state"):
         config.entry["error_msg"] = "Unknown Extended Responder state"
@@ -452,8 +451,8 @@ def nwk_networkstatus(pkt):
     # Status Code field (1 byte)
     config.entry["nwk_networkstatus_code"] = get_nwk_networkstatus_code(pkt)
 
-    # Short Destination Address field (2 bytes)
-    config.entry["nwk_networkstatus_dstshortaddr"] = hex(
+    # Destination Short Address field (2 bytes)
+    config.entry["nwk_networkstatus_dstshortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].destination_address)
 
     return
@@ -496,7 +495,7 @@ def nwk_rejoinreq(pkt):
 
 def nwk_rejoinrsp(pkt):
     # Network Address field (2 bytes)
-    config.entry["nwk_rejoinrsp_shortaddr"] = hex(
+    config.entry["nwk_rejoinrsp_shortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].network_address)
 
     # Rejoin Status field (1 byte)
@@ -525,8 +524,8 @@ def nwk_linkstatus(pkt):
         config.entry["error_msg"] = "Unable to process the Link Status List"
         return
     if config.entry["nwk_linkstatus_count"] > 0:
-        config.entry["nwk_linkstatus_addresses"] = ",".join(
-            hex(link.neighbor_network_address) for link in linkstatus_list)
+        config.entry["nwk_linkstatus_addresses"] = ",".join("0x{:04x}".format(
+            link.neighbor_network_address) for link in linkstatus_list)
         config.entry["nwk_linkstatus_incomingcosts"] = ",".join(
             str(link.incoming_cost) for link in linkstatus_list)
         config.entry["nwk_linkstatus_outgoingcosts"] = ",".join(
@@ -543,8 +542,8 @@ def nwk_networkreport(pkt):
     config.entry["nwk_networkreport_type"] = get_nwk_networkreport_type(pkt)
 
     # EPID field (8 bytes)
-    config.entry["nwk_networkreport_epid"] = hex(
-        pkt[ZigbeeNWKCommandPayload].epid)
+    config.entry["nwk_networkreport_epid"] = format(
+        pkt[ZigbeeNWKCommandPayload].epid, "016x")
 
     # Report Information field (variable)
     if config.entry["nwk_networkreport_type"] == "PAN Identifier Conflict":
@@ -560,7 +559,7 @@ def nwk_networkreport(pkt):
             return
         if config.entry["nwk_networkreport_count"] > 0:
             config.entry["nwk_networkreport_info"] = ",".join(
-                hex(panid) for panid in panid_list)
+                "0x{:04x}".format(panid) for panid in panid_list)
         return
     else:
         config.entry["error_msg"] = "Unknown report type"
@@ -575,8 +574,8 @@ def nwk_networkupdate(pkt):
     config.entry["nwk_networkupdate_type"] = get_nwk_networkupdate_type(pkt)
 
     # EPID field (8 bytes)
-    config.entry["nwk_networkupdate_epid"] = hex(
-        pkt[ZigbeeNWKCommandPayload].epid)
+    config.entry["nwk_networkupdate_epid"] = format(
+        pkt[ZigbeeNWKCommandPayload].epid, "016x")
 
     # Update ID field (1 byte)
     config.entry["nwk_networkupdate_updateid"] = (
@@ -586,7 +585,7 @@ def nwk_networkupdate(pkt):
     # Update Information field (variable)
     if config.entry["nwk_networkupdate_type"] == "PAN Identifier Update":
         # New PAN ID (2 bytes)
-        config.entry["nwk_networkupdate_newpanid"] = hex(
+        config.entry["nwk_networkupdate_newpanid"] = "0x{:04x}".format(
             pkt[ZigbeeNWKCommandPayload].new_PAN_ID)
         return
     else:
@@ -671,7 +670,8 @@ def nwk_beacon(pkt):
     config.entry["nwk_beacon_routercap"] = pkt[ZigBeeBeacon].router_capacity
     config.entry["nwk_beacon_devdepth"] = pkt[ZigBeeBeacon].device_depth
     config.entry["nwk_beacon_edcap"] = pkt[ZigBeeBeacon].end_device_capacity
-    config.entry["nwk_beacon_epid"] = hex(pkt[ZigBeeBeacon].extended_pan_id)
+    config.entry["nwk_beacon_epid"] = format(
+        pkt[ZigBeeBeacon].extended_pan_id, "016x")
     config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset
     config.entry["nwk_beacon_updateid"] = pkt[ZigBeeBeacon].update_id
 
@@ -691,8 +691,8 @@ def nwk_auxiliary(pkt):
     # Source Address field (0/8 bytes)
     if (config.entry["nwk_aux_extnonce"]
             == "The source address is present"):
-        config.entry["nwk_aux_srcaddr"] = hex(
-            pkt[ZigbeeSecurityHeader].source)
+        config.entry["nwk_aux_srcaddr"] = format(
+            pkt[ZigbeeSecurityHeader].source, "016x")
         potential_sources = set([pkt[ZigbeeSecurityHeader].source])
     elif (config.entry["nwk_aux_extnonce"]
             == "The source address is not present"):
@@ -730,12 +730,13 @@ def nwk_auxiliary(pkt):
             dec_payload, auth_payload = crypto.zigbee_decryption(
                 key, source_addr, frame_counter, sec_control,
                 header, key_seqnum, enc_payload, mic)
+
             # Check whether the decrypted payload is authentic
             if auth_payload:
-                config.entry["nwk_aux_deckey"] = binascii.hexlify(key)
-                config.entry["nwk_aux_decsrc"] = hex(source_addr)
-                config.entry["nwk_aux_decpayload"] = binascii.hexlify(
-                    dec_payload)
+                config.entry["nwk_aux_deckey"] = key.hex()
+                config.entry["nwk_aux_decsrc"] = format(source_addr, "016x")
+                config.entry["nwk_aux_decpayload"] = dec_payload.hex()
+
                 # NWK Payload field (variable)
                 if config.entry["nwk_frametype"] == "NWK Command":
                     dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
@@ -805,11 +806,13 @@ def nwk_fields(pkt):
     else:
         config.entry["nwk_edinitiator"] = "NWK Not End Device Initiator"
 
-    # Short Destination Address field (2 bytes)
-    config.entry["nwk_dstshortaddr"] = hex(pkt[ZigbeeNWK].destination)
+    # Destination Short Address field (2 bytes)
+    config.entry["nwk_dstshortaddr"] = "0x{:04x}".format(
+        pkt[ZigbeeNWK].destination)
 
-    # Short Source Address field (2 bytes)
-    config.entry["nwk_srcshortaddr"] = hex(pkt[ZigbeeNWK].source)
+    # Source Short Address field (2 bytes)
+    config.entry["nwk_srcshortaddr"] = "0x{:04x}".format(
+        pkt[ZigbeeNWK].source)
 
     # Radius field (1 byte)
     config.entry["nwk_radius"] = pkt[ZigbeeNWK].radius
@@ -817,19 +820,21 @@ def nwk_fields(pkt):
     # Sequence Number field (1 byte)
     config.entry["nwk_seqnum"] = pkt[ZigbeeNWK].seqnum
 
-    # Extended Destination Address field (0/8 bytes)
+    # Destination Extended Address field (0/8 bytes)
     if (config.entry["nwk_extendeddst"]
             == "NWK Extended Destination Included"):
-        config.entry["nwk_dstextendedaddr"] = hex(pkt[ZigbeeNWK].ext_dst)
+        config.entry["nwk_dstextendedaddr"] = format(
+            pkt[ZigbeeNWK].ext_dst, "016x")
     elif (config.entry["nwk_extendeddst"]
             != "NWK Extended Destination Omitted"):
         config.entry["error_msg"] = "Unknown Extended Destination state"
         return
 
-    # Extended Source Address field (0/8 bytes)
+    # Source Extended Address field (0/8 bytes)
     if (config.entry["nwk_extendedsrc"]
             == "NWK Extended Source Included"):
-        config.entry["nwk_srcextendedaddr"] = hex(pkt[ZigbeeNWK].ext_src)
+        config.entry["nwk_srcextendedaddr"] = format(
+            pkt[ZigbeeNWK].ext_src, "016x")
     elif (config.entry["nwk_extendedsrc"]
             != "NWK Extended Source Omitted"):
         config.entry["error_msg"] = "Unknown Extended Source state"

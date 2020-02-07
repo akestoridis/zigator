@@ -232,7 +232,7 @@ def mac_assocreq(pkt):
 
 def mac_assocrsp(pkt):
     # Short Address field (2 bytes)
-    config.entry["mac_assocrsp_shortaddr"] = hex(
+    config.entry["mac_assocrsp_shortaddr"] = "0x{:04x}".format(
         pkt[Dot15d4CmdAssocResp].short_address)
 
     # Association Status field (1 byte)
@@ -250,17 +250,18 @@ def mac_disassoc(pkt):
 
 def mac_realign(pkt):
     # PAN Identifier field (2 bytes)
-    config.entry["mac_realign_panid"] = hex(pkt[Dot15d4CmdCoordRealign].panid)
+    config.entry["mac_realign_panid"] = "0x{:04x}".format(
+        pkt[Dot15d4CmdCoordRealign].panid)
 
     # Coordinator Short Address field (2 bytes)
-    config.entry["mac_realign_coordaddr"] = hex(
+    config.entry["mac_realign_coordaddr"] = "0x{:04x}".format(
         pkt[Dot15d4CmdCoordRealign].coord_address)
 
     # Channel Number field (1 byte)
     config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
 
     # Short Address field (2 bytes)
-    config.entry["mac_realign_shortaddr"] = hex(
+    config.entry["mac_realign_shortaddr"] = "0x{:04x}".format(
         pkt[Dot15d4CmdCoordRealign].dev_address)
 
     # Channel Page field (0/1 byte)
@@ -293,12 +294,16 @@ def mac_command(pkt):
     # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
-        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Cmd].dest_panid)
-        config.entry["mac_dstshortaddr"] = hex(pkt[Dot15d4Cmd].dest_addr)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Cmd].dest_panid)
+        config.entry["mac_dstshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Cmd].dest_addr)
     elif (config.entry["mac_dstaddrmode"]
             == "Extended destination MAC address"):
-        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Cmd].dest_panid)
-        config.entry["mac_dstextendedaddr"] = hex(pkt[Dot15d4Cmd].dest_addr)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Cmd].dest_panid)
+        config.entry["mac_dstextendedaddr"] = format(
+            pkt[Dot15d4Cmd].dest_addr, "016x")
     elif (config.entry["mac_dstaddrmode"]
             != "No destination MAC address"):
         config.entry["error_msg"] = "Unknown MAC DA mode"
@@ -309,22 +314,26 @@ def mac_command(pkt):
             == "Short source MAC address"):
         if (config.entry["mac_panidcomp"]
                 == "Do not compress the source PAN ID"):
-            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Cmd].src_panid)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Cmd].src_panid)
         elif (config.entry["mac_panidcomp"]
                 != "The source PAN ID is the same as the destination PAN ID"):
             config.entry["error_msg"] = "Unknown MAC PC state"
             return
-        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Cmd].src_addr)
+        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Cmd].src_addr)
     elif (config.entry["mac_srcaddrmode"]
             == "Extended source MAC address"):
         if (config.entry["mac_panidcomp"]
                 == "Do not compress the source PAN ID"):
-            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Cmd].src_panid)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Cmd].src_panid)
         elif (config.entry["mac_panidcomp"]
                 != "The source PAN ID is the same as the destination PAN ID"):
             config.entry["error_msg"] = "Unknown MAC PC state"
             return
-        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Cmd].src_addr)
+        config.entry["mac_srcextendedaddr"] = format(
+            pkt[Dot15d4Cmd].src_addr, "016x")
     elif (config.entry["mac_srcaddrmode"]
             != "No source MAC address"):
         config.entry["error_msg"] = "Unknown MAC SA mode"
@@ -379,11 +388,14 @@ def mac_beacon(pkt):
         return
 
     # Addressing fields (4/10 bytes)
-    config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Beacon].src_panid)
+    config.entry["mac_srcpanid"] = "0x{:04x}".format(
+        pkt[Dot15d4Beacon].src_panid)
     if config.entry["mac_srcaddrmode"] == "Short source MAC address":
-        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Beacon].src_addr)
+        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Beacon].src_addr)
     elif config.entry["mac_srcaddrmode"] == "Extended source MAC address":
-        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Beacon].src_addr)
+        config.entry["mac_srcextendedaddr"] = format(
+            pkt[Dot15d4Beacon].src_addr, "016x")
     elif config.entry["mac_srcaddrmode"] == "No source MAC address":
         config.entry["error_msg"] = (
             "MAC Beacons should contain a source PAN ID and address"
@@ -447,12 +459,16 @@ def mac_data(pkt):
     # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
-        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Data].dest_panid)
-        config.entry["mac_dstshortaddr"] = hex(pkt[Dot15d4Data].dest_addr)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_panid)
+        config.entry["mac_dstshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_addr)
     elif (config.entry["mac_dstaddrmode"]
             == "Extended destination MAC address"):
-        config.entry["mac_dstpanid"] = hex(pkt[Dot15d4Data].dest_panid)
-        config.entry["mac_dstextendedaddr"] = hex(pkt[Dot15d4Data].dest_addr)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_panid)
+        config.entry["mac_dstextendedaddr"] = format(
+            pkt[Dot15d4Data].dest_addr, "016x")
     elif (config.entry["mac_dstaddrmode"]
             != "No destination MAC address"):
         config.entry["error_msg"] = "Unknown MAC DA mode"
@@ -463,22 +479,26 @@ def mac_data(pkt):
             == "Short source MAC address"):
         if (config.entry["mac_panidcomp"]
                 == "Do not compress the source PAN ID"):
-            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Data].src_panid)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Data].src_panid)
         elif (config.entry["mac_panidcomp"]
                 != "The source PAN ID is the same as the destination PAN ID"):
             config.entry["error_msg"] = "Unknown MAC PC state"
             return
-        config.entry["mac_srcshortaddr"] = hex(pkt[Dot15d4Data].src_addr)
+        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].src_addr)
     elif (config.entry["mac_srcaddrmode"]
             == "Extended source MAC address"):
         if (config.entry["mac_panidcomp"]
                 == "Do not compress the source PAN ID"):
-            config.entry["mac_srcpanid"] = hex(pkt[Dot15d4Data].src_panid)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Data].src_panid)
         elif (config.entry["mac_panidcomp"]
                 != "The source PAN ID is the same as the destination PAN ID"):
             config.entry["error_msg"] = "Unknown MAC PC state"
             return
-        config.entry["mac_srcextendedaddr"] = hex(pkt[Dot15d4Data].src_addr)
+        config.entry["mac_srcextendedaddr"] = format(
+            pkt[Dot15d4Data].src_addr, "016x")
     elif (config.entry["mac_srcaddrmode"]
             != "No source MAC address"):
         config.entry["error_msg"] = "Unknown MAC SA mode"
@@ -503,17 +523,17 @@ def mac_fields(pkt):
 
     comp_fcs = struct.unpack("<H", pkt.compute_fcs(raw(pkt)[:-2]))[0]
     if pkt[Dot15d4FCS].fcs != comp_fcs:
-        logging.debug("The received FCS ({}), for packet #{} in {}, "
-                      "does not match the computed FCS ({})"
-                      "".format(hex(pkt[Dot15d4FCS].fcs),
+        logging.debug("The received FCS (0x{:04x}), for packet #{} in {}, "
+                      "does not match the computed FCS (0x{:04x})"
+                      "".format(pkt[Dot15d4FCS].fcs,
                                 config.entry["pkt_num"],
                                 config.entry["pcap_filename"],
-                                hex(comp_fcs)))
+                                comp_fcs))
         config.entry["error_msg"] = "Incorrect frame check sequence (FCS)"
         return
 
     # Frame Check Sequence field (2 bytes)
-    config.entry["mac_fcs"] = hex(pkt[Dot15d4FCS].fcs)
+    config.entry["mac_fcs"] = "0x{:04x}".format(pkt[Dot15d4FCS].fcs)
 
     # Frame Control field (2 bytes)
     config.entry["mac_frametype"] = get_mac_frametype(pkt)

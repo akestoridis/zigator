@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import binascii
 import logging
 import os
 
@@ -40,7 +39,7 @@ def pcap_file(filepath):
     for pkt in PcapReader(filepath):
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
-        config.entry["pkt_raw"] = binascii.hexlify(raw(pkt))
+        config.entry["pkt_raw"] = raw(pkt).hex()
         config.entry["pkt_show"] = pkt.show(dump=True)
 
         # Collect more data about the packet from the PHY layer and onward

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import binascii
 import logging
 
 from scapy.all import ZigbeeAppCommandPayload
@@ -398,8 +397,9 @@ def aps_transportkey(pkt):
     if (config.entry["aps_transportkey_stdkeytype"]
             == "Standard Network Key"):
         # Key field (16 bytes)
-        config.entry["aps_transportkey_key"] = binascii.hexlify(
-            pkt[ZigbeeAppCommandPayload].key)
+        config.entry["aps_transportkey_key"] = (
+            pkt[ZigbeeAppCommandPayload].key.hex()
+        )
 
         # Key Sequence Number field (1 byte)
         config.entry["aps_transportkey_keyseqnum"] = (
@@ -407,12 +407,12 @@ def aps_transportkey(pkt):
         )
 
         # Destination Extended Address field (8 bytes)
-        config.entry["aps_transportkey_dstextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPayload].dest_addr)
+        config.entry["aps_transportkey_dstextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPayload].dest_addr, "016x")
 
         # Source Extended Address field (8 bytes)
-        config.entry["aps_transportkey_srcextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPayload].src_addr)
+        config.entry["aps_transportkey_srcextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPayload].src_addr, "016x")
 
         # Store the sniffed network key
         config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "network")
@@ -421,16 +421,17 @@ def aps_transportkey(pkt):
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Trust Center Link Key"):
         # Key field (16 bytes)
-        config.entry["aps_transportkey_key"] = binascii.hexlify(
-            pkt[ZigbeeAppCommandPayload].key)
+        config.entry["aps_transportkey_key"] = (
+            pkt[ZigbeeAppCommandPayload].key.hex()
+        )
 
         # Destination Extended Address field (8 bytes)
-        config.entry["aps_transportkey_dstextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPayload].dest_addr)
+        config.entry["aps_transportkey_dstextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPayload].dest_addr, "016x")
 
         # Source Extended Address field (8 bytes)
-        config.entry["aps_transportkey_srcextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPayload].src_addr)
+        config.entry["aps_transportkey_srcextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPayload].src_addr, "016x")
 
         # Store the sniffed link key
         config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")
@@ -439,12 +440,13 @@ def aps_transportkey(pkt):
     elif (config.entry["aps_transportkey_stdkeytype"]
             == "Application Link Key"):
         # Key field (16 bytes)
-        config.entry["aps_transportkey_key"] = binascii.hexlify(
-            pkt[ZigbeeAppCommandPayload].key)
+        config.entry["aps_transportkey_key"] = (
+            pkt[ZigbeeAppCommandPayload].key.hex()
+        )
 
         # Partner Extended Address field (8 bytes)
-        config.entry["aps_transportkey_prtextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPaylad].partner_addr)
+        config.entry["aps_transportkey_prtextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPaylad].partner_addr, "016x")
 
         # Initiator Flag field (1 byte)
         config.entry["aps_transportkey_initflag"] = get_aps_initflag(pkt)
@@ -460,11 +462,11 @@ def aps_transportkey(pkt):
 
 def aps_updatedevice(pkt):
     # Device Extended Address field (8 bytes)
-    config.entry["aps_updatedevice_extendedaddr"] = hex(
-        pkt[ZigbeeAppCommandPayload].address)
+    config.entry["aps_updatedevice_extendedaddr"] = format(
+        pkt[ZigbeeAppCommandPayload].address, "016x")
 
     # Device Short Address field (2 bytes)
-    config.entry["aps_updatedevice_shortaddr"] = hex(
+    config.entry["aps_updatedevice_shortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeAppCommandPayload].short_address)
 
     # Status field (1 byte)
@@ -475,8 +477,8 @@ def aps_updatedevice(pkt):
 
 def aps_removedevice(pkt):
     # Target Extended Address field (8 bytes)
-    config.entry["aps_removedevice_extendedaddr"] = hex(
-        pkt[ZigbeeAppCommandPayload].address)
+    config.entry["aps_removedevice_extendedaddr"] = format(
+        pkt[ZigbeeAppCommandPayload].address, "016x")
 
     return
 
@@ -488,8 +490,8 @@ def aps_requestkey(pkt):
     if (config.entry["aps_requestkey_reqkeytype"]
             == "Application Link Key"):
         # Partner Extended Address field (8 bytes)
-        config.entry["aps_requestkey_prtextendedaddr"] = hex(
-            pkt[ZigbeeAppCommandPaylad].partner_addr)
+        config.entry["aps_requestkey_prtextendedaddr"] = format(
+            pkt[ZigbeeAppCommandPaylad].partner_addr, "016x")
 
         return
     elif (config.entry["aps_requestkey_reqkeytype"]
@@ -511,9 +513,9 @@ def aps_switchkey(pkt):
 
 
 def aps_tunnel(pkt):
-    # Extended Destination Address field (8 bytes)
-    config.entry["aps_tunnel_dstextendedaddr"] = hex(
-        pkt[ZigbeeAppCommandPayload].dest_addr)
+    # Destination Extended Address field (8 bytes)
+    config.entry["aps_tunnel_dstextendedaddr"] = format(
+        pkt[ZigbeeAppCommandPayload].dest_addr, "016x")
 
     # Tunneled Frame Control field (1 byte)
     if pkt[ZigbeeAppCommandPayload].aps_frametype == 1:
@@ -577,13 +579,14 @@ def aps_verifykey(pkt):
     # Standard Key Type field (1 byte)
     config.entry["aps_verifykey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
-    # Extended Source Address field (8 bytes)
-    config.entry["aps_verifykey_extendedaddr"] = hex(
-        pkt[ZigbeeAppCommandPayload].address)
+    # Source Extended Address field (8 bytes)
+    config.entry["aps_verifykey_extendedaddr"] = format(
+        pkt[ZigbeeAppCommandPayload].address, "016x")
 
     # Initiator Verify-Key Hash Value field (16 bytes)
-    config.entry["aps_verifykey_keyhash"] = binascii.hexlify(
-        pkt[ZigbeeAppCommandPayload].key_hash)
+    config.entry["aps_verifykey_keyhash"] = (
+        pkt[ZigbeeAppCommandPayload].key_hash.hex()
+    )
 
     return
 
@@ -595,9 +598,9 @@ def aps_confirmkey(pkt):
     # Standard Key Type field (1 byte)
     config.entry["aps_confirmkey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
-    # Extended Destination Address field (8 bytes)
-    config.entry["aps_confirmkey_extendedaddr"] = hex(
-        pkt[ZigbeeAppCommandPayload].address)
+    # Destination Extended Address field (8 bytes)
+    config.entry["aps_confirmkey_extendedaddr"] = format(
+        pkt[ZigbeeAppCommandPayload].address, "016x")
 
     return
 
@@ -647,8 +650,8 @@ def aps_auxiliary(pkt):
     # Source Address field (0/8 bytes)
     if (config.entry["aps_aux_extnonce"]
             == "The source address is present"):
-        config.entry["aps_aux_srcaddr"] = hex(
-            pkt[ZigbeeSecurityHeader].source)
+        config.entry["aps_aux_srcaddr"] = format(
+            pkt[ZigbeeSecurityHeader].source, "016x")
         potential_sources = set([pkt[ZigbeeSecurityHeader].source])
     elif (config.entry["aps_aux_extnonce"]
             == "The source address is not present"):
@@ -716,12 +719,13 @@ def aps_auxiliary(pkt):
             dec_payload, auth_payload = crypto.zigbee_decryption(
                 key, source_addr, frame_counter, sec_control,
                 header, key_seqnum, enc_payload, mic)
+
             # Check whether the decrypted payload is authentic
             if auth_payload:
-                config.entry["aps_aux_deckey"] = binascii.hexlify(key)
-                config.entry["aps_aux_decsrc"] = hex(source_addr)
-                config.entry["aps_aux_decpayload"] = binascii.hexlify(
-                    dec_payload)
+                config.entry["aps_aux_deckey"] = key.hex()
+                config.entry["aps_aux_decsrc"] = format(source_addr, "016x")
+                config.entry["aps_aux_decpayload"] = dec_payload.hex()
+
                 # APS Payload field (variable)
                 if config.entry["aps_frametype"] == "APS Data":
                     if (config.entry["aps_profilename"]
@@ -778,18 +782,20 @@ def aps_data_header(pkt):
         )
     elif config.entry["aps_delmode"] == "Group addressing":
         # Group Address field (2 bytes)
-        config.entry["aps_groupaddr"] = hex(
+        config.entry["aps_groupaddr"] = "0x{:04x}".format(
             pkt[ZigbeeAppDataPayload].group_addr)
     else:
         config.entry["error_msg"] = "Unknown APS delivery mode"
         return
 
     # Cluster Identifier field (2 bytes)
-    config.entry["aps_clusterid"] = hex(pkt[ZigbeeAppDataPayload].cluster)
+    config.entry["aps_clusterid"] = "0x{:04x}".format(
+        pkt[ZigbeeAppDataPayload].cluster)
     config.entry["aps_clustername"] = get_aps_clustername(pkt)
 
     # Profile Identifier field (2 bytes)
-    config.entry["aps_profileid"] = hex(pkt[ZigbeeAppDataPayload].profile)
+    config.entry["aps_profileid"] = "0x{:04x}".format(
+        pkt[ZigbeeAppDataPayload].profile)
     config.entry["aps_profilename"] = get_aps_profilename(pkt)
 
     # Source Endpoint field (1 byte)
@@ -888,11 +894,13 @@ def aps_ack_header(pkt):
         )
 
         # Cluster Identifier field (2 bytes)
-        config.entry["aps_clusterid"] = hex(pkt[ZigbeeAppDataPayload].cluster)
+        config.entry["aps_clusterid"] = "0x{:04x}".format(
+            pkt[ZigbeeAppDataPayload].cluster)
         config.entry["aps_clustername"] = get_aps_clustername(pkt)
 
         # Profile Identifier field (2 bytes)
-        config.entry["aps_profileid"] = hex(pkt[ZigbeeAppDataPayload].profile)
+        config.entry["aps_profileid"] = "0x{:04x}".format(
+            pkt[ZigbeeAppDataPayload].profile)
         config.entry["aps_profilename"] = get_aps_profilename(pkt)
 
         # Source Endpoint field (1 byte)
