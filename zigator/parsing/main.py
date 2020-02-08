@@ -22,21 +22,22 @@ from .. import config
 from .pcap_file import pcap_file
 
 
-def main(dirpath, db_filepath):
+def main(pcap_dirpath, db_filepath):
     """Parse all pcap files in the provided directory."""
     # Sanity check
-    if not os.path.isdir(dirpath):
+    if not os.path.isdir(pcap_dirpath):
         raise ValueError("The provided directory \"{}\" "
-                         "does not exist".format(dirpath))
+                         "does not exist".format(pcap_dirpath))
 
     # Initialize the database that will store the parsed data
-    config.initialize_db(db_filepath)
+    config.connect_to_db(db_filepath)
+    config.create_db_table()
 
     # Get a sorted list of pcap filepaths
-    filepaths = glob.glob(os.path.join(dirpath, "*.[pP][cC][aA][pP]"))
+    filepaths = glob.glob(os.path.join(pcap_dirpath, "*.[pP][cC][aA][pP]"))
     filepaths.sort()
     logging.info("Detected {} pcap files in the directory \"{}\""
-                 "".format(len(filepaths), dirpath))
+                 "".format(len(filepaths), pcap_dirpath))
 
     # Parse the detected pcap files
     pcap_counter = 0
@@ -46,5 +47,5 @@ def main(dirpath, db_filepath):
         logging.info("Parsed {} out of the {} pcap files"
                      "".format(pcap_counter, len(filepaths)))
 
-    # Finalize the connection with the database
-    config.finalize_db()
+    # Disconnection from the database
+    config.disconnect_from_db()

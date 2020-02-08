@@ -114,8 +114,7 @@ def main():
 
         zigator.parsing.main(args.PCAP_DIRECTORY, args.DATABASE_FILEPATH)
     elif args.subcommand == "analyze":
-        print(args.DATABASE_FILEPATH)
-        print(args.OUTPUT_DIRECTORY)
+        zigator.analysis.main(args.DATABASE_FILEPATH, args.OUTPUT_DIRECTORY)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 

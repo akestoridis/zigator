@@ -246,6 +246,9 @@ DB_COLUMNS = [
     ("error_msg", "TEXT")
 ]
 
+# Define a list that contains only the names of the columns
+COLUMN_NAMES = [column[0] for column in DB_COLUMNS]
+
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
 ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
@@ -261,7 +264,7 @@ CONSTRAINED_COLUMNS = set([
 network_keys = {}
 link_keys = {}
 install_codes = {}
-entry = {column[0]: None for column in DB_COLUMNS}
+entry = {column_name: None for column_name in COLUMN_NAMES}
 db_connection = None
 db_cursor = None
 
@@ -324,12 +327,12 @@ def reset_entries(keep=[]):
     # the ones that were requested to maintain their values
     if keep is None:
         keep = []
-    for column_name in entry.keys():
+    for column_name in COLUMN_NAMES:
         if column_name not in keep:
             entry[column_name] = None
 
 
-def initialize_db(db_filepath):
+def connect_to_db(db_filepath):
     global db_connection
     global db_cursor
 
@@ -338,13 +341,14 @@ def initialize_db(db_filepath):
     db_connection.text_factory = str
     db_cursor = db_connection.cursor()
 
-    # TODO: Stop automatically resetting the table
-    #       when its definition becomes stable
+
+def create_db_table():
+    # Drop the table if it already exists
     db_cursor.execute("DROP TABLE IF EXISTS packets")
     db_connection.commit()
 
-    # Create a table for the parsed packets, if it doesn't already exist
-    table_creation_command = "CREATE TABLE IF NOT EXISTS packets("
+    # Create a table for the parsed packets
+    table_creation_command = "CREATE TABLE packets("
     delimiter_needed = False
     for column in DB_COLUMNS:
         if delimiter_needed:
@@ -383,18 +387,19 @@ def initialize_db(db_filepath):
     db_connection.commit()
 
 
-def insert_pkt_into_database():
+def insert_pkt_into_db():
     global db_connection
     global db_cursor
 
     # Insert the parsed data into the database
     db_cursor.execute("INSERT INTO packets VALUES ({})".format(
                             ", ".join("?"*len(DB_COLUMNS))),
-                      tuple(entry[column[0]] for column in DB_COLUMNS))
+                      tuple(entry[column_name]
+                            for column_name in COLUMN_NAMES))
     db_connection.commit()
 
 
-def finalize_db():
+def disconnect_from_db():
     global db_connection
     global db_cursor
 
@@ -402,6 +407,40 @@ def finalize_db():
     db_connection.close()
     db_connection = None
     db_cursor = None
+
+
+def grouped_count(selected_columns, count_errors):
+    global db_cursor
+
+    # Sanity check
+    for column_name in selected_columns:
+        if column_name not in COLUMN_NAMES:
+            raise ValueError("Unknown column name \"{}\"".format(column_name))
+
+    # Construct the selection command
+    column_csv = ", ".join(selected_columns)
+    select_command = "SELECT {}, COUNT(*) FROM packets".format(column_csv)
+    if not count_errors:
+        select_command += " WHERE error_msg IS NULL"
+    select_command += " GROUP BY {}".format(column_csv)
+
+    # Return the results of the constructed command
+    db_cursor.execute(select_command)
+    return db_cursor.fetchall()
+
+
+def write_tsv(results, out_filepath):
+    fp = open(out_filepath, "w")
+    for row in results:
+        for i in range(len(row)):
+            if i == 0:
+                fp.write("{}".format(row[i]))
+            elif i < (len(row) - 1):
+                fp.write(", {}".format(row[i]))
+            else:
+                fp.write("\t{}".format(row[i]))
+        fp.write("\n")
+    fp.close()
 
 
 def add_encryption_keys(filepath, key_type):

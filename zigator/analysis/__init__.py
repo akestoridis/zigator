@@ -15,12 +15,10 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Security analysis tool for Zigbee networks
+Collection of analysis modules for the zigator package
 """
 
-from .__about__ import *
+from .main import main
 
-from . import config
 
-from . import analysis
-from . import parsing
+__all__ = ["main"]
