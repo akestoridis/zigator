@@ -17,6 +17,7 @@
 import os
 
 from .. import config
+from .distinct_matches import distinct_matches
 from .group_frequencies import group_frequencies
 from .solo_frequencies import solo_frequencies
 
@@ -37,6 +38,7 @@ def main(db_filepath, out_dirpath):
     # Write the results of each analysis method in the output directory
     solo_frequencies(os.path.join(out_dirpath, "solo-frequencies"))
     group_frequencies(os.path.join(out_dirpath, "group-frequencies"))
+    distinct_matches(os.path.join(out_dirpath, "distinct-matches"))
 
     # Disconnect from the provided database
     config.disconnect_from_db()
