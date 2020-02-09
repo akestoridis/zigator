@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -132,6 +133,8 @@ def unique_forms(out_dirpath):
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
+    logging.info("Computing the unique forms of {} packet types..."
+                 "".format(len(PACKET_TYPES)))
     for packet_type in PACKET_TYPES:
         # Derive the path of the output file and the matching conditions
         out_filepath = os.path.join(out_dirpath, packet_type[0])

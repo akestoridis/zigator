@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -36,6 +37,8 @@ def main(db_filepath, out_dirpath):
     os.makedirs(out_dirpath, exist_ok=True)
 
     # Connect to the provided database
+    logging.info("Analyzing traffic stored in the {} database..."
+                 "".format(db_filepath))
     config.connect_to_db(db_filepath)
 
     # Write the results of each analysis method in the output directory
@@ -47,4 +50,6 @@ def main(db_filepath, out_dirpath):
     unique_forms(os.path.join(out_dirpath, "unique-forms"))
 
     # Disconnect from the provided database
+    logging.info("Finished the analysis of the {} database"
+                 "".format(db_filepath))
     config.disconnect_from_db()

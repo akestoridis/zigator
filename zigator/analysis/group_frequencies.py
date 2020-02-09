@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -60,6 +61,8 @@ def group_frequencies(out_dirpath):
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
+    logging.info("Computing the frequency of values for {} column groups..."
+                 "".format(len(COLUMN_GROUPS)))
     for column_group in COLUMN_GROUPS:
         # Derive the path of the output file and the list of column names
         out_filepath = os.path.join(out_dirpath, column_group[0])

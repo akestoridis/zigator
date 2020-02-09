@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -44,6 +45,8 @@ def solo_frequencies(out_dirpath):
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
+    logging.info("Computing the frequency of values for {} columns..."
+                 "".format(len(config.COLUMN_NAMES) - len(IGNORED_COLUMNS)))
     for i, column_name in enumerate(config.COLUMN_NAMES):
         # Ignore certain columns
         if column_name in IGNORED_COLUMNS:

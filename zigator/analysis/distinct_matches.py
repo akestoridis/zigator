@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -135,10 +136,12 @@ COLUMN_MATCHES = set([
 
 
 def distinct_matches(out_dirpath):
-    """Compute distinct matching values under certain conditions."""
+    """Compute the distinct matching values for certain conditions."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
+    logging.info("Computing the distinct matching values for {} conditions..."
+                 "".format(len(COLUMN_MATCHES)))
     for column_match in COLUMN_MATCHES:
         # Derive the path of the output file, the varying columns,
         # the matching conditions, and the list of column names

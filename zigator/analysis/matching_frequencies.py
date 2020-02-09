@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from .. import config
@@ -44,10 +45,12 @@ CONDITION_MATCHES = set([
 
 
 def matching_frequencies(out_dirpath):
-    """Compute matching frequency of certain conditions."""
+    """Compute the matching frequency of certain conditions."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
+    logging.info("Computing the matching frequency of {} conditions"
+                 "".format(len(CONDITION_MATCHES)))
     for condition_match in CONDITION_MATCHES:
         # Derive the path of the output file, the varying columns,
         # and the matching conditions
