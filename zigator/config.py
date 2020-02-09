@@ -461,6 +461,32 @@ def distinct_values(selected_columns, conditions):
     return db_cursor.fetchall()
 
 
+def matching_frequency(conditions):
+    global db_cursor
+
+    # Construct the selection command
+    select_command = "SELECT COUNT(*) FROM packets"
+    expr_statements = []
+    expr_values = []
+    if conditions is not None:
+        select_command += " WHERE "
+        for condition in conditions:
+            param = condition[0]
+            value = condition[1]
+            if param not in COLUMN_NAMES:
+                raise ValueError("Unknown column name \"{}\"".format(param))
+            elif value is None:
+                expr_statements.append("{} IS NULL".format(param))
+            else:
+                expr_statements.append("{}=?".format(param))
+                expr_values.append(value)
+        select_command += " AND ".join(expr_statements)
+
+    # Return the results of the constructed command
+    db_cursor.execute(select_command, tuple(expr_values))
+    return db_cursor.fetchall()[0][0]
+
+
 def write_tsv(results, out_filepath):
     fp = open(out_filepath, "w")
     for row in results:
