@@ -128,12 +128,12 @@ PACKET_TYPES = set([
 ])
 
 
-def unique_forms(out_dirpath):
-    """Compute the unique forms of certain packet types."""
+def form_frequencies(out_dirpath):
+    """Compute the frequency of forms for certain packet types."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
-    logging.info("Computing the unique forms of {} packet types..."
+    logging.info("Computing the frequency of forms for {} packet types..."
                  "".format(len(PACKET_TYPES)))
     for packet_type in PACKET_TYPES:
         # Derive the path of the output file and the matching conditions
@@ -149,8 +149,17 @@ def unique_forms(out_dirpath):
                 selected_columns.append(column_name)
 
         # Compute the distinct matching values of the selected columns
-        results = config.distinct_values(selected_columns, conditions)
-        results.sort(key=config.custom_sorter)
+        form_values = config.distinct_values(selected_columns, conditions)
+        form_values.sort(key=config.custom_sorter)
 
-        # Write the distinct matching values in the output file
+        # Compute the matching frequency for each form
+        results = []
+        for form_value in form_values:
+            form_conditions = list(conditions)
+            for i in range(len(form_value)):
+                form_conditions.append((selected_columns[i], form_value[i]))
+            matches = config.matching_frequency(form_conditions)
+            results.append((form_value, matches))
+
+        # Write the frequency of each form in the output file
         config.write_tsv(results, out_filepath)

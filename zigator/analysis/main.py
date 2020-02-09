@@ -20,10 +20,10 @@ import os
 from .. import config
 from .distinct_matches import distinct_matches
 from .field_values import field_values
+from .form_frequencies import form_frequencies
 from .group_frequencies import group_frequencies
 from .matching_frequencies import matching_frequencies
 from .solo_frequencies import solo_frequencies
-from .unique_forms import unique_forms
 
 
 def main(db_filepath, out_dirpath):
@@ -37,7 +37,7 @@ def main(db_filepath, out_dirpath):
     os.makedirs(out_dirpath, exist_ok=True)
 
     # Connect to the provided database
-    logging.info("Analyzing traffic stored in the {} database..."
+    logging.info("Analyzing traffic stored in the \"{}\" database..."
                  "".format(db_filepath))
     config.connect_to_db(db_filepath)
 
@@ -47,9 +47,9 @@ def main(db_filepath, out_dirpath):
     distinct_matches(os.path.join(out_dirpath, "distinct-matches"))
     matching_frequencies(os.path.join(out_dirpath, "matching-frequencies"))
     field_values(os.path.join(out_dirpath, "field-values"))
-    unique_forms(os.path.join(out_dirpath, "unique-forms"))
+    form_frequencies(os.path.join(out_dirpath, "form-frequencies"))
 
     # Disconnect from the provided database
-    logging.info("Finished the analysis of the {} database"
+    logging.info("Finished the analysis of the \"{}\" database"
                  "".format(db_filepath))
     config.disconnect_from_db()
