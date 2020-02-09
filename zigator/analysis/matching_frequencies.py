@@ -47,11 +47,11 @@ def custom_sorter(var_value):
     str_repr = []
     for i in range(len(var_value)):
         if var_value[i] is None:
-            str_repr.append("")
+            str_repr.append(" "*80)
         elif isinstance(var_value[i], int):
-            str_repr.append(str(var_value[i]).zfill(10))
+            str_repr.append(str(var_value[i]).zfill(80))
         else:
-            str_repr.append(var_value[i].zfill(80))
+            str_repr.append(var_value[i].ljust(80))
     return ", ".join(str_repr)
 
 

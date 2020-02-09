@@ -18,6 +18,7 @@ import os
 
 from .. import config
 from .distinct_matches import distinct_matches
+from .field_values import field_values
 from .group_frequencies import group_frequencies
 from .matching_frequencies import matching_frequencies
 from .solo_frequencies import solo_frequencies
@@ -41,6 +42,7 @@ def main(db_filepath, out_dirpath):
     group_frequencies(os.path.join(out_dirpath, "group-frequencies"))
     distinct_matches(os.path.join(out_dirpath, "distinct-matches"))
     matching_frequencies(os.path.join(out_dirpath, "matching-frequencies"))
+    field_values(os.path.join(out_dirpath, "field-values"))
 
     # Disconnect from the provided database
     config.disconnect_from_db()

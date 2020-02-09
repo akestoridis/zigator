@@ -26,7 +26,7 @@ IGNORED_COLUMNS = set([
     "mac_fcs",
     "mac_seqnum",
     "nwk_seqnum",
-    "nwk_aux_framecounter"
+    "nwk_aux_framecounter",
     "nwk_aux_decpayload",
     "nwk_aux_decshow",
     "aps_counter",
