@@ -41,6 +41,7 @@ DB_COLUMNS = [
     ("pcap_directory", "TEXT"),
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
+    ("pkt_time", "REAL"),
     ("pkt_raw", "TEXT"),
     ("pkt_show", "TEXT"),
     ("phy_length", "INTEGER"),
@@ -243,7 +244,7 @@ DB_COLUMNS = [
     ("zcl_seqnum", "INTEGER"),
     ("zcl_cmd_id", "TEXT"),
     ("warning_msg", "TEXT"),
-    ("error_msg", "TEXT")
+    ("error_msg", "TEXT"),
 ]
 
 # Define a list that contains only the names of the columns
@@ -256,8 +257,9 @@ CONSTRAINED_COLUMNS = set([
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
+    "pkt_time",
     "pkt_raw",
-    "pkt_show"
+    "pkt_show",
 ])
 
 # Initialize the global variables

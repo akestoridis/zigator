@@ -22,6 +22,7 @@ from .. import config
 
 IGNORED_COLUMNS = set([
     "pkt_num",
+    "pkt_time",
     "pkt_raw",
     "pkt_show",
     "mac_fcs",

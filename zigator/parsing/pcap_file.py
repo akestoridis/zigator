@@ -39,6 +39,7 @@ def pcap_file(filepath):
     for pkt in PcapReader(filepath):
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
+        config.entry["pkt_time"] = float(pkt.time)
         config.entry["pkt_raw"] = raw(pkt).hex()
         config.entry["pkt_show"] = pkt.show(dump=True)
 
