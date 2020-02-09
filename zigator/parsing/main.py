@@ -47,5 +47,25 @@ def main(pcap_dirpath, db_filepath):
         logging.info("Parsed {} out of the {} pcap files"
                      "".format(pcap_counter, len(filepaths)))
 
+    # Log a summary of the generated warnings
+    warnings = config.distinct_values(["warning_msg"], None)
+    for warning in warnings:
+        message = warning[0]
+        if message is None:
+            continue
+        frequency = config.matching_frequency([("warning_msg", message)])
+        logging.warning("Generated {} \"{}\" parsing warnings"
+                        "".format(frequency, message))
+
+    # Log a summary of the generated errors
+    errors = config.distinct_values(["error_msg"], None)
+    for error in errors:
+        message = error[0]
+        if message is None:
+            continue
+        frequency = config.matching_frequency([("error_msg", message)])
+        logging.warning("Generated {} \"{}\" parsing errors"
+                        "".format(frequency, message))
+
     # Disconnection from the database
     config.disconnect_from_db()
