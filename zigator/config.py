@@ -487,6 +487,20 @@ def matching_frequency(conditions):
     return db_cursor.fetchall()[0][0]
 
 
+def custom_sorter(var_value):
+    str_repr = []
+    for i in range(len(var_value)):
+        if var_value[i] is None:
+            str_repr.append(" "*80)
+        elif isinstance(var_value[i], int):
+            str_repr.append(str(var_value[i]).zfill(80))
+        elif isinstance(var_value[i], str):
+            str_repr.append(var_value[i].ljust(80))
+        else:
+            raise ValueError("Unexpected type: {}".format(type(var_value[i])))
+    return ",".join(str_repr)
+
+
 def write_tsv(results, out_filepath):
     fp = open(out_filepath, "w")
     for row in results:

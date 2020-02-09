@@ -127,8 +127,8 @@ PACKET_TYPES = set([
 ])
 
 
-def field_values(out_dirpath):
-    """Compute the distinct field values of certain packet types."""
+def unique_forms(out_dirpath):
+    """Compute the unique forms of certain packet types."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
@@ -137,19 +137,17 @@ def field_values(out_dirpath):
         out_filepath = os.path.join(out_dirpath, packet_type[0])
         conditions = packet_type[1]
 
-        results = []
+        selected_columns = []
         for column_name in config.COLUMN_NAMES:
             # Ignore certain columns
             if column_name in IGNORED_COLUMNS:
                 continue
+            else:
+                selected_columns.append(column_name)
 
-            # Compute the distinct values of this column
-            var_values = config.distinct_values([column_name], conditions)
-            var_values.sort(key=config.custom_sorter)
-            var_values = [var_value[0] for var_value in var_values]
+        # Compute the distinct matching values of the selected columns
+        results = config.distinct_values(selected_columns, conditions)
+        results.sort(key=config.custom_sorter)
 
-            # Add the distinct values of this column in the list of results
-            results.append((column_name, var_values))
-
-        # Write the distinct values of each column in the output file
+        # Write the distinct matching values in the output file
         config.write_tsv(results, out_filepath)

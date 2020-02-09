@@ -43,20 +43,8 @@ CONDITION_MATCHES = set([
 ])
 
 
-def custom_sorter(var_value):
-    str_repr = []
-    for i in range(len(var_value)):
-        if var_value[i] is None:
-            str_repr.append(" "*80)
-        elif isinstance(var_value[i], int):
-            str_repr.append(str(var_value[i]).zfill(80))
-        else:
-            str_repr.append(var_value[i].ljust(80))
-    return ", ".join(str_repr)
-
-
 def matching_frequencies(out_dirpath):
-    """Compute matching frequency of some conditions in the database table."""
+    """Compute matching frequency of certain conditions."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
@@ -69,7 +57,7 @@ def matching_frequencies(out_dirpath):
 
         # Compute the distinct values of the varying columns
         var_values = config.distinct_values(var_columns, conditions)
-        var_values.sort(key=custom_sorter)
+        var_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each set of conditions
         results = []

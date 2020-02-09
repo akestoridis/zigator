@@ -134,20 +134,8 @@ COLUMN_MATCHES = set([
 ])
 
 
-def custom_sorter(var_value):
-    str_repr = []
-    for i in range(len(var_value)):
-        if var_value[i] is None:
-            str_repr.append(" "*80)
-        elif isinstance(var_value[i], int):
-            str_repr.append(str(var_value[i]).zfill(80))
-        else:
-            str_repr.append(var_value[i].ljust(80))
-    return ", ".join(str_repr)
-
-
 def distinct_matches(out_dirpath):
-    """Compute matching values under some conditions in the database table."""
+    """Compute distinct matching values under certain conditions."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
@@ -161,7 +149,7 @@ def distinct_matches(out_dirpath):
 
         # Compute the distinct values of the varying columns
         var_values = config.distinct_values(var_columns, conditions)
-        var_values.sort(key=custom_sorter)
+        var_values.sort(key=config.custom_sorter)
 
         # Compute the distinct matches for each value
         results = []
@@ -170,7 +158,7 @@ def distinct_matches(out_dirpath):
             for i in range(len(var_value)):
                 var_conditions.append((var_columns[i], var_value[i]))
             matches = config.distinct_values(column_names, var_conditions)
-            matches.sort(key=custom_sorter)
+            matches.sort(key=config.custom_sorter)
             results.append((var_value, matches))
 
         # Write the distinct matches in the output file

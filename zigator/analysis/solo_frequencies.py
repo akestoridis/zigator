@@ -35,12 +35,12 @@ IGNORED_COLUMNS = set([
     "aps_aux_decshow",
     "aps_tunnel_counter",
     "zdp_seqnum",
-    "zcl_seqnum"
+    "zcl_seqnum",
 ])
 
 
 def solo_frequencies(out_dirpath):
-    """Compute the frequency of certain columns in the database table."""
+    """Compute the frequency of values for certain columns."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 

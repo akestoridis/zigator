@@ -24,12 +24,12 @@ COLUMN_GROUPS = set([
         "security-frequency.tsv",
         "mac_security",
         "nwk_security",
-        "aps_security"
+        "aps_security",
     ),
     (
         "keytype-frequency.tsv",
         "nwk_aux_keytype",
-        "aps_aux_keytype"
+        "aps_aux_keytype",
     ),
     (
         "frametype-frequency.tsv",
@@ -37,7 +37,7 @@ COLUMN_GROUPS = set([
         "nwk_frametype",
         "aps_frametype",
         "aps_profilename",
-        "zcl_frametype"
+        "zcl_frametype",
     ),
     (
         "frametype_cmdid-frequency.tsv",
@@ -50,13 +50,13 @@ COLUMN_GROUPS = set([
         "aps_profilename",
         "aps_clustername",
         "zcl_frametype",
-        "zcl_cmd_id"
-    )
+        "zcl_cmd_id",
+    ),
 ])
 
 
 def group_frequencies(out_dirpath):
-    """Compute the frequency of some column groups in the database table."""
+    """Compute the frequency of values for certain column groups."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 

@@ -22,6 +22,7 @@ from .field_values import field_values
 from .group_frequencies import group_frequencies
 from .matching_frequencies import matching_frequencies
 from .solo_frequencies import solo_frequencies
+from .unique_forms import unique_forms
 
 
 def main(db_filepath, out_dirpath):
@@ -43,6 +44,7 @@ def main(db_filepath, out_dirpath):
     distinct_matches(os.path.join(out_dirpath, "distinct-matches"))
     matching_frequencies(os.path.join(out_dirpath, "matching-frequencies"))
     field_values(os.path.join(out_dirpath, "field-values"))
+    unique_forms(os.path.join(out_dirpath, "unique-forms"))
 
     # Disconnect from the provided database
     config.disconnect_from_db()
