@@ -278,10 +278,12 @@ def init(debug):
 
     # Configure the logging system
     if debug:
-        logging.basicConfig(format="[%(levelname)s] %(message)s",
+        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S",
                             level=logging.DEBUG)
     else:
-        logging.basicConfig(format="[%(levelname)s] %(message)s",
+        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S",
                             level=logging.INFO)
 
     # Make sure that the configuration directory exists
