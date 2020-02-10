@@ -142,7 +142,7 @@ def form_frequencies(out_dirpath):
         conditions = packet_type[1]
 
         selected_columns = []
-        for column_name in config.COLUMN_NAMES:
+        for column_name in config.db.PKT_COLUMN_NAMES:
             # Ignore certain columns
             if column_name in IGNORED_COLUMNS:
                 continue
@@ -150,7 +150,7 @@ def form_frequencies(out_dirpath):
                 selected_columns.append(column_name)
 
         # Compute the distinct matching values of the selected columns
-        form_values = config.distinct_values(selected_columns, conditions)
+        form_values = config.db.distinct_values(selected_columns, conditions)
         form_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each form
@@ -159,8 +159,8 @@ def form_frequencies(out_dirpath):
             form_conditions = list(conditions)
             for i in range(len(form_value)):
                 form_conditions.append((selected_columns[i], form_value[i]))
-            matches = config.matching_frequency(form_conditions)
+            matches = config.db.matching_frequency(form_conditions)
             results.append((form_value, matches))
 
         # Write the frequency of each form in the output file
-        config.write_tsv(results, out_filepath)
+        config.fs.write_tsv(results, out_filepath)

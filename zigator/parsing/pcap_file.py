@@ -47,7 +47,7 @@ def pcap_file(filepath):
         phy_fields(pkt)
 
         # Insert the collected data into the database
-        config.insert_pkt_into_db()
+        config.db.insert_pkt(config.entry)
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(keep=["pcap_directory",

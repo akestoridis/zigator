@@ -30,8 +30,8 @@ def main(pcap_dirpath, db_filepath):
                          "does not exist".format(pcap_dirpath))
 
     # Initialize the database that will store the parsed data
-    config.connect_to_db(db_filepath)
-    config.create_db_table()
+    config.db.connect(db_filepath)
+    config.db.create_pkt_table()
 
     # Get a sorted list of pcap filepaths
     filepaths = glob.glob(os.path.join(pcap_dirpath, "*.[pP][cC][aA][pP]"))
@@ -48,24 +48,24 @@ def main(pcap_dirpath, db_filepath):
                      "".format(pcap_counter, len(filepaths)))
 
     # Log a summary of the generated warnings
-    warnings = config.distinct_values(["warning_msg"], None)
+    warnings = config.db.distinct_values(["warning_msg"], None)
     for warning in warnings:
         message = warning[0]
         if message is None:
             continue
-        frequency = config.matching_frequency([("warning_msg", message)])
+        frequency = config.db.matching_frequency([("warning_msg", message)])
         logging.warning("Generated {} \"{}\" parsing warnings"
                         "".format(frequency, message))
 
     # Log a summary of the generated errors
-    errors = config.distinct_values(["error_msg"], None)
+    errors = config.db.distinct_values(["error_msg"], None)
     for error in errors:
         message = error[0]
         if message is None:
             continue
-        frequency = config.matching_frequency([("error_msg", message)])
+        frequency = config.db.matching_frequency([("error_msg", message)])
         logging.warning("Generated {} \"{}\" parsing errors"
                         "".format(frequency, message))
 
     # Disconnection from the database
-    config.disconnect_from_db()
+    config.db.disconnect()

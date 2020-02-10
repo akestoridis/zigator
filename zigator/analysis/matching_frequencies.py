@@ -59,7 +59,7 @@ def matching_frequencies(out_dirpath):
         conditions = condition_match[2]
 
         # Compute the distinct values of the varying columns
-        var_values = config.distinct_values(var_columns, conditions)
+        var_values = config.db.distinct_values(var_columns, conditions)
         var_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each set of conditions
@@ -68,8 +68,8 @@ def matching_frequencies(out_dirpath):
             var_conditions = list(conditions)
             for i in range(len(var_value)):
                 var_conditions.append((var_columns[i], var_value[i]))
-            matches = config.matching_frequency(var_conditions)
+            matches = config.db.matching_frequency(var_conditions)
             results.append((var_value, matches))
 
         # Write the matching frequencies in the output file
-        config.write_tsv(results, out_filepath)
+        config.fs.write_tsv(results, out_filepath)

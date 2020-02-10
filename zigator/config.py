@@ -15,17 +15,16 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Configuration script for the zigator package
+Configuration module for the zigator package
 """
 
 import logging
 import os
-import sqlite3
-import string
 
 from scapy.all import conf
 
-from . import load
+from . import db
+from . import fs
 
 
 # Define the path of the configuration directory
@@ -36,239 +35,11 @@ NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network_keys.tsv")
 LINK_FILEPATH = os.path.join(CONFIG_DIR, "link_keys.tsv")
 INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
 
-# Define the columns of the table in the database
-DB_COLUMNS = [
-    ("pcap_directory", "TEXT"),
-    ("pcap_filename", "TEXT"),
-    ("pkt_num", "INTEGER"),
-    ("pkt_time", "REAL"),
-    ("pkt_raw", "TEXT"),
-    ("pkt_show", "TEXT"),
-    ("phy_length", "INTEGER"),
-    ("mac_fcs", "TEXT"),
-    ("mac_frametype", "TEXT"),
-    ("mac_security", "TEXT"),
-    ("mac_framepending", "TEXT"),
-    ("mac_ackreq", "TEXT"),
-    ("mac_panidcomp", "TEXT"),
-    ("mac_dstaddrmode", "TEXT"),
-    ("mac_frameversion", "TEXT"),
-    ("mac_srcaddrmode", "TEXT"),
-    ("mac_seqnum", "INTEGER"),
-    ("mac_dstpanid", "TEXT"),
-    ("mac_dstshortaddr", "TEXT"),
-    ("mac_dstextendedaddr", "TEXT"),
-    ("mac_srcpanid", "TEXT"),
-    ("mac_srcshortaddr", "TEXT"),
-    ("mac_srcextendedaddr", "TEXT"),
-    ("mac_cmd_id", "TEXT"),
-    ("mac_assocreq_apc", "TEXT"),
-    ("mac_assocreq_devtype", "TEXT"),
-    ("mac_assocreq_powsrc", "TEXT"),
-    ("mac_assocreq_rxidle", "TEXT"),
-    ("mac_assocreq_seccap", "TEXT"),
-    ("mac_assocreq_allocaddr", "TEXT"),
-    ("mac_assocrsp_shortaddr", "TEXT"),
-    ("mac_assocrsp_status", "TEXT"),
-    ("mac_disassoc_reason", "TEXT"),
-    ("mac_realign_panid", "TEXT"),
-    ("mac_realign_coordaddr", "TEXT"),
-    ("mac_realign_channel", "INTEGER"),
-    ("mac_realign_shortaddr", "TEXT"),
-    ("mac_realign_page", "INTEGER"),
-    ("mac_gtsreq_length", "INTEGER"),
-    ("mac_gtsreq_dir", "TEXT"),
-    ("mac_gtsreq_chartype", "TEXT"),
-    ("mac_beacon_beaconorder", "INTEGER"),
-    ("mac_beacon_sforder", "INTEGER"),
-    ("mac_beacon_finalcap", "INTEGER"),
-    ("mac_beacon_ble", "INTEGER"),
-    ("mac_beacon_pancoord", "INTEGER"),
-    ("mac_beacon_assocpermit", "INTEGER"),
-    ("mac_beacon_gtsnum", "INTEGER"),
-    ("mac_beacon_gtspermit", "INTEGER"),
-    ("mac_beacon_gtsmask", "INTEGER"),
-    ("mac_beacon_nsap", "INTEGER"),
-    ("mac_beacon_neap", "INTEGER"),
-    ("nwk_beacon_protocolid", "INTEGER"),
-    ("nwk_beacon_stackprofile", "INTEGER"),
-    ("nwk_beacon_protocolversion", "TEXT"),
-    ("nwk_beacon_routercap", "INTEGER"),
-    ("nwk_beacon_devdepth", "INTEGER"),
-    ("nwk_beacon_edcap", "INTEGER"),
-    ("nwk_beacon_epid", "TEXT"),
-    ("nwk_beacon_txoffset", "INTEGER"),
-    ("nwk_beacon_updateid", "INTEGER"),
-    ("nwk_frametype", "TEXT"),
-    ("nwk_protocolversion", "TEXT"),
-    ("nwk_discroute", "TEXT"),
-    ("nwk_multicast", "TEXT"),
-    ("nwk_security", "TEXT"),
-    ("nwk_srcroute", "TEXT"),
-    ("nwk_extendeddst", "TEXT"),
-    ("nwk_extendedsrc", "TEXT"),
-    ("nwk_edinitiator", "TEXT"),
-    ("nwk_dstshortaddr", "TEXT"),
-    ("nwk_srcshortaddr", "TEXT"),
-    ("nwk_radius", "INTEGER"),
-    ("nwk_seqnum", "INTEGER"),
-    ("nwk_dstextendedaddr", "TEXT"),
-    ("nwk_srcextendedaddr", "TEXT"),
-    ("nwk_srcroute_relaycount", "INTEGER"),
-    ("nwk_srcroute_relayindex", "INTEGER"),
-    ("nwk_srcroute_relaylist", "TEXT"),
-    ("nwk_aux_seclevel", "TEXT"),
-    ("nwk_aux_keytype", "TEXT"),
-    ("nwk_aux_extnonce", "TEXT"),
-    ("nwk_aux_framecounter", "INTEGER"),
-    ("nwk_aux_srcaddr", "TEXT"),
-    ("nwk_aux_keyseqnum", "INTEGER"),
-    ("nwk_aux_deckey", "TEXT"),
-    ("nwk_aux_decsrc", "TEXT"),
-    ("nwk_aux_decpayload", "TEXT"),
-    ("nwk_aux_decshow", "TEXT"),
-    ("nwk_cmd_id", "TEXT"),
-    ("nwk_routerequest_mto", "TEXT"),
-    ("nwk_routerequest_ed", "TEXT"),
-    ("nwk_routerequest_mc", "TEXT"),
-    ("nwk_routerequest_id", "INTEGER"),
-    ("nwk_routerequest_dstshortaddr", "TEXT"),
-    ("nwk_routerequest_pathcost", "INTEGER"),
-    ("nwk_routerequest_dstextendedaddr", "TEXT"),
-    ("nwk_routereply_eo", "TEXT"),
-    ("nwk_routereply_er", "TEXT"),
-    ("nwk_routereply_mc", "TEXT"),
-    ("nwk_routereply_id", "INTEGER"),
-    ("nwk_routereply_origshortaddr", "TEXT"),
-    ("nwk_routereply_respshortaddr", "TEXT"),
-    ("nwk_routereply_pathcost", "INTEGER"),
-    ("nwk_routereply_origextendedaddr", "TEXT"),
-    ("nwk_routereply_respextendedaddr", "TEXT"),
-    ("nwk_networkstatus_code", "TEXT"),
-    ("nwk_networkstatus_dstshortaddr", "TEXT"),
-    ("nwk_leave_rejoin", "TEXT"),
-    ("nwk_leave_request", "TEXT"),
-    ("nwk_leave_rmch", "TEXT"),
-    ("nwk_routerecord_relaycount", "INTEGER"),
-    ("nwk_routerecord_relaylist", "TEXT"),
-    ("nwk_rejoinreq_apc", "TEXT"),
-    ("nwk_rejoinreq_devtype", "TEXT"),
-    ("nwk_rejoinreq_powsrc", "TEXT"),
-    ("nwk_rejoinreq_rxidle", "TEXT"),
-    ("nwk_rejoinreq_seccap", "TEXT"),
-    ("nwk_rejoinreq_allocaddr", "TEXT"),
-    ("nwk_rejoinrsp_shortaddr", "TEXT"),
-    ("nwk_rejoinrsp_status", "TEXT"),
-    ("nwk_linkstatus_count", "INTEGER"),
-    ("nwk_linkstatus_first", "TEXT"),
-    ("nwk_linkstatus_last", "TEXT"),
-    ("nwk_linkstatus_addresses", "TEXT"),
-    ("nwk_linkstatus_incomingcosts", "TEXT"),
-    ("nwk_linkstatus_outgoingcosts", "TEXT"),
-    ("nwk_networkreport_count", "INTEGER"),
-    ("nwk_networkreport_type", "TEXT"),
-    ("nwk_networkreport_epid", "TEXT"),
-    ("nwk_networkreport_info", "TEXT"),
-    ("nwk_networkupdate_count", "INTEGER"),
-    ("nwk_networkupdate_type", "TEXT"),
-    ("nwk_networkupdate_epid", "TEXT"),
-    ("nwk_networkupdate_updateid", "INTEGER"),
-    ("nwk_networkupdate_newpanid", "TEXT"),
-    ("nwk_edtimeoutreq_reqtime", "TEXT"),
-    ("nwk_edtimeoutreq_edconf", "INTEGER"),
-    ("nwk_edtimeoutrsp_status", "TEXT"),
-    ("nwk_edtimeoutrsp_poll", "TEXT"),
-    ("nwk_edtimeoutrsp_timeout", "TEXT"),
-    ("aps_frametype", "TEXT"),
-    ("aps_delmode", "TEXT"),
-    ("aps_ackformat", "TEXT"),
-    ("aps_security", "TEXT"),
-    ("aps_ackreq", "TEXT"),
-    ("aps_exthdr", "TEXT"),
-    ("aps_dstendpoint", "INTEGER"),
-    ("aps_groupaddr", "TEXT"),
-    ("aps_clusterid", "TEXT"),
-    ("aps_clustername", "TEXT"),
-    ("aps_profileid", "TEXT"),
-    ("aps_profilename", "TEXT"),
-    ("aps_srcendpoint", "INTEGER"),
-    ("aps_counter", "INTEGER"),
-    ("aps_fragmentation", "TEXT"),
-    ("aps_blocknumber", "INTEGER"),
-    ("aps_ackbitfield", "INTEGER"),
-    ("aps_aux_seclevel", "TEXT"),
-    ("aps_aux_keytype", "TEXT"),
-    ("aps_aux_extnonce", "TEXT"),
-    ("aps_aux_framecounter", "INTEGER"),
-    ("aps_aux_srcaddr", "TEXT"),
-    ("aps_aux_keyseqnum", "INTEGER"),
-    ("aps_aux_deckey", "TEXT"),
-    ("aps_aux_decsrc", "TEXT"),
-    ("aps_aux_decpayload", "TEXT"),
-    ("aps_aux_decshow", "TEXT"),
-    ("aps_cmd_id", "TEXT"),
-    ("aps_transportkey_stdkeytype", "TEXT"),
-    ("aps_transportkey_key", "TEXT"),
-    ("aps_transportkey_keyseqnum", "INTEGER"),
-    ("aps_transportkey_dstextendedaddr", "TEXT"),
-    ("aps_transportkey_srcextendedaddr", "TEXT"),
-    ("aps_transportkey_prtextendedaddr", "TEXT"),
-    ("aps_transportkey_initflag", "TEXT"),
-    ("aps_updatedevice_extendedaddr", "TEXT"),
-    ("aps_updatedevice_shortaddr", "TEXT"),
-    ("aps_updatedevice_status", "TEXT"),
-    ("aps_removedevice_extendedaddr", "TEXT"),
-    ("aps_requestkey_reqkeytype", "TEXT"),
-    ("aps_requestkey_prtextendedaddr", "TEXT"),
-    ("aps_switchkey_keyseqnum", "INTEGER"),
-    ("aps_tunnel_dstextendedaddr", "TEXT"),
-    ("aps_tunnel_frametype", "TEXT"),
-    ("aps_tunnel_delmode", "TEXT"),
-    ("aps_tunnel_ackformat", "TEXT"),
-    ("aps_tunnel_security", "TEXT"),
-    ("aps_tunnel_ackreq", "TEXT"),
-    ("aps_tunnel_exthdr", "TEXT"),
-    ("aps_tunnel_counter", "INTEGER"),
-    ("aps_verifykey_stdkeytype", "TEXT"),
-    ("aps_verifykey_extendedaddr", "TEXT"),
-    ("aps_verifykey_keyhash", "TEXT"),
-    ("aps_confirmkey_status", "TEXT"),
-    ("aps_confirmkey_stdkeytype", "TEXT"),
-    ("aps_confirmkey_extendedaddr", "TEXT"),
-    ("zdp_seqnum", "INTEGER"),
-    ("zcl_frametype", "TEXT"),
-    ("zcl_manufspecific", "TEXT"),
-    ("zcl_direction", "TEXT"),
-    ("zcl_disdefrsp", "TEXT"),
-    ("zcl_manufcode", "TEXT"),
-    ("zcl_seqnum", "INTEGER"),
-    ("zcl_cmd_id", "TEXT"),
-    ("warning_msg", "TEXT"),
-    ("error_msg", "TEXT"),
-]
-
-# Define a list that contains only the names of the columns
-COLUMN_NAMES = [column[0] for column in DB_COLUMNS]
-
-# Define sets that will be used to construct valid column definitions
-ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
-ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-CONSTRAINED_COLUMNS = set([
-    "pcap_directory",
-    "pcap_filename",
-    "pkt_num",
-    "pkt_time",
-    "pkt_raw",
-    "pkt_show",
-])
-
 # Initialize the global variables
 network_keys = {}
 link_keys = {}
 install_codes = {}
-entry = {column_name: None for column_name in COLUMN_NAMES}
-db_connection = None
-db_cursor = None
+entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
 
 def init(debug):
@@ -290,16 +61,16 @@ def init(debug):
     os.makedirs(CONFIG_DIR, exist_ok=True)
 
     # Load network keys
-    network_keys = load.encryption_keys(NETWORK_FILEPATH, optional=True)
+    network_keys = fs.load_enc_keys(NETWORK_FILEPATH, optional=True)
     logging.info("Loaded {} network keys".format(len(network_keys)))
 
     # Load link keys
-    link_keys = load.encryption_keys(LINK_FILEPATH, optional=True)
+    link_keys = fs.load_enc_keys(LINK_FILEPATH, optional=True)
     logging.info("Loaded {} link keys".format(len(link_keys)))
 
     # Load install codes and derive link keys from them
-    install_codes, derived_keys = load.install_codes(INSTALL_FILEPATH,
-                                                     optional=True)
+    install_codes, derived_keys = fs.load_install_codes(INSTALL_FILEPATH,
+                                                        optional=True)
     logging.info("Loaded {} install codes".format(len(install_codes)))
 
     # Add link keys, derived from install codes, that are not already loaded
@@ -331,164 +102,9 @@ def reset_entries(keep=[]):
     # the ones that were requested to maintain their values
     if keep is None:
         keep = []
-    for column_name in COLUMN_NAMES:
+    for column_name in db.PKT_COLUMN_NAMES:
         if column_name not in keep:
             entry[column_name] = None
-
-
-def connect_to_db(db_filepath):
-    global db_connection
-    global db_cursor
-
-    # Open a connection with the database
-    db_connection = sqlite3.connect(db_filepath)
-    db_connection.text_factory = str
-    db_cursor = db_connection.cursor()
-
-
-def create_db_table():
-    # Drop the table if it already exists
-    db_cursor.execute("DROP TABLE IF EXISTS packets")
-    db_connection.commit()
-
-    # Create a table for the parsed packets
-    table_creation_command = "CREATE TABLE packets("
-    delimiter_needed = False
-    for column in DB_COLUMNS:
-        if delimiter_needed:
-            table_creation_command += ", "
-        else:
-            delimiter_needed = True
-
-        column_name = column[0]
-        column_type = column[1]
-
-        for i in range(len(column_name)):
-            if column_name[i] not in ALLOWED_CHARACTERS:
-                raise ValueError("The character \"{}\" in the name of the "
-                                 "column \"{}\" is not allowed"
-                                 "".format(column_name[i], column_name))
-
-        if column_name[0].isdigit():
-            raise ValueError("The name of the column \"{}\" is not allowed "
-                             "because it starts with a digit"
-                             "".format(column_name))
-
-        table_creation_command += column_name
-
-        if column_type not in ALLOWED_TYPES:
-            raise ValueError("The column type \"{}\" is not in the "
-                             "set of allowed column types {}"
-                             "".format(column_type, ALLOWED_TYPES))
-
-        table_creation_command += " " + column_type
-
-        if column_name in CONSTRAINED_COLUMNS:
-            table_creation_command += " NOT NULL"
-    table_creation_command += ")"
-
-    db_cursor.execute(table_creation_command)
-    db_connection.commit()
-
-
-def insert_pkt_into_db():
-    global db_connection
-    global db_cursor
-
-    # Insert the parsed data into the database
-    db_cursor.execute("INSERT INTO packets VALUES ({})".format(
-                            ", ".join("?"*len(DB_COLUMNS))),
-                      tuple(entry[column_name]
-                            for column_name in COLUMN_NAMES))
-    db_connection.commit()
-
-
-def disconnect_from_db():
-    global db_connection
-    global db_cursor
-
-    # Close the connection with the database
-    db_connection.close()
-    db_connection = None
-    db_cursor = None
-
-
-def grouped_count(selected_columns, count_errors):
-    global db_cursor
-
-    # Sanity check
-    for column_name in selected_columns:
-        if column_name not in COLUMN_NAMES:
-            raise ValueError("Unknown column name \"{}\"".format(column_name))
-
-    # Construct the selection command
-    column_csv = ", ".join(selected_columns)
-    select_command = "SELECT {}, COUNT(*) FROM packets".format(column_csv)
-    if not count_errors:
-        select_command += " WHERE error_msg IS NULL"
-    select_command += " GROUP BY {}".format(column_csv)
-
-    # Return the results of the constructed command
-    db_cursor.execute(select_command)
-    return db_cursor.fetchall()
-
-
-def distinct_values(selected_columns, conditions):
-    global db_cursor
-
-    # Sanity check
-    for column_name in selected_columns:
-        if column_name not in COLUMN_NAMES:
-            raise ValueError("Unknown column name \"{}\"".format(column_name))
-
-    # Construct the selection command
-    column_csv = ", ".join(selected_columns)
-    select_command = "SELECT DISTINCT {} FROM packets".format(column_csv)
-    expr_statements = []
-    expr_values = []
-    if conditions is not None:
-        select_command += " WHERE "
-        for condition in conditions:
-            param = condition[0]
-            value = condition[1]
-            if param not in COLUMN_NAMES:
-                raise ValueError("Unknown column name \"{}\"".format(param))
-            elif value is None:
-                expr_statements.append("{} IS NULL".format(param))
-            else:
-                expr_statements.append("{}=?".format(param))
-                expr_values.append(value)
-        select_command += " AND ".join(expr_statements)
-
-    # Return the results of the constructed command
-    db_cursor.execute(select_command, tuple(expr_values))
-    return db_cursor.fetchall()
-
-
-def matching_frequency(conditions):
-    global db_cursor
-
-    # Construct the selection command
-    select_command = "SELECT COUNT(*) FROM packets"
-    expr_statements = []
-    expr_values = []
-    if conditions is not None:
-        select_command += " WHERE "
-        for condition in conditions:
-            param = condition[0]
-            value = condition[1]
-            if param not in COLUMN_NAMES:
-                raise ValueError("Unknown column name \"{}\"".format(param))
-            elif value is None:
-                expr_statements.append("{} IS NULL".format(param))
-            else:
-                expr_statements.append("{}=?".format(param))
-                expr_values.append(value)
-        select_command += " AND ".join(expr_statements)
-
-    # Return the results of the constructed command
-    db_cursor.execute(select_command, tuple(expr_values))
-    return db_cursor.fetchall()[0][0]
 
 
 def custom_sorter(var_value):
@@ -503,20 +119,6 @@ def custom_sorter(var_value):
         else:
             raise ValueError("Unexpected type: {}".format(type(var_value[i])))
     return ",".join(str_repr)
-
-
-def write_tsv(results, out_filepath):
-    fp = open(out_filepath, "w")
-    for row in results:
-        for i in range(len(row)):
-            if i == 0:
-                fp.write("{}".format(row[i]))
-            elif i < (len(row) - 1):
-                fp.write(", {}".format(row[i]))
-            else:
-                fp.write("\t{}".format(row[i]))
-        fp.write("\n")
-    fp.close()
 
 
 def add_encryption_keys(filepath, key_type):
@@ -534,7 +136,7 @@ def add_encryption_keys(filepath, key_type):
         raise ValueError("Unknown key type \"{}\"".format(key_type))
 
     # Add the encryption keys that are not already loaded
-    tmp_keys = load.encryption_keys(filepath, optional=False)
+    tmp_keys = fs.load_enc_keys(filepath, optional=False)
     added_keys = 0
     for key_name in tmp_keys.keys():
         if tmp_keys[key_name] in loaded_keys.values():
@@ -565,7 +167,7 @@ def add_install_codes(filepath):
     global install_codes
 
     # Add the install codes that are not already loaded
-    tmp_codes = load.install_codes(filepath, optional=False)
+    tmp_codes, _ = fs.load_install_codes(filepath, optional=False)
     added_codes = 0
     for code_name in tmp_codes.keys():
         if tmp_codes[code_name] in install_codes.values():

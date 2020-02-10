@@ -142,13 +142,13 @@ def field_values(out_dirpath):
         conditions = packet_type[1]
 
         results = []
-        for column_name in config.COLUMN_NAMES:
+        for column_name in config.db.PKT_COLUMN_NAMES:
             # Ignore certain columns
             if column_name in IGNORED_COLUMNS:
                 continue
 
             # Compute the distinct values of this column
-            var_values = config.distinct_values([column_name], conditions)
+            var_values = config.db.distinct_values([column_name], conditions)
             var_values.sort(key=config.custom_sorter)
             var_values = [var_value[0] for var_value in var_values]
 
@@ -156,4 +156,4 @@ def field_values(out_dirpath):
             results.append((column_name, var_values))
 
         # Write the distinct values of each column in the output file
-        config.write_tsv(results, out_filepath)
+        config.fs.write_tsv(results, out_filepath)

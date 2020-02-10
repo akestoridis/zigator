@@ -47,8 +47,9 @@ def solo_frequencies(out_dirpath):
     os.makedirs(out_dirpath, exist_ok=True)
 
     logging.info("Computing the frequency of values for {} columns..."
-                 "".format(len(config.COLUMN_NAMES) - len(IGNORED_COLUMNS)))
-    for i, column_name in enumerate(config.COLUMN_NAMES):
+                 "".format(len(config.db.PKT_COLUMN_NAMES)
+                           - len(IGNORED_COLUMNS)))
+    for i, column_name in enumerate(config.db.PKT_COLUMN_NAMES):
         # Ignore certain columns
         if column_name in IGNORED_COLUMNS:
             continue
@@ -66,5 +67,5 @@ def solo_frequencies(out_dirpath):
             count_errors = False
 
         # Write the computed frequencies in the output file
-        results = config.grouped_count([column_name], count_errors)
-        config.write_tsv(results, out_filepath)
+        results = config.db.grouped_count([column_name], count_errors)
+        config.fs.write_tsv(results, out_filepath)

@@ -76,5 +76,5 @@ def group_frequencies(out_dirpath):
             count_errors = False
 
         # Write the computed frequencies in the output file
-        results = config.grouped_count(column_names, count_errors)
-        config.write_tsv(results, out_filepath)
+        results = config.db.grouped_count(column_names, count_errors)
+        config.fs.write_tsv(results, out_filepath)

@@ -39,7 +39,7 @@ def main(db_filepath, out_dirpath):
     # Connect to the provided database
     logging.info("Analyzing traffic stored in the \"{}\" database..."
                  "".format(db_filepath))
-    config.connect_to_db(db_filepath)
+    config.db.connect(db_filepath)
 
     # Write the results of each analysis method in the output directory
     solo_frequencies(os.path.join(out_dirpath, "solo-frequencies"))
@@ -52,4 +52,4 @@ def main(db_filepath, out_dirpath):
     # Disconnect from the provided database
     logging.info("Finished the analysis of the \"{}\" database"
                  "".format(db_filepath))
-    config.disconnect_from_db()
+    config.db.disconnect()

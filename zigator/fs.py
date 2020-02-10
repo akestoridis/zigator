@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Loading script for the zigator package
+Filesystem module for the zigator package
 """
 
 import csv
@@ -28,8 +28,21 @@ from pycrc.algorithms import Crc
 from . import crypto
 
 
-def encryption_keys(filepath, optional=False):
-    """Load encryption keys from the provided text file."""
+def write_tsv(results, out_filepath):
+    fp = open(out_filepath, "w")
+    for row in results:
+        for i in range(len(row)):
+            if i == 0:
+                fp.write("{}".format(row[i]))
+            elif i < (len(row) - 1):
+                fp.write(", {}".format(row[i]))
+            else:
+                fp.write("\t{}".format(row[i]))
+        fp.write("\n")
+    fp.close()
+
+
+def load_enc_keys(filepath, optional=False):
     # Check whether an exception should be raised if the file does not exist
     if not os.path.isfile(filepath):
         if optional:
@@ -90,8 +103,7 @@ def encryption_keys(filepath, optional=False):
     return loaded_keys
 
 
-def install_codes(filepath, optional=False):
-    """Load install codes from the provided text file and derive link keys."""
+def load_install_codes(filepath, optional=False):
     # Check whether an exception should be raised if the file does not exist
     if not os.path.isfile(filepath):
         if optional:

@@ -151,7 +151,7 @@ def distinct_matches(out_dirpath):
         column_names = list(column_match[3:])
 
         # Compute the distinct values of the varying columns
-        var_values = config.distinct_values(var_columns, conditions)
+        var_values = config.db.distinct_values(var_columns, conditions)
         var_values.sort(key=config.custom_sorter)
 
         # Compute the distinct matches for each value
@@ -160,9 +160,9 @@ def distinct_matches(out_dirpath):
             var_conditions = list(conditions)
             for i in range(len(var_value)):
                 var_conditions.append((var_columns[i], var_value[i]))
-            matches = config.distinct_values(column_names, var_conditions)
+            matches = config.db.distinct_values(column_names, var_conditions)
             matches.sort(key=config.custom_sorter)
             results.append((var_value, matches))
 
         # Write the distinct matches in the output file
-        config.write_tsv(results, out_filepath)
+        config.fs.write_tsv(results, out_filepath)
