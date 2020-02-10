@@ -370,6 +370,24 @@ def get_edtimeoutrsp_timeout(pkt):
     return timeout_states.get(timeout_state, "Unknown timeout state")
 
 
+def get_nwk_beacon_routercap(pkt):
+    rcap_states = {
+        0: "The sender cannot accept join requests from routers",
+        1: "The sender can accept join requests from routers"
+    }
+    rcap_state = pkt[ZigBeeBeacon].router_capacity
+    return rcap_states.get(rcap_state, "Unknown Router Capacity state")
+
+
+def get_nwk_beacon_edcap(pkt):
+    edcap_states = {
+        0: "The sender cannot accept join requests from end devices",
+        1: "The sender can accept join requests from end devices"
+    }
+    edcap_state = pkt[ZigBeeBeacon].end_device_capacity
+    return edcap_states.get(edcap_state, "Unknown End Device Capacity state")
+
+
 def nwk_routerequest(pkt):
     # Command Options field (1 byte)
     config.entry["nwk_routerequest_mto"] = get_nwk_routerequest_mto(pkt)
@@ -667,9 +685,9 @@ def nwk_beacon(pkt):
     config.entry["nwk_beacon_protocolid"] = pkt[ZigBeeBeacon].proto_id
     config.entry["nwk_beacon_stackprofile"] = pkt[ZigBeeBeacon].stack_profile
     config.entry["nwk_beacon_protocolversion"] = get_nwk_protocolversion(pkt)
-    config.entry["nwk_beacon_routercap"] = pkt[ZigBeeBeacon].router_capacity
+    config.entry["nwk_beacon_routercap"] = get_nwk_beacon_routercap(pkt)
     config.entry["nwk_beacon_devdepth"] = pkt[ZigBeeBeacon].device_depth
-    config.entry["nwk_beacon_edcap"] = pkt[ZigBeeBeacon].end_device_capacity
+    config.entry["nwk_beacon_edcap"] = get_nwk_beacon_edcap(pkt)
     config.entry["nwk_beacon_epid"] = format(
         pkt[ZigBeeBeacon].extended_pan_id, "016x")
     config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset

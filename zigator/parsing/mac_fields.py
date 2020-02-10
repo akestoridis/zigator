@@ -129,8 +129,8 @@ def get_mac_command(pkt):
 
 def get_mac_assocreq_apc(pkt):
     apc_states = {
-        0: "The sender is capable of becoming a PAN coordinator",
-        1: "The sender is not capable of becoming a PAN coordinator"
+        0: "The sender is not capable of becoming a PAN coordinator",
+        1: "The sender is capable of becoming a PAN coordinator"
     }
     apc_state = pkt[Dot15d4CmdAssocReq].alternate_pan_coordinator
     return apc_states.get(apc_state, "Unknown APC state")
@@ -216,6 +216,24 @@ def get_mac_gtsreq_chartype(pkt):
     }
     chartype_id = pkt[Dot15d4CmdGTSReq].charact_type
     return charact_types.get(chartype_id, "Unknown GTS characteristics type")
+
+
+def get_mac_beacon_pancoord(pkt):
+    panc_states = {
+        0: "The sender is not the PAN coordinator",
+        1: "The sender is the PAN coordinator"
+    }
+    panc_state = pkt[Dot15d4Beacon].sf_pancoord
+    return panc_states.get(panc_state, "Unknown PAN coordinator state")
+
+
+def get_mac_beacon_assocpermit(pkt):
+    assocp_states = {
+        0: "The sender is currently not accepting association requests",
+        1: "The sender is currently accepting association requests"
+    }
+    assocp_state = pkt[Dot15d4Beacon].sf_assocpermit
+    return assocp_states.get(assocp_state, "Unknown Association Permit state")
 
 
 def mac_assocreq(pkt):
@@ -410,8 +428,8 @@ def mac_beacon(pkt):
     config.entry["mac_beacon_sforder"] = pkt[Dot15d4Beacon].sf_sforder
     config.entry["mac_beacon_finalcap"] = pkt[Dot15d4Beacon].sf_finalcapslot
     config.entry["mac_beacon_ble"] = pkt[Dot15d4Beacon].sf_battlifeextend
-    config.entry["mac_beacon_pancoord"] = pkt[Dot15d4Beacon].sf_pancoord
-    config.entry["mac_beacon_assocpermit"] = pkt[Dot15d4Beacon].sf_assocpermit
+    config.entry["mac_beacon_pancoord"] = get_mac_beacon_pancoord(pkt)
+    config.entry["mac_beacon_assocpermit"] = get_mac_beacon_assocpermit(pkt)
 
     # GTS Specification field (1 byte)
     config.entry["mac_beacon_gtsnum"] = pkt[Dot15d4Beacon].gts_spec_desccount
