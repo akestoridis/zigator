@@ -53,6 +53,16 @@ COLUMN_GROUPS = set([
         "zcl_frametype",
         "zcl_cmd_id",
     ),
+    (
+        "profileid_clusterid-frequency.tsv",
+        "aps_profileid",
+        "aps_clusterid",
+    ),
+    (
+        "profilename_clustername-frequency.tsv",
+        "aps_profilename",
+        "aps_clustername",
+    ),
 ])
 
 
