@@ -238,6 +238,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -252,6 +253,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -271,6 +273,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -285,6 +288,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -304,6 +308,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -318,6 +323,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!nwk_frametype", None),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -337,6 +343,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("nwk_security", "NWK Security Enabled"),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -351,6 +358,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("nwk_security", "NWK Security Enabled"),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -370,6 +378,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("nwk_security", "NWK Security Enabled"),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -384,6 +393,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("nwk_security", "NWK Security Enabled"),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -403,6 +413,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!aps_frametype", None),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -417,6 +428,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("!aps_frametype", None),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -436,6 +448,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("aps_security", "APS Security Enabled"),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -450,6 +463,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("aps_security", "APS Security Enabled"),
         ),
         "mac_frametype",
         "mac_cmd_id",
@@ -469,6 +483,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("aps_security", "APS Security Enabled"),
         ),
         "mac_frametype",
         "nwk_frametype",
@@ -483,6 +498,7 @@ COLUMN_MATCHES = set([
         ),
         (
             ("error_msg", None),
+            ("aps_security", "APS Security Enabled"),
         ),
         "mac_frametype",
         "mac_cmd_id",

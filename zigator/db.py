@@ -361,12 +361,23 @@ def distinct_values(selected_columns, conditions):
         for condition in conditions:
             param = condition[0]
             value = condition[1]
+            if param[0] == "!":
+                neq = True
+                param = param[1:]
+            else:
+                neq = False
             if param not in PKT_COLUMN_NAMES:
                 raise ValueError("Unknown column name \"{}\"".format(param))
             elif value is None:
-                expr_statements.append("{} IS NULL".format(param))
+                if neq:
+                    expr_statements.append("{} IS NOT NULL".format(param))
+                else:
+                    expr_statements.append("{} IS NULL".format(param))
             else:
-                expr_statements.append("{}=?".format(param))
+                if neq:
+                    expr_statements.append("{}!=?".format(param))
+                else:
+                    expr_statements.append("{}=?".format(param))
                 expr_values.append(value)
         select_command += " AND ".join(expr_statements)
 
@@ -387,12 +398,23 @@ def matching_frequency(conditions):
         for condition in conditions:
             param = condition[0]
             value = condition[1]
+            if param[0] == "!":
+                neq = True
+                param = param[1:]
+            else:
+                neq = False
             if param not in PKT_COLUMN_NAMES:
                 raise ValueError("Unknown column name \"{}\"".format(param))
             elif value is None:
-                expr_statements.append("{} IS NULL".format(param))
+                if neq:
+                    expr_statements.append("{} IS NOT NULL".format(param))
+                else:
+                    expr_statements.append("{} IS NULL".format(param))
             else:
-                expr_statements.append("{}=?".format(param))
+                if neq:
+                    expr_statements.append("{}!=?".format(param))
+                else:
+                    expr_statements.append("{}=?".format(param))
                 expr_values.append(value)
         select_command += " AND ".join(expr_statements)
 
