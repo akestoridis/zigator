@@ -78,13 +78,28 @@ parser_parse.add_argument(
 
 parser_analyze = subparsers.add_parser(
     "analyze",
-    help="analyze a database")
+    help="analyze data from a database")
 parser_analyze.add_argument(
     "DATABASE_FILEPATH",
     type=str,
     action="store",
     help="path of the database file")
 parser_analyze.add_argument(
+    "OUTPUT_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory for the output files")
+
+
+parser_visualize = subparsers.add_parser(
+    "visualize",
+    help="visualize data from a database")
+parser_visualize.add_argument(
+    "DATABASE_FILEPATH",
+    type=str,
+    action="store",
+    help="path of the database file")
+parser_visualize.add_argument(
     "OUTPUT_DIRECTORY",
     type=str,
     action="store",
@@ -115,6 +130,9 @@ def main():
         zigator.parsing.main(args.PCAP_DIRECTORY, args.DATABASE_FILEPATH)
     elif args.subcommand == "analyze":
         zigator.analysis.main(args.DATABASE_FILEPATH, args.OUTPUT_DIRECTORY)
+    elif args.subcommand == "visualize":
+        zigator.visualization.main(args.DATABASE_FILEPATH,
+                                   args.OUTPUT_DIRECTORY)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
