@@ -31,7 +31,8 @@ def main(pcap_dirpath, db_filepath):
 
     # Initialize the database that will store the parsed data
     config.db.connect(db_filepath)
-    config.db.create_pkt_table()
+    config.db.create_table("packets")
+    config.db.create_table("devices")
 
     # Get a sorted list of pcap filepaths
     filepaths = glob.glob(os.path.join(pcap_dirpath, "*.[pP][cC][aA][pP]"))

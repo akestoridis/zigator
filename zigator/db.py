@@ -22,6 +22,16 @@ import sqlite3
 import string
 
 
+# Define the columns of the devices table in the database
+DEV_COLUMNS = [
+    ("panid", "TEXT"),
+    ("epid", "TEXT"),
+    ("shortaddr", "TEXT"),
+    ("extendedaddr", "TEXT"),
+    ("macdevtype", "TEXT"),
+    ("nwkdevtype", "TEXT"),
+]
+
 # Define the columns of the packets table in the database
 PKT_COLUMNS = [
     ("pcap_directory", "TEXT"),
@@ -233,13 +243,17 @@ PKT_COLUMNS = [
     ("error_msg", "TEXT"),
 ]
 
-# Define a list that contains only the column names of the packets table
+# Define a list that contains only the column names for each table
+DEV_COLUMN_NAMES = [column[0] for column in DEV_COLUMNS]
 PKT_COLUMN_NAMES = [column[0] for column in PKT_COLUMNS]
 
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
 ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-CONSTRAINED_COLUMNS = set([
+CONSTRAINED_DEV_COLUMNS = set([
+    "panid",
+])
+CONSTRAINED_PKT_COLUMNS = set([
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
@@ -263,18 +277,28 @@ def connect(db_filepath):
     cursor = connection.cursor()
 
 
-def create_pkt_table():
+def create_table(tablename):
     global connection
     global cursor
 
+    if tablename == "packets":
+        columns = PKT_COLUMNS
+        constrained_columns = CONSTRAINED_PKT_COLUMNS
+    elif tablename == "devices":
+        columns = DEV_COLUMNS
+        constrained_columns = CONSTRAINED_DEV_COLUMNS
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
+
     # Drop the table if it already exists
-    cursor.execute("DROP TABLE IF EXISTS packets")
+    table_drop_command = "DROP TABLE IF EXISTS {}".format(tablename)
+    cursor.execute(table_drop_command)
     connection.commit()
 
-    # Create a table for the parsed packets
-    table_creation_command = "CREATE TABLE packets("
+    # Create the table
+    table_creation_command = "CREATE TABLE {}(".format(tablename)
     delimiter_needed = False
-    for column in PKT_COLUMNS:
+    for column in columns:
         if delimiter_needed:
             table_creation_command += ", "
         else:
@@ -303,7 +327,7 @@ def create_pkt_table():
 
         table_creation_command += " " + column_type
 
-        if column_name in CONSTRAINED_COLUMNS:
+        if column_name in constrained_columns:
             table_creation_command += " NOT NULL"
     table_creation_command += ")"
 
@@ -321,6 +345,99 @@ def insert_pkt(entry):
                    tuple(entry[column_name]
                          for column_name in PKT_COLUMN_NAMES))
     connection.commit()
+
+
+def update_dev(panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype):
+    global connection
+    global cursor
+
+    # Sanity checks
+    if panid is None:
+        raise ValueError("The PAN ID of the device is required")
+    elif shortaddr is None and extendedaddr is None:
+        raise ValueError("The address of the device is required")
+
+    # Fetch the stored information about this device
+    select_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE "
+    )
+    where_expr = "panid=? AND "
+    if shortaddr is not None and extendedaddr is None:
+        where_expr += "shortaddr=?"
+        where_tuple = tuple([panid, shortaddr])
+        select_command += where_expr
+        cursor.execute(select_command, where_tuple)
+    elif shortaddr is None and extendedaddr is not None:
+        where_expr += "extendedaddr=?"
+        where_tuple = tuple([panid, extendedaddr])
+        select_command += where_expr
+        cursor.execute(select_command, where_tuple)
+    else:
+        where_expr += "shortaddr=? AND extendedaddr=?"
+        where_tuple = tuple([panid, shortaddr, extendedaddr])
+        select_command += where_expr
+        cursor.execute(select_command, where_tuple)
+    stored_info = cursor.fetchall()
+
+    if len(stored_info) == 0:
+        # Store information about the previously unknown device
+        cursor.execute("INSERT INTO devices VALUES (?, ?, ?, ?, ?, ?)",
+                       tuple([panid, epid,
+                              shortaddr, extendedaddr,
+                              macdevtype, nwkdevtype]))
+        connection.commit()
+    elif len(stored_info) == 1:
+        if stored_info[0][1] is None and epid is not None:
+            # Store the previously unknown EPID of the device
+            update_command = (
+                "UPDATE devices SET epid=? WHERE " + where_expr
+            )
+            cursor.execute(update_command, tuple([epid]) + where_tuple)
+            connection.commit()
+        elif stored_info[0][1] is not None and epid is not None:
+            if stored_info[0][1] != epid:
+                raise ValueError("Conflicting EPID values")
+
+        if stored_info[0][2] is None and shortaddr is not None:
+            # Store the previously unknown short address of the device
+            update_command = (
+                "UPDATE devices SET shortaddr=? WHERE " + where_expr
+            )
+            cursor.execute(update_command, tuple([shortaddr]) + where_tuple)
+            connection.commit()
+
+        if stored_info[0][3] is None and extendedaddr is not None:
+            # Store the previously unknown extended address of the device
+            update_command = (
+                "UPDATE devices SET extendedaddr=? WHERE " + where_expr
+            )
+            cursor.execute(update_command, tuple([extendedaddr]) + where_tuple)
+            connection.commit()
+
+        if stored_info[0][4] is None and macdevtype is not None:
+            # Store the previously unknown MAC device type of the device
+            update_command = (
+                "UPDATE devices SET macdevtype=? WHERE " + where_expr
+            )
+            cursor.execute(update_command, tuple([macdevtype]) + where_tuple)
+            connection.commit()
+        elif stored_info[0][4] is not None and macdevtype is not None:
+            if stored_info[0][4] != macdevtype:
+                raise ValueError("Conflicting MAC device type values")
+
+        if stored_info[0][5] is None and nwkdevtype is not None:
+            # Store the previously unknown NWK device type of the device
+            update_command = (
+                "UPDATE devices SET nwkdevtype=? WHERE " + where_expr
+            )
+            cursor.execute(update_command, tuple([nwkdevtype]) + where_tuple)
+            connection.commit()
+        elif stored_info[0][5] is not None and nwkdevtype is not None:
+            if stored_info[0][5] != nwkdevtype:
+                raise ValueError("Conflicting NWK device type values")
+    else:
+        raise ValueError("Multiple entries for a device in the database")
 
 
 def grouped_count(selected_columns, count_errors):

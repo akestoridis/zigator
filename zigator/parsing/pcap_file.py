@@ -20,6 +20,7 @@ import os
 from scapy.all import PcapReader
 
 from .. import config
+from .dev_info import dev_info
 from .phy_fields import phy_fields
 
 
@@ -48,6 +49,10 @@ def pcap_file(filepath):
 
         # Insert the collected data into the database
         config.db.insert_pkt(config.entry)
+
+        # Derive information about the devices that exchange packets
+        if config.entry["error_msg"] is None:
+            dev_info()
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(keep=["pcap_directory",
