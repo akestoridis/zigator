@@ -20,24 +20,21 @@ import os
 from .. import config
 
 
-IGNORED_COLUMNS = set([
-    "pkt_num",
-    "pkt_time",
-    "pkt_raw",
-    "pkt_show",
-    "mac_fcs",
-    "mac_seqnum",
-    "nwk_seqnum",
-    "nwk_aux_framecounter",
-    "nwk_aux_decpayload",
-    "nwk_aux_decshow",
-    "aps_counter",
-    "apx_aux_framecounter",
-    "aps_aux_decpayload",
-    "aps_aux_decshow",
-    "aps_tunnel_counter",
-    "zdp_seqnum",
-    "zcl_seqnum",
+INCLUDED_COLUMNS = set([
+    "phy_length",
+    "mac_framepending",
+    "mac_ackreq",
+    "mac_panidcomp",
+    "mac_dstaddrmode",
+    "mac_srcaddrmode",
+    "nwk_discroute",
+    "nwk_multicast",
+    "nwk_srcroute",
+    "nwk_extendeddst",
+    "nwk_extendedsrc",
+    "nwk_edinitiator",
+    "nwk_radius",
+    "nwk_aux_extnonce",
 ])
 
 
@@ -144,10 +141,10 @@ def form_frequencies(out_dirpath):
         selected_columns = []
         for column_name in config.db.PKT_COLUMN_NAMES:
             # Ignore certain columns
-            if column_name in IGNORED_COLUMNS:
-                continue
-            else:
+            if column_name in INCLUDED_COLUMNS:
                 selected_columns.append(column_name)
+            else:
+                continue
 
         # Compute the distinct matching values of the selected columns
         form_values = config.db.distinct_values(selected_columns, conditions)
