@@ -32,7 +32,6 @@ def main(pcap_dirpath, db_filepath):
     # Initialize the database that will store the parsed data
     config.db.connect(db_filepath)
     config.db.create_table("packets")
-    config.db.create_table("devices")
 
     # Get a sorted list of pcap filepaths
     filepaths = glob.glob(os.path.join(pcap_dirpath, "*.[pP][cC][aA][pP]"))
@@ -47,6 +46,17 @@ def main(pcap_dirpath, db_filepath):
         pcap_counter += 1
         logging.info("Parsed {} out of the {} pcap files"
                      "".format(pcap_counter, len(filepaths)))
+
+    # Log the derived information in detail for debugging purposes
+    logging.debug("Networks: {}".format(config.networks))
+    logging.debug("Devices: {}".format(config.devices))
+    logging.debug("Addresses: {}".format(config.addresses))
+
+    # Log a summary of the derived information
+    logging.info("Discovered {} unique networks".format(len(config.networks)))
+    logging.info("Discovered {} unique devices".format(len(config.devices)))
+    logging.info("Discovered {} short-to-extended address mappings"
+                 "".format(len(config.addresses)))
 
     # Log a summary of the generated warnings
     warnings = config.db.distinct_values(["warning_msg"], None)

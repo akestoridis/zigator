@@ -22,16 +22,6 @@ import sqlite3
 import string
 
 
-# Define the columns of the devices table in the database
-DEV_COLUMNS = [
-    ("panid", "TEXT"),
-    ("epid", "TEXT"),
-    ("shortaddr", "TEXT"),
-    ("extendedaddr", "TEXT"),
-    ("macdevtype", "TEXT"),
-    ("nwkdevtype", "TEXT"),
-]
-
 # Define the columns of the packets table in the database
 PKT_COLUMNS = [
     ("pcap_directory", "TEXT"),
@@ -244,15 +234,11 @@ PKT_COLUMNS = [
 ]
 
 # Define a list that contains only the column names for each table
-DEV_COLUMN_NAMES = [column[0] for column in DEV_COLUMNS]
 PKT_COLUMN_NAMES = [column[0] for column in PKT_COLUMNS]
 
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
 ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-CONSTRAINED_DEV_COLUMNS = set([
-    "panid",
-])
 CONSTRAINED_PKT_COLUMNS = set([
     "pcap_directory",
     "pcap_filename",
@@ -284,9 +270,6 @@ def create_table(tablename):
     if tablename == "packets":
         columns = PKT_COLUMNS
         constrained_columns = CONSTRAINED_PKT_COLUMNS
-    elif tablename == "devices":
-        columns = DEV_COLUMNS
-        constrained_columns = CONSTRAINED_DEV_COLUMNS
     else:
         raise ValueError("Unknown table name \"{}\"".format(tablename))
 
@@ -347,97 +330,234 @@ def insert_pkt(entry):
     connection.commit()
 
 
-def update_dev(panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype):
+def merge_old_rows(panid, shortaddr, extendedaddr):
     global connection
     global cursor
 
-    # Sanity checks
-    if panid is None:
-        raise ValueError("The PAN ID of the device is required")
-    elif shortaddr is None and extendedaddr is None:
-        raise ValueError("The address of the device is required")
-
-    # Fetch the stored information about this device
-    select_command = (
+    # Fetch the row that contains only the short address
+    short_command = (
         "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
-        "FROM devices WHERE "
+        "FROM devices WHERE panid=? AND shortaddr=? AND extendedaddr IS NULL"
     )
-    where_expr = "panid=? AND "
-    if shortaddr is not None and extendedaddr is None:
-        where_expr += "shortaddr=?"
-        where_tuple = tuple([panid, shortaddr])
-        select_command += where_expr
-        cursor.execute(select_command, where_tuple)
-    elif shortaddr is None and extendedaddr is not None:
-        where_expr += "extendedaddr=?"
-        where_tuple = tuple([panid, extendedaddr])
-        select_command += where_expr
-        cursor.execute(select_command, where_tuple)
-    else:
-        where_expr += "shortaddr=? AND extendedaddr=?"
-        where_tuple = tuple([panid, shortaddr, extendedaddr])
-        select_command += where_expr
-        cursor.execute(select_command, where_tuple)
-    stored_info = cursor.fetchall()
-
-    if len(stored_info) == 0:
-        # Store information about the previously unknown device
-        cursor.execute("INSERT INTO devices VALUES (?, ?, ?, ?, ?, ?)",
-                       tuple([panid, epid,
-                              shortaddr, extendedaddr,
-                              macdevtype, nwkdevtype]))
-        connection.commit()
-    elif len(stored_info) == 1:
-        if stored_info[0][1] is None and epid is not None:
-            # Store the previously unknown EPID of the device
-            update_command = (
-                "UPDATE devices SET epid=? WHERE " + where_expr
-            )
-            cursor.execute(update_command, tuple([epid]) + where_tuple)
-            connection.commit()
-        elif stored_info[0][1] is not None and epid is not None:
-            if stored_info[0][1] != epid:
-                raise ValueError("Conflicting EPID values")
-
-        if stored_info[0][2] is None and shortaddr is not None:
-            # Store the previously unknown short address of the device
-            update_command = (
-                "UPDATE devices SET shortaddr=? WHERE " + where_expr
-            )
-            cursor.execute(update_command, tuple([shortaddr]) + where_tuple)
-            connection.commit()
-
-        if stored_info[0][3] is None and extendedaddr is not None:
-            # Store the previously unknown extended address of the device
-            update_command = (
-                "UPDATE devices SET extendedaddr=? WHERE " + where_expr
-            )
-            cursor.execute(update_command, tuple([extendedaddr]) + where_tuple)
-            connection.commit()
-
-        if stored_info[0][4] is None and macdevtype is not None:
-            # Store the previously unknown MAC device type of the device
-            update_command = (
-                "UPDATE devices SET macdevtype=? WHERE " + where_expr
-            )
-            cursor.execute(update_command, tuple([macdevtype]) + where_tuple)
-            connection.commit()
-        elif stored_info[0][4] is not None and macdevtype is not None:
-            if stored_info[0][4] != macdevtype:
-                raise ValueError("Conflicting MAC device type values")
-
-        if stored_info[0][5] is None and nwkdevtype is not None:
-            # Store the previously unknown NWK device type of the device
-            update_command = (
-                "UPDATE devices SET nwkdevtype=? WHERE " + where_expr
-            )
-            cursor.execute(update_command, tuple([nwkdevtype]) + where_tuple)
-            connection.commit()
-        elif stored_info[0][5] is not None and nwkdevtype is not None:
-            if stored_info[0][5] != nwkdevtype:
-                raise ValueError("Conflicting NWK device type values")
-    else:
+    cursor.execute(short_command, tuple([panid, shortaddr]))
+    short_row = cursor.fetchall()
+    if len(short_row) == 0:
+        # There is no need to merge any rows
+        return
+    elif len(short_row) != 1:
         raise ValueError("Multiple entries for a device in the database")
+
+    # Fetch the row that contains only the extended address
+    extended_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE panid=? AND shortaddr IS NULL AND extendedaddr=?"
+    )
+    cursor.execute(short_command, tuple([panid, extendedaddr]))
+    extended_row = cursor.fetchall()
+    if len(extended_row) == 0:
+        # There is no need to merge any rows
+        return
+    elif len(extended_row) != 1:
+        raise ValueError("Multiple entries for a device in the database")
+
+    # Merge the information of the two rows
+    if short_row[0][1] is not None and extended_row[0][1] is None:
+        epid = short_row[0][1]
+    elif short_row[0][1] is None and extended_row[0][1] is not None:
+        epid = extended_row[0][1]
+    elif short_row[0][1] != extended_row[0][1]:
+        raise ValueError("Conflicting EPID values")
+    else:
+        epid = short_row[0][1]
+
+    if short_row[0][4] is not None and extended_row[0][4] is None:
+        macdevtype = short_row[0][4]
+    elif short_row[0][4] is None and extended_row[0][4] is not None:
+        macdevtype = extended_row[0][4]
+    elif short_row[0][4] != extended_row[0][4]:
+        raise ValueError("Conflicting MAC device type values")
+    else:
+        macdevtype = short_row[0][4]
+
+    if short_row[0][5] is not None and extended_row[0][5] is None:
+        nwkdevtype = short_row[0][5]
+    elif short_row[0][5] is None and extended_row[0][5] is not None:
+        nwkdevtype = extended_row[0][5]
+    elif short_row[0][5] != extended_row[0][5]:
+        raise ValueError("Conflicting NWK device type values")
+    else:
+        nwk_devtype = short_row[0][5]
+
+    # Delete the rows from the table
+    delete_command = (
+        "DELETE FROM devices "
+        "WHERE panid=? AND shortaddr=? AND extendedaddr IS NULL"
+    )
+    cursor.execute(delete_command, tuple([panid, shortaddr]))
+    connection.commit()
+    delete_command = (
+        "DELETE FROM devices "
+        "WHERE panid=? AND shortaddr IS NULL AND extendedaddr=?"
+    )
+    cursor.execute(delete_command, tuple([panid, extendedaddr]))
+    connection.commit()
+
+    # Insert the merged row into the table
+    cursor.execute("INSERT INTO devices VALUES (?, ?, ?, ?, ?, ?)",
+                   tuple([panid, epid,
+                          shortaddr, extendedaddr,
+                          macdevtype, nwkdevtype]))
+    connection.commit()
+
+
+def merge_short_row(panid, shortaddr, extendedaddr):
+    global connection
+    global cursor
+
+    # Fetch the row that contains only the short address
+    short_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE panid=? AND shortaddr=? AND extendedaddr IS NULL"
+    )
+    cursor.execute(short_command, tuple([panid, shortaddr]))
+    short_row = cursor.fetchall()
+    if len(short_row) == 0:
+        # There is no need to merge any rows
+        return
+    elif len(short_row) != 1:
+        raise ValueError("Multiple entries for a device in the database")
+
+    # Fetch the row that contains both addresses
+    merged_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+    )
+    cursor.execute(merged_command, tuple([panid, shortaddr, extendedaddr]))
+    merged_row = cursor.fetchall()
+    if len(merged_row) == 0:
+        raise ValueError("Unable to fetch the merged row")
+    elif len(merged_row) != 1:
+        raise ValueError("Multiple entries for a device in the database")
+
+    # Merge the information of the two rows
+    if short_row[0][1] is not None and merged_row[0][1] is None:
+        update_command = (
+            "UPDATE devices SET epid=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][1], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif short_row[0][1] is not None and merged_row[0][1] is not None:
+        if short_row[0][1] != merged_row[0][1]:
+            raise ValueError("Conflicting EPID values")
+
+    if short_row[0][4] is not None and merged_row[0][4] is None:
+        update_command = (
+            "UPDATE devices SET macdevtype=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][4], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif short_row[0][4] is not None and merged_row[0][4] is not None:
+        if short_row[0][4] != merged_row[0][4]:
+            raise ValueError("Conflicting MAC device type values")
+
+    if short_row[0][5] is not None and merged_row[0][5] is None:
+        update_command = (
+            "UPDATE devices SET nwkdevtype=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][5], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif short_row[0][5] is not None and merged_row[0][5] is not None:
+        if short_row[0][5] != merged_row[0][5]:
+            raise ValueError("Conflicting NWK device type values")
+
+    # Delete the row that contains only the short address
+    delete_command = (
+        "DELETE FROM devices "
+        "WHERE panid=? AND shortaddr=? AND extendedaddr IS NULL"
+    )
+    cursor.execute(delete_command, tuple([panid, shortaddr]))
+    connection.commit()
+
+
+def merge_extended_row(panid, shortaddr, extendedaddr):
+    global connection
+    global cursor
+
+    # Fetch the row that contains only the extended address
+    extended_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE panid=? AND shortaddr IS NULL AND extendedaddr=?"
+    )
+    cursor.execute(extended_command, tuple([panid, extendedaddr]))
+    extended_row = cursor.fetchall()
+    if len(extended_row) == 0:
+        # There is no need to merge any rows
+        return
+    elif len(extended_row) != 1:
+        raise ValueError("Multiple entries for a device in the database")
+
+    # Fetch the row that contains both addresses
+    merged_command = (
+        "SELECT panid, epid, shortaddr, extendedaddr, macdevtype, nwkdevtype "
+        "FROM devices WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+    )
+    cursor.execute(merged_command, tuple([panid, shortaddr, extendedaddr]))
+    merged_row = cursor.fetchall()
+    if len(merged_row) == 0:
+        raise ValueError("Unable to fetch the merged row")
+    elif len(merged_row) != 1:
+        raise ValueError("Multiple entries for a device in the database")
+
+    # Merge the information of the two rows
+    if extended_row[0][1] is not None and merged_row[0][1] is None:
+        update_command = (
+            "UPDATE devices SET epid=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][1], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif extended_row[0][1] is not None and merged_row[0][1] is not None:
+        if extended_row[0][1] != merged_row[0][1]:
+            raise ValueError("Conflicting EPID values")
+
+    if extended_row[0][4] is not None and merged_row[0][4] is None:
+        update_command = (
+            "UPDATE devices SET macdevtype=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][4], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif extended_row[0][4] is not None and merged_row[0][4] is not None:
+        if extended_row[0][4] != merged_row[0][4]:
+            raise ValueError("Conflicting MAC device type values")
+
+    if extended_row[0][5] is not None and merged_row[0][5] is None:
+        update_command = (
+            "UPDATE devices SET nwkdevtype=? "
+            "WHERE panid=? AND shortaddr=? AND extendedaddr=?"
+        )
+        cursor.execute(update_command, tuple([short_row[0][5], panid,
+                                              shortaddr, extendedaddr]))
+        connection.commit()
+    elif extended_row[0][5] is not None and merged_row[0][5] is not None:
+        if extended_row[0][5] != merged_row[0][5]:
+            raise ValueError("Conflicting NWK device type values")
+
+    # Delete the row that contains only the extended address
+    delete_command = (
+        "DELETE FROM devices "
+        "WHERE panid=? AND shortaddr IS NULL AND extendedaddr=?"
+    )
+    cursor.execute(delete_command, tuple([panid, extendedaddr]))
+    connection.commit()
 
 
 def grouped_count(selected_columns, count_errors):

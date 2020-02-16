@@ -17,175 +17,216 @@
 from .. import config
 
 
-def beacon_info():
-    # Beacon transmitters always include their PAN ID
-    panid = config.entry["mac_srcpanid"]
+def examine_extended_addresses():
+    if config.entry["mac_dstextendedaddr"] is not None:
+        config.update_devices(config.entry["mac_dstextendedaddr"], None, None)
 
-    # Zigbee devices always include their EPID in their beacons
-    epid = config.entry["nwk_beacon_epid"]
+    if config.entry["mac_srcextendedaddr"] is not None:
+        config.update_devices(config.entry["mac_srcextendedaddr"], None, None)
 
-    # The beacon transmitters always include one of their addresses
-    shortaddr = None
-    extendedaddr = None
-    if config.entry["mac_srcaddrmode"] == "Short source MAC address":
-        shortaddr = config.entry["mac_srcshortaddr"]
-    elif config.entry["mac_srcaddrmode"] == "Extended source MAC address":
+    if config.entry["nwk_dstextendedaddr"] is not None:
+        config.update_devices(config.entry["nwk_dstextendedaddr"], None, None)
+
+    if config.entry["nwk_srcextendedaddr"] is not None:
+        config.update_devices(config.entry["nwk_srcextendedaddr"], None, None)
+
+    if config.entry["nwk_aux_srcaddr"] is not None:
+        config.update_devices(config.entry["nwk_aux_srcaddr"], None, None)
+
+    if (config.entry["aps_aux_srcaddr"] is not None
+            and config.entry["nwk_security"] == "NWK Security Disabled"):
+        config.update_devices(config.entry["aps_aux_srcaddr"], None, None)
+
+
+def examine_network_ids():
+    if config.entry["mac_frametype"] == "MAC Beacon":
+        panid = config.entry["mac_srcpanid"]
+        epid = config.entry["nwk_beacon_epid"]
+
+        config.map_networks(epid, panid)
+
+
+def examine_short_addresses():
+    if config.entry["mac_frametype"] == "MAC Data":
+        if (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            # Ignore Inter-PAN packets
+            return
+
+        # Map the short address of the source to its extended address
+        panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["nwk_srcshortaddr"]
+        extendedaddr = config.entry["nwk_srcextendedaddr"]
+        if None not in {shortaddr, panid, extendedaddr}:
+            config.map_addresses(shortaddr, panid, extendedaddr)
+
+        # Map the short address of the destination to its extended address
+        panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["nwk_dstshortaddr"]
+        extendedaddr = config.entry["nwk_dstextendedaddr"]
+        if None not in {shortaddr, panid, extendedaddr}:
+            config.map_addresses(shortaddr, panid, extendedaddr)
+    elif config.entry["mac_cmd_id"] == "MAC Association Response":
+        if config.entry["mac_assocrsp_status"] != "Association successful":
+            # Ignore unsuccessful associations
+            return
+
+        # Map the short address of the receiver to its extended address
+        panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["mac_assocrsp_shortaddr"]
+        extendedaddr = config.entry["mac_dstextendedaddr"]
+        if None not in {shortaddr, panid, extendedaddr}:
+            config.map_addresses(shortaddr, panid, extendedaddr)
+    elif config.entry["mac_cmd_id"] == "MAC Coordinator Realignment":
+        # Map the short address of the transmitter to its extended address
+        panid = config.entry["mac_realign_panid"]
+        shortaddr = config.entry["mac_realign_coordaddr"]
+        extendedaddr = config.entry["mac_srcextendedaddr"]
+        if None not in {shortaddr, panid, extendedaddr}:
+            config.map_addresses(shortaddr, panid, extendedaddr)
+
+        # Map the short address of the receiver to its extended address
+        panid = config.entry["mac_realign_panid"]
+        shortaddr = config.entry["mac_realign_shortaddr"]
+        extendedaddr = config.entry["mac_dstextendedaddr"]
+        if None not in {shortaddr, panid, extendedaddr}:
+            config.map_addresses(shortaddr, panid, extendedaddr)
+
+
+def examine_device_types():
+    if config.entry["mac_frametype"] == "MAC Beacon":
+        # Only FFDs transmit beacons
+        panid = config.entry["mac_srcpanid"]
+
+        shortaddr = None
+        extendedaddr = None
+        if config.entry["mac_srcaddrmode"] == "Short source MAC address":
+            shortaddr = config.entry["mac_srcshortaddr"]
+            if (shortaddr, panid) in config.addresses.keys():
+                extendedaddr = config.addresses[(shortaddr, panid)]
+            else:
+                return
+        elif config.entry["mac_srcaddrmode"] == "Extended source MAC address":
+            extendedaddr = config.entry["mac_srcextendedaddr"]
+
+        macdevtype = "Full-Function Device"
+        nwkdevtype = None
+        if ((config.entry["nwk_beacon_devdepth"] == 0)
+            and (config.entry["mac_beacon_pancoord"]
+                 == "The sender is the PAN coordinator")):
+            # Zigbee Coordinators are always PAN Coordinators with zero depth
+            nwkdevtype = "Zigbee Coordinator"
+        elif ((config.entry["nwk_beacon_devdepth"] > 0)
+              and (config.entry["mac_beacon_pancoord"]
+                   == "The sender is not the PAN coordinator")):
+            # Zigbee Routers transmit beacons with depth greater than zero
+            nwkdevtype = "Zigbee Router"
+
+        config.update_devices(extendedaddr, macdevtype, nwkdevtype)
+    elif config.entry["mac_cmd_id"] == "MAC Association Request":
+        # The receivers of association requests are always FFDs
+        panid = config.entry["mac_dstpanid"]
+
+        shortaddr = None
+        extendedaddr = None
+        if (config.entry["mac_dstaddrmode"]
+                == "Short destination MAC address"):
+            shortaddr = config.entry["mac_dstshortaddr"]
+            if (shortaddr, panid) in config.addresses.keys():
+                extendedaddr = config.addresses[(shortaddr, panid)]
+            else:
+                return
+        elif (config.entry["mac_dstaddrmode"]
+                == "Extended destination MAC address"):
+            extendedaddr = config.entry["mac_dstextendedaddr"]
+
+        macdevtype = "Full-Function Device"
+        nwkdevtype = None
+        if shortaddr is not None:
+            if shortaddr == "0x0000":
+                nwkdevtype = "Zigbee Coordinator"
+            else:
+                nwkdevtype = "Zigbee Router"
+
+        config.update_devices(extendedaddr, macdevtype, nwkdevtype)
+
+        # The transmitters of association requests always include
+        # their extended address as well as their MAC device type
+        panid = config.entry["mac_dstpanid"]
+
+        shortaddr = None
         extendedaddr = config.entry["mac_srcextendedaddr"]
 
-    # Only FFDs transmit beacons
-    macdevtype = "Full-Function Device"
+        macdevtype = config.entry["mac_assocreq_devtype"]
+        nwkdevtype = None
+        if macdevtype == "Full-Function Device":
+            # Zigbee Coordinators do not transmit association requests
+            nwkdevtype = "Zigbee Router"
+        elif macdevtype == "Reduced-Function Device":
+            # All RFDs are Zigbee End Devices
+            nwkdevtype = "Zigbee End Device"
 
-    # We can derive the NWK device type from multiple packet fields
-    nwkdevtype = None
-    if ((config.entry["nwk_beacon_devdepth"] == 0)
-        and (config.entry["mac_beacon_pancoord"]
-             == "The sender is the PAN coordinator")):
-        # Zigbee Coordinators are always PAN Coordinators with zero depth
-        nwkdevtype = "Zigbee Coordinator"
-    elif ((config.entry["nwk_beacon_devdepth"] > 0)
-          and (config.entry["mac_beacon_pancoord"]
-               == "The sender is not the PAN coordinator")):
-        # Zigbee Routers transmit beacons with depth greater than zero
-        nwkdevtype = "Zigbee Router"
+        config.update_devices(extendedaddr, macdevtype, nwkdevtype)
+    elif config.entry["mac_cmd_id"] == "MAC Data Request":
+        # The receivers of data requests are always FFDs
+        panid = config.entry["mac_dstpanid"]
 
-    # Update the devices table in the database
-    config.db.update_dev(panid, epid,
-                         shortaddr, extendedaddr,
-                         macdevtype, nwkdevtype)
+        shortaddr = None
+        extendedaddr = None
+        if (config.entry["mac_dstaddrmode"]
+                == "Short destination MAC address"):
+            shortaddr = config.entry["mac_dstshortaddr"]
+            if (shortaddr, panid) in config.addresses.keys():
+                extendedaddr = config.addresses[(shortaddr, panid)]
+            else:
+                return
+        elif (config.entry["mac_dstaddrmode"]
+                == "Extended destination MAC address"):
+            extendedaddr = config.entry["mac_dstextendedaddr"]
 
-    return
+        macdevtype = "Full-Function Device"
+        nwkdevtype = None
+        if shortaddr is not None:
+            if shortaddr == "0x0000":
+                nwkdevtype = "Zigbee Coordinator"
+            else:
+                nwkdevtype = "Zigbee Router"
 
+        config.update_devices(extendedaddr, macdevtype, nwkdevtype)
+    elif config.entry["mac_cmd_id"] == "MAC Coordinator Realignment":
+        # The transmitter of the Coordinator Realignment is always an FFD
+        panid = config.entry["mac_realign_panid"]
 
-def assoc_req():
-    # The destination is always an FFD
-    panid = config.entry["mac_dstpanid"]
-    epid = None
-    shortaddr = None
-    extendedaddr = None
-    if (config.entry["mac_dstaddrmode"]
-            == "Short destination MAC address"):
-        shortaddr = config.entry["mac_dstshortaddr"]
-    elif (config.entry["mac_dstaddrmode"]
-            == "Extended destination MAC address"):
-        extendedaddr = config.entry["mac_dstextendedaddr"]
-    macdevtype = "Full-Function Device"
-    nwkdevtype = None
-    if shortaddr is not None:
+        shortaddr = config.entry["mac_realign_coordaddr"]
+        extendedaddr = config.entry["mac_srcextendedaddr"]
+
+        macdevtype = "Full-Function Device"
+        nwkdevtype = None
         if shortaddr == "0x0000":
             nwkdevtype = "Zigbee Coordinator"
         else:
             nwkdevtype = "Zigbee Router"
 
-    # Update the devices table in the database
-    config.db.update_dev(panid, epid,
-                         shortaddr, extendedaddr,
-                         macdevtype, nwkdevtype)
+        # The receiver of the Coordinator Realignment is always an RFD
+        panid = config.entry["mac_realign_panid"]
 
-    # The source always includes their extended address and MAC device type
-    # TODO
-    return
+        shortaddr = config.entry["mac_realign_shortaddr"]
+        extendedaddr = config.entry["mac_dstextendedaddr"]
 
-
-def assoc_rsp():
-    # TODO
-    return
-
-
-def data_req():
-    # TODO
-    return
-
-
-def orphan_notif():
-    # TODO
-    return
-
-
-def beacon_req():
-    # TODO
-    return
-
-
-def coord_realign():
-    # The transmitter of the Coordinator Realignment is always an FFD
-    panid = config.entry["mac_realign_panid"]
-    epid = None
-    shortaddr = config.entry["mac_realign_coordaddr"]
-    extendedaddr = config.entry["mac_srcextendedaddr"]
-    macdevtype = "Full-Function Device"
-    nwkdevtype = None
-    if shortaddr == "0x0000":
-        nwkdevtype = "Zigbee Coordinator"
-    else:
-        nwkdevtype = "Zigbee Router"
-
-    # Update the devices table in the database
-    config.db.update_dev(panid, epid,
-                         shortaddr, extendedaddr,
-                         macdevtype, nwkdevtype)
-
-    # The receiver of the Coordinator Realignment is always an RFD
-    panid = config.entry["mac_realign_panid"]
-    epid = None
-    shortaddr = config.entry["mac_realign_shortaddr"]
-    extendedaddr = config.entry["mac_dstextendedaddr"]
-    macdevtype = "Reduced-Function Device"
-    nwkdevtype = "Zigbee End Device"
-
-
-    # Update the devices table in the database
-    config.db.update_dev(panid, epid,
-                         shortaddr, extendedaddr,
-                         macdevtype, nwkdevtype)
-    return
-
-
-def mac_command_info():
-    if config.entry["mac_cmd_id"] == "MAC Association Request":
-        assoc_req()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Association Response":
-        assoc_rsp()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Disassociation Notification":
-        # Not used by Zigbee devices
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Data Request":
-        data_req()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC PAN ID Conflict Notification":
-        # Not used by Zigbee devices
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Orphan Notification":
-        orphan_notif()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Beacon Request":
-        beacon_req()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC Coordinator Realignment":
-        coord_realign()
-        return
-    elif config.entry["mac_cmd_id"] == "MAC GTS Request":
-        # Not used by Zigbee devices
-        return
+        macdevtype = "Reduced-Function Device"
+        nwkdevtype = "Zigbee End Device"
 
 
 def dev_info():
-    """Derive information about the devices from parsed packet fields."""
-    if config.entry["mac_frametype"] == "MAC Acknowledgment":
-        # MAC Acknowledgments do not contain anything useful
-        return
-    elif config.entry["mac_frametype"] == "MAC Beacon":
-        # MAC Beacons contain valuable information
-        beacon_info()
-        return
-    elif config.entry["mac_frametype"] == "MAC Command":
-        # Some MAC Commands contain valuable information
-        mac_command_info()
-        return
-    elif config.entry["mac_frametype"] == "MAC Data":
-        # TODO
-        return
-    else:
-        # Ignore unknown MAC frame types
-        return
+    """Derive information about the devices from unencrypted packet fields."""
+    # Try to keep a record of all extended addresses
+    examine_extended_addresses()
+
+    # Try to map EPIDs to PAN IDs
+    examine_network_ids()
+
+    # Try to map short addresses to extended addresses
+    examine_short_addresses()
+
+    # Try to derive logical device types
+    examine_device_types()

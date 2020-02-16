@@ -39,6 +39,9 @@ INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
 network_keys = {}
 link_keys = {}
 install_codes = {}
+devices = {}
+addresses = {}
+networks = {}
 entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
 
@@ -119,6 +122,79 @@ def custom_sorter(var_value):
         else:
             raise ValueError("Unexpected type: {}".format(type(var_value[i])))
     return ",".join(str_repr)
+
+
+def update_devices(extendedaddr, macdevtype, nwkdevtype):
+    global devices
+
+    # Sanity checks
+    if extendedaddr is None:
+        raise ValueError("The extended address is required")
+    elif macdevtype not in {None, "Full-Function Device",
+                            "Reduced-Function Device"}:
+        raise ValueError("Unexpected MAC device type")
+    elif nwkdevtype not in {None, "Zigbee Coordinator", "Zigbee Router",
+                            "Zigbee End Device"}:
+        raise ValueError("Unexpected NWK device type")
+
+    # Check whether it is a previously unknown device or not
+    if extendedaddr not in devices.keys():
+        devices[extendedaddr] = {
+            "macdevtype": macdevtype,
+            "nwkdevtype": nwkdevtype,
+        }
+    else:
+        # Check whether the device's information should be updated or not
+        if macdevtype is not None:
+            if devices[extendedaddr]["macdevtype"] is None:
+                devices[extendedaddr]["macdevtype"] = macdevtype
+            elif devices[extendedaddr]["macdevtype"] != macdevtype:
+                raise ValueError("Conflicting MAC device type")
+
+        if nwkdevtype is not None:
+            if devices[extendedaddr]["nwkdevtype"] is None:
+                devices[extendedaddr]["nwkdevtype"] = nwkdevtype
+            elif devices[extendedaddr]["nwkdevtype"] != nwkdevtype:
+                raise ValueError("Conflicting NWK device type")
+
+
+def map_addresses(shortaddr, panid, extendedaddr):
+    global addresses
+
+    # Sanity checks
+    if panid is None:
+        raise ValueError("The PAN ID of the device is required")
+    elif shortaddr is None or extendedaddr is None:
+        raise ValueError("Both addresses of the device are required")
+    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
+        # Ignore invalid PAN IDs
+        return
+    elif int(shortaddr, 16) < 0 or int(shortaddr, 16) > 65527:
+        # Ignore invalid device short addresses
+        return
+
+    # Update the shared dictionary of addresses
+    if (shortaddr, panid) not in addresses.keys():
+        addresses[(shortaddr, panid)] = extendedaddr
+    elif addresses[(shortaddr, panid)] != extendedaddr:
+        raise ValueError("Conflicting mapping of addresses")
+
+
+def map_networks(epid, panid):
+    global networks
+
+    # Sanity checks
+    if epid is None or panid is None:
+        raise ValueError("Both network IDs are required")
+    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
+        # Ignore invalid PAN IDs
+        return
+
+    # Update the shared dictionary of networks
+    if epid not in networks.keys():
+        networks[epid] = set([panid])
+    else:
+        networks[epid].add(panid)
 
 
 def add_encryption_keys(filepath, key_type):
