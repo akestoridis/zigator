@@ -217,7 +217,7 @@ def examine_device_types():
         nwkdevtype = "Zigbee End Device"
 
 
-def dev_info():
+def derive_info():
     """Derive information about the devices from unencrypted packet fields."""
     # Try to keep a record of all extended addresses
     examine_extended_addresses()

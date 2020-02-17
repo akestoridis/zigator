@@ -20,7 +20,7 @@ import os
 from scapy.all import PcapReader
 
 from .. import config
-from .dev_info import dev_info
+from .derive_info import derive_info
 from .phy_fields import phy_fields
 
 
@@ -52,7 +52,7 @@ def pcap_file(filepath):
 
         # Derive information about the devices that exchange packets
         if config.entry["error_msg"] is None:
-            dev_info()
+            derive_info()
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(keep=["pcap_directory",
