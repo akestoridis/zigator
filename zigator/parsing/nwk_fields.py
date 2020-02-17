@@ -715,6 +715,11 @@ def nwk_auxiliary(pkt):
     elif (config.entry["nwk_aux_extnonce"]
             == "The source address is not present"):
         potential_sources = set()
+        shortaddr = config.entry["nwk_srcshortaddr"]
+        panid = config.entry["mac_dstpanid"]
+        if (shortaddr, panid) in config.addresses:
+            potential_sources.add(
+                int(config.addresses[(shortaddr, panid)], 16))
         if config.entry["nwk_srcextendedaddr"] is not None:
             potential_sources.add(
                 int(config.entry["nwk_srcextendedaddr"], 16))
