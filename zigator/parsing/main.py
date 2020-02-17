@@ -47,12 +47,6 @@ def main(pcap_dirpath, db_filepath):
         logging.info("Parsed {} out of the {} pcap files"
                      "".format(pcap_counter, len(filepaths)))
 
-    # Log the derived information in detail for debugging purposes
-    logging.debug("Networks: {}".format(config.networks))
-    logging.debug("Devices: {}".format(config.devices))
-    logging.debug("Addresses: {}".format(config.addresses))
-    logging.debug("Pairs: {}".format(config.pairs))
-
     # Log a summary of the derived information
     logging.info("Discovered {} networks".format(len(config.networks)))
     logging.info("Discovered {} devices".format(len(config.devices)))
@@ -60,6 +54,12 @@ def main(pcap_dirpath, db_filepath):
                  "".format(len(config.addresses)))
     logging.info("Discovered {} pairs of short addresses exchanging packets"
                  "".format(len(config.pairs)))
+
+    # Store the derived information into the database
+    config.db.store_networks(config.networks)
+    config.db.store_devices(config.devices)
+    config.db.store_addresses(config.addresses)
+    config.db.store_pairs(config.pairs)
 
     # Log a summary of the generated warnings
     warnings = config.db.distinct_values(["warning_msg"], None)

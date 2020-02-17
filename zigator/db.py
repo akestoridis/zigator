@@ -430,6 +430,84 @@ def matching_frequency(conditions):
     return cursor.fetchall()[0][0]
 
 
+def store_networks(networks):
+    global connection
+    global cursor
+
+    # Drop the table if it already exists
+    cursor.execute("DROP TABLE IF EXISTS networks")
+
+    # Create the table
+    cursor.execute("CREATE TABLE networks(epid TEXT NOT NULL, panids TEXT)")
+
+    # Insert the data into the database
+    for epid in networks.keys():
+        cursor.execute("INSERT INTO networks VALUES (?, ?)",
+                       tuple([epid, ",".join(networks[epid])]))
+    connection.commit()
+
+
+def store_devices(devices):
+    global connection
+    global cursor
+
+    # Drop the table if it already exists
+    cursor.execute("DROP TABLE IF EXISTS devices")
+
+    # Create the table
+    cursor.execute("CREATE TABLE devices(extendedaddr TEXT NOT NULL, "
+                   "macdevtype TEXT, nwkdevtype TEXT)")
+
+    # Insert the data into the database
+    for extendedaddr in devices.keys():
+        cursor.execute("INSERT INTO devices VALUES (?, ?, ?)",
+                       tuple([extendedaddr,
+                              devices[extendedaddr]["macdevtype"],
+                              devices[extendedaddr]["nwkdevtype"]]))
+    connection.commit()
+
+
+def store_addresses(addresses):
+    global connection
+    global cursor
+
+    # Drop the table if it already exists
+    cursor.execute("DROP TABLE IF EXISTS addresses")
+
+    # Create the table
+    cursor.execute("CREATE TABLE addresses(shortaddr TEXT NOT NULL, "
+                   "panid TEXT NOT NULL, extendedaddr TEXT)")
+
+    # Insert the data into the database
+    for addrpan in addresses.keys():
+        cursor.execute("INSERT INTO addresses VALUES (?, ?, ?)",
+                       tuple([addrpan[0], addrpan[1], addresses[addrpan]]))
+    connection.commit()
+
+
+def store_pairs(pairs):
+    global connection
+    global cursor
+
+    # Drop the table if it already exists
+    cursor.execute("DROP TABLE IF EXISTS pairs")
+
+    # Create the table
+    cursor.execute("CREATE TABLE pairs(srcaddr TEXT NOT NULL, "
+                   "dstaddr TEXT NOT NULL, panid TEXT NOT NULL, "
+                   "first REAL, last REAL)")
+
+    # Insert the data into the database
+    for pairpan in pairs.keys():
+        cursor.execute("INSERT INTO pairs VALUES (?, ?, ?, ?, ?)",
+                       tuple([pairpan[0],
+                              pairpan[1],
+                              pairpan[2],
+                              pairs[pairpan]["first"],
+                              pairs[pairpan]["last"]]))
+    connection.commit()
+
+
 def disconnect():
     global connection
     global cursor
