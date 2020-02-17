@@ -51,12 +51,15 @@ def main(pcap_dirpath, db_filepath):
     logging.debug("Networks: {}".format(config.networks))
     logging.debug("Devices: {}".format(config.devices))
     logging.debug("Addresses: {}".format(config.addresses))
+    logging.debug("Pairs: {}".format(config.pairs))
 
     # Log a summary of the derived information
-    logging.info("Discovered {} unique networks".format(len(config.networks)))
-    logging.info("Discovered {} unique devices".format(len(config.devices)))
+    logging.info("Discovered {} networks".format(len(config.networks)))
+    logging.info("Discovered {} devices".format(len(config.devices)))
     logging.info("Discovered {} short-to-extended address mappings"
                  "".format(len(config.addresses)))
+    logging.info("Discovered {} pairs of short addresses exchanging packets"
+                 "".format(len(config.pairs)))
 
     # Log a summary of the generated warnings
     warnings = config.db.distinct_values(["warning_msg"], None)

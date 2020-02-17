@@ -39,9 +39,10 @@ INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
 network_keys = {}
 link_keys = {}
 install_codes = {}
+networks = {}
 devices = {}
 addresses = {}
-networks = {}
+pairs = {}
 entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
 
@@ -156,6 +157,40 @@ def update_devices(extendedaddr, macdevtype, nwkdevtype):
                 devices[extendedaddr]["nwkdevtype"] = nwkdevtype
             elif devices[extendedaddr]["nwkdevtype"] != nwkdevtype:
                 raise ValueError("Conflicting NWK device type")
+
+
+def update_pairs(srcaddr, dstaddr, panid, time):
+    global pairs
+
+    # Sanity checks
+    if panid is None:
+        raise ValueError("The PAN ID is required")
+    elif srcaddr is None:
+        raise ValueError("The source address is required")
+    elif dstaddr is None:
+        raise ValueError("The destination address is required")
+    elif time is None:
+        raise ValueError("The arrival time is required")
+    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
+        # Ignore invalid PAN IDs
+        return
+    elif int(srcaddr, 16) < 0 or int(srcaddr, 16) > 65527:
+        # Ignore invalid source short addresses
+        return
+    elif int(dstaddr, 16) < 0 or int(dstaddr, 16) > 65527:
+        # Ignore invalid destination short addresses
+        return
+
+    # Update the shared dictionary of pairs
+    if (srcaddr, dstaddr, panid) not in pairs.keys():
+        pairs[(srcaddr, dstaddr, panid)] = {
+            "first": time,
+            "last": time,
+        }
+    elif time > pairs[(srcaddr, dstaddr, panid)]["last"]:
+        pairs[(srcaddr, dstaddr, panid)]["last"] = time
+    elif time < pairs[(srcaddr, dstaddr, panid)]["first"]:
+        pairs[(srcaddr, dstaddr, panid)]["first"] = time
 
 
 def map_addresses(shortaddr, panid, extendedaddr):

@@ -217,6 +217,24 @@ def examine_device_types():
         nwkdevtype = "Zigbee End Device"
 
 
+def examine_address_pairs():
+    if config.entry["mac_frametype"] != "MAC Data":
+        # Examine only MAC Data packets
+        return
+    elif (config.entry["mac_panidcomp"]
+            != "The source PAN ID is the same as the destination PAN ID"):
+        # Ignore Inter-PAN packets
+        return
+
+    # Update the stored information about this pair of short addresses
+    srcaddr = config.entry["mac_srcshortaddr"]
+    dstaddr = config.entry["mac_dstshortaddr"]
+    panid = config.entry["mac_dstpanid"]
+    time = config.entry["pkt_time"]
+    if None not in {srcaddr, dstaddr, panid, time}:
+        config.update_pairs(srcaddr, dstaddr, panid, time)
+
+
 def derive_info():
     """Derive information about the devices from unencrypted packet fields."""
     # Try to keep a record of all extended addresses
@@ -230,3 +248,6 @@ def derive_info():
 
     # Try to derive logical device types
     examine_device_types()
+
+    # Try to keep a record of all short address pairs that exchange packets
+    examine_address_pairs()
