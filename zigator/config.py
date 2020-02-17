@@ -150,13 +150,21 @@ def update_devices(extendedaddr, macdevtype, nwkdevtype):
             if devices[extendedaddr]["macdevtype"] is None:
                 devices[extendedaddr]["macdevtype"] = macdevtype
             elif devices[extendedaddr]["macdevtype"] != macdevtype:
-                raise ValueError("Conflicting MAC device type")
+                if devices[extendedaddr]["macdevtype"] != "Conflicting Data":
+                    devices[extendedaddr]["macdevtype"] = "Conflicting Data"
+                    logging.warning("Conflicting data for the MAC device "
+                                    "type of the device with extended "
+                                    "address {}".format(extendedaddr))
 
         if nwkdevtype is not None:
             if devices[extendedaddr]["nwkdevtype"] is None:
                 devices[extendedaddr]["nwkdevtype"] = nwkdevtype
             elif devices[extendedaddr]["nwkdevtype"] != nwkdevtype:
-                raise ValueError("Conflicting NWK device type")
+                if devices[extendedaddr]["nwkdevtype"] != "Conflicting Data":
+                    devices[extendedaddr]["nwkdevtype"] = "Conflicting Data"
+                    logging.warning("Conflicting data for the NWK device "
+                                    "type of the device with extended "
+                                    "address {}".format(extendedaddr))
 
 
 def update_pairs(srcaddr, dstaddr, panid, time):
@@ -212,7 +220,11 @@ def map_addresses(shortaddr, panid, extendedaddr):
     if (shortaddr, panid) not in addresses.keys():
         addresses[(shortaddr, panid)] = extendedaddr
     elif addresses[(shortaddr, panid)] != extendedaddr:
-        raise ValueError("Conflicting mapping of addresses")
+        if addresses[(shortaddr, panid)] != "Conflicting Data":
+            addresses[(shortaddr, panid)] = "Conflicting Data"
+            logging.warning("Conflicting data for the mapping of the "
+                            "short address {}, in the PAN with ID {}, to "
+                            "an extended address".format(shortaddr, panid))
 
 
 def map_networks(epid, panid):
