@@ -103,7 +103,10 @@ def examine_device_types():
         if config.entry["mac_srcaddrmode"] == "Short source MAC address":
             shortaddr = config.entry["mac_srcshortaddr"]
             if (shortaddr, panid) in config.addresses.keys():
-                extendedaddr = config.addresses[(shortaddr, panid)]
+                if config.addresses[(shortaddr, panid)] != "Conflicting Data":
+                    extendedaddr = config.addresses[(shortaddr, panid)]
+                else:
+                    return
             else:
                 return
         elif config.entry["mac_srcaddrmode"] == "Extended source MAC address":
@@ -133,7 +136,10 @@ def examine_device_types():
                 == "Short destination MAC address"):
             shortaddr = config.entry["mac_dstshortaddr"]
             if (shortaddr, panid) in config.addresses.keys():
-                extendedaddr = config.addresses[(shortaddr, panid)]
+                if config.addresses[(shortaddr, panid)] != "Conflicting Data":
+                    extendedaddr = config.addresses[(shortaddr, panid)]
+                else:
+                    return
             else:
                 return
         elif (config.entry["mac_dstaddrmode"]
@@ -177,7 +183,10 @@ def examine_device_types():
                 == "Short destination MAC address"):
             shortaddr = config.entry["mac_dstshortaddr"]
             if (shortaddr, panid) in config.addresses.keys():
-                extendedaddr = config.addresses[(shortaddr, panid)]
+                if config.addresses[(shortaddr, panid)] != "Conflicting Data":
+                    extendedaddr = config.addresses[(shortaddr, panid)]
+                else:
+                    return
             else:
                 return
         elif (config.entry["mac_dstaddrmode"]
