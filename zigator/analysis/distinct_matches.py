@@ -548,6 +548,92 @@ COLUMN_MATCHES = set([
         "zcl_frametype",
         "zcl_cmd_id",
     ),
+    (
+        "srcpanid--mac_frametype_cmdid.tsv",
+        (
+            "mac_srcpanid",
+        ),
+        (
+            ("error_msg", None),
+        ),
+        "mac_frametype",
+        "mac_cmd_id",
+    ),
+    (
+        "mac_frametype_cmdid--addrmode.tsv",
+        (
+            "mac_frametype",
+            "mac_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+        ),
+        "mac_dstaddrmode",
+        "mac_srcaddrmode",
+    ),
+    (
+        "nwk_frametype_cmdid--addrmode.tsv",
+        (
+            "nwk_frametype",
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("!nwk_frametype", None),
+        ),
+        "nwk_extendeddst",
+        "nwk_extendedsrc",
+    ),
+    (
+        "nwk_srcextendedaddr--nwk_cmdid.tsv",
+        (
+            "nwk_srcextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+            ("!nwk_srcextendedaddr", None),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_dstextendedaddr--nwk_cmdid.tsv",
+        (
+            "nwk_dstextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+            ("!nwk_dstextendedaddr", None),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_srcextendedaddr--aps_frametype_cmdid.tsv",
+        (
+            "nwk_srcextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!aps_frametype", None),
+            ("!nwk_srcextendedaddr", None),
+        ),
+        "aps_frametype",
+        "aps_cmd_id",
+    ),
+    (
+        "nwk_dstextendedaddr--aps_frametype_cmdid.tsv",
+        (
+            "nwk_dstextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!aps_frametype", None),
+            ("!nwk_dstextendedaddr", None),
+        ),
+        "aps_frametype",
+        "aps_cmd_id",
+    ),
 ])
 
 
