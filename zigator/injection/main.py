@@ -14,15 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Security analysis tool for Zigbee networks
-"""
+from .beacon import beacon
 
-from .__about__ import *
 
-from . import config
-
-from . import analysis
-from . import injection
-from . import parsing
-from . import visualization
+def main(pkt_type, panid):
+    """Inject forged packets."""
+    if pkt_type.lower() == "beacon":
+        beacon(panid)
+    else:
+        raise ValueError("Unknown packet type \"{}\"".format(pkt_type))

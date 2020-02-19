@@ -105,6 +105,16 @@ parser_visualize.add_argument(
     action="store",
     help="directory for the output files")
 
+
+parser_injectbeacon = subparsers.add_parser(
+    "inject-beacon",
+    help="inject a Zigbee beacon packet")
+parser_injectbeacon.add_argument(
+    "PANID",
+    type=str,
+    action="store",
+    help="the PAN ID of the beacon packet")
+
 args = parser.parse_args()
 
 
@@ -133,6 +143,8 @@ def main():
     elif args.subcommand == "visualize":
         zigator.visualization.main(args.DATABASE_FILEPATH,
                                    args.OUTPUT_DIRECTORY)
+    elif args.subcommand == "inject-beacon":
+        zigator.injection.main("beacon", args.PANID)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
