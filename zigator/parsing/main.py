@@ -50,11 +50,13 @@ def main(pcap_dirpath, db_filepath):
                      "".format(pcap_counter, len(filepaths)))
 
     # Log a summary of the derived information
-    logging.info("Discovered {} networks".format(len(config.networks)))
-    logging.info("Discovered {} devices".format(len(config.devices)))
-    logging.info("Discovered {} short-to-extended address mappings"
-                 "".format(len(config.addresses)))
-    logging.info("Discovered {} pairs of short addresses exchanging packets"
+    logging.info("Discovered the EPID of {} networks"
+                 "".format(len(config.networks)))
+    logging.info("Discovered the extended address of {} devices"
+                 "".format(len(config.devices)))
+    logging.info("Discovered the short-to-extended address mapping of "
+                 "{} devices".format(len(config.addresses)))
+    logging.info("Discovered {} flows of MAC Data packets"
                  "".format(len(config.pairs)))
 
     # Store the derived information into the database
