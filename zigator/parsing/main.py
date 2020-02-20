@@ -34,7 +34,9 @@ def main(pcap_dirpath, db_filepath):
     config.db.create_table("packets")
 
     # Get a sorted list of pcap filepaths
-    filepaths = glob.glob(os.path.join(pcap_dirpath, "*.[pP][cC][aA][pP]"))
+    filepaths = glob.glob(
+        os.path.join(pcap_dirpath, "**", "*.[pP][cC][aA][pP]"),
+        recursive=True)
     filepaths.sort()
     logging.info("Detected {} pcap files in the directory \"{}\""
                  "".format(len(filepaths), pcap_dirpath))
