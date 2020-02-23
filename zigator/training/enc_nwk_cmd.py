@@ -93,6 +93,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         ("error_msg", None),
         ("nwk_frametype", "NWK Command"),
         ("nwk_security", "NWK Security Enabled"),
+        ("!nwk_cmd_id", None),
     ]
     raw_samples = config.db.fetch_values(columns, conditions, False)
     logging.info("Fetched {} raw samples of encrypted NWK commands"
