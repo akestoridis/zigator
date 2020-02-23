@@ -66,7 +66,7 @@ def main(pcap_dirpath, db_filepath):
     config.db.store_pairs(config.pairs)
 
     # Log a summary of the generated warnings
-    warnings = config.db.distinct_values(["warning_msg"], None)
+    warnings = config.db.fetch_values(["warning_msg"], None, True)
     for warning in warnings:
         message = warning[0]
         if message is None:
@@ -76,7 +76,7 @@ def main(pcap_dirpath, db_filepath):
                         "".format(frequency, message))
 
     # Log a summary of the generated errors
-    errors = config.db.distinct_values(["error_msg"], None)
+    errors = config.db.fetch_values(["error_msg"], None, True)
     for error in errors:
         message = error[0]
         if message is None:

@@ -90,7 +90,6 @@ parser_analyze.add_argument(
     action="store",
     help="directory for the output files")
 
-
 parser_visualize = subparsers.add_parser(
     "visualize",
     help="visualize data from a database")
@@ -105,7 +104,6 @@ parser_visualize.add_argument(
     action="store",
     help="directory for the output files")
 
-
 parser_injectbeacon = subparsers.add_parser(
     "inject-beacon",
     help="inject a Zigbee beacon packet")
@@ -114,6 +112,20 @@ parser_injectbeacon.add_argument(
     type=str,
     action="store",
     help="the PAN ID of the beacon packet")
+
+parser_train = subparsers.add_parser(
+    "train",
+    help="train a classifier based on data from a database")
+parser_train.add_argument(
+    "DATABASE_FILEPATH",
+    type=str,
+    action="store",
+    help="path of the database file")
+parser_train.add_argument(
+    "OUTPUT_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory for the output files")
 
 args = parser.parse_args()
 
@@ -145,6 +157,10 @@ def main():
                                    args.OUTPUT_DIRECTORY)
     elif args.subcommand == "inject-beacon":
         zigator.injection.main("beacon", args.PANID)
+    elif args.subcommand == "train":
+        zigator.training.main("enc-nwk-cmd",
+                              args.DATABASE_FILEPATH,
+                              args.OUTPUT_DIRECTORY)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 

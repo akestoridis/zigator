@@ -14,16 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Security analysis tool for Zigbee networks
-"""
+from .enc_nwk_cmd import enc_nwk_cmd
 
-from .__about__ import *
 
-from . import config
-
-from . import analysis
-from . import injection
-from . import parsing
-from . import training
-from . import visualization
+def main(train_type, db_filepath, out_dirpath):
+    """Train a classifier from data stored in a database file."""
+    if train_type.lower() == "enc-nwk-cmd":
+        enc_nwk_cmd(db_filepath, out_dirpath)
+    else:
+        raise ValueError("Unknown training type \"{}\"".format(train_type))

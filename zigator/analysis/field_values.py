@@ -148,7 +148,10 @@ def field_values(out_dirpath):
                 continue
 
             # Compute the distinct values of this column
-            var_values = config.db.distinct_values([column_name], conditions)
+            var_values = config.db.fetch_values(
+                [column_name],
+                conditions,
+                True)
             var_values.sort(key=config.custom_sorter)
             var_values = [var_value[0] for var_value in var_values]
 

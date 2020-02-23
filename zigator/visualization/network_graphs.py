@@ -27,17 +27,18 @@ def network_graphs(out_dirpath):
     os.makedirs(out_dirpath, exist_ok=True)
 
     # Get the path of each pcap file
-    pcap_filepaths = config.db.distinct_values(
+    pcap_filepaths = config.db.fetch_values(
         [
             "pcap_directory",
             "pcap_filename"
         ],
-        None
+        None,
+        True
     )
 
     for pcap_filepath in pcap_filepaths:
         # Get the addresses of nodes that have exchanged MAC Data packets
-        addr_pairs = config.db.distinct_values(
+        addr_pairs = config.db.fetch_values(
             [
                 "mac_srcshortaddr",
                 "mac_dstshortaddr",
@@ -48,7 +49,8 @@ def network_graphs(out_dirpath):
                 ("mac_frametype", "MAC Data"),
                 ("!mac_dstshortaddr", "0xffff"),
                 ("error_msg", None),
-            ]
+            ],
+            True
         )
 
         # Render a directed graph from the observed address pairs

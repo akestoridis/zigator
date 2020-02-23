@@ -493,7 +493,7 @@ def nwk_routerecord(pkt):
 
     # Relay List field (variable)
     config.entry["nwk_routerecord_relaylist"] = ",".join(
-        "0x{:04X}".format(addr)
+        "0x{:04x}".format(addr)
         for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
 
     return
@@ -885,7 +885,7 @@ def nwk_fields(pkt):
         config.entry["nwk_srcroute_relaycount"] = pkt[ZigbeeNWK].relay_count
         config.entry["nwk_srcroute_relayindex"] = pkt[ZigbeeNWK].relay_index
         config.entry["nwk_srcroute_relaylist"] = ",".join(
-            "0x{:04X}".format(addr) for addr in pkt[ZigbeeNWK].relays)
+            "0x{:04x}".format(addr) for addr in pkt[ZigbeeNWK].relays)
     elif config.entry["nwk_srcroute"] != "NWK Source Route Omitted":
         config.entry["error_msg"] = "Unknown Source Route state"
         return

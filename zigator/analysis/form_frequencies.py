@@ -147,7 +147,10 @@ def form_frequencies(out_dirpath):
                 continue
 
         # Compute the distinct matching values of the selected columns
-        form_values = config.db.distinct_values(selected_columns, conditions)
+        form_values = config.db.fetch_values(
+            selected_columns,
+            conditions,
+            True)
         form_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each form

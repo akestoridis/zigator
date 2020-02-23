@@ -59,7 +59,7 @@ def matching_frequencies(out_dirpath):
         conditions = condition_match[2]
 
         # Compute the distinct values of the varying columns
-        var_values = config.db.distinct_values(var_columns, conditions)
+        var_values = config.db.fetch_values(var_columns, conditions, True)
         var_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each set of conditions

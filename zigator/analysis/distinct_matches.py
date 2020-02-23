@@ -653,7 +653,7 @@ def distinct_matches(out_dirpath):
         column_names = list(column_match[3:])
 
         # Compute the distinct values of the varying columns
-        var_values = config.db.distinct_values(var_columns, conditions)
+        var_values = config.db.fetch_values(var_columns, conditions, True)
         var_values.sort(key=config.custom_sorter)
 
         # Compute the distinct matches for each value
@@ -662,7 +662,10 @@ def distinct_matches(out_dirpath):
             var_conditions = list(conditions)
             for i in range(len(var_value)):
                 var_conditions.append((var_columns[i], var_value[i]))
-            matches = config.db.distinct_values(column_names, var_conditions)
+            matches = config.db.fetch_values(
+                column_names,
+                var_conditions,
+                True)
             matches.sort(key=config.custom_sorter)
             results.append((var_value, matches))
 

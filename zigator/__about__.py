@@ -44,9 +44,11 @@ __classifiers__ = [
 ]
 __install_requires__ = [
     "graphviz>=0.13.2",
+    "numpy>=1.18.1",
     "pycrc>=0.9.2",
     "pycryptodomex>=3.9.4",
-    "scapy===2.4.3-zigator"
+    "scapy===2.4.3-zigator",
+    "scikit-learn>=0.22.1"
 ]
 __python_requires__ = ">=3.5.3"
 __entry_points__ = {

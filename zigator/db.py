@@ -350,7 +350,7 @@ def grouped_count(selected_columns, count_errors):
     return cursor.fetchall()
 
 
-def distinct_values(selected_columns, conditions):
+def fetch_values(selected_columns, conditions, distinct):
     global cursor
 
     # Sanity check
@@ -360,7 +360,10 @@ def distinct_values(selected_columns, conditions):
 
     # Construct the selection command
     column_csv = ", ".join(selected_columns)
-    select_command = "SELECT DISTINCT {} FROM packets".format(column_csv)
+    if distinct:
+        select_command = "SELECT DISTINCT {} FROM packets".format(column_csv)
+    else:
+        select_command = "SELECT {} FROM packets".format(column_csv)
     expr_statements = []
     expr_values = []
     if conditions is not None:
@@ -506,6 +509,35 @@ def store_pairs(pairs):
                               pairs[pairpan]["first"],
                               pairs[pairpan]["last"]]))
     connection.commit()
+
+
+def get_nwkdevtype(shortaddr=None, panid=None, extendedaddr=None):
+    global cursor
+
+    # Make sure that the extended address of the device is known
+    if extendedaddr is None:
+        cursor.execute("SELECT extendedaddr FROM addresses WHERE shortaddr=? "
+                       "AND panid=?", tuple([shortaddr, panid]))
+        results = cursor.fetchall()
+        if len(results) == 0:
+            return None
+        elif len(results) != 1:
+            return "Conflicting Data"
+        elif results[0][0] == "Conflicting Data":
+            return "Conflicting Data"
+        else:
+            extendedaddr = results[0][0]
+
+    # Use the extended address of the device to determine its NWK device type
+    cursor.execute("SELECT nwkdevtype FROM devices WHERE extendedaddr=?",
+                   tuple([extendedaddr]))
+    results = cursor.fetchall()
+    if len(results) == 0:
+        return None
+    elif len(results) != 1:
+        return "Conflicting Data"
+    else:
+        return results[0][0]
 
 
 def disconnect():
