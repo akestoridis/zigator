@@ -19,6 +19,7 @@ import os
 
 import graphviz
 import numpy as np
+from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
@@ -118,14 +119,14 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         ("nwk_edinitiator", "CATEGORICAL"),
         ("nwk_radius", "NUMERICAL"),
         ("nwk_aux_extnonce", "CATEGORICAL"),
+        ("der_same_macnwkdst", "CATEGORICAL"),
+        ("der_same_macnwksrc", "CATEGORICAL"),
+        ("der_same_nwknwkauxsrc", "CATEGORICAL"),
         ("der_mac_dsttype", "CATEGORICAL"),
         ("der_mac_srctype", "CATEGORICAL"),
         ("der_nwk_dsttype", "CATEGORICAL"),
         ("der_nwk_srctype", "CATEGORICAL"),
         ("der_nwkaux_srctype", "CATEGORICAL"),
-        ("der_same_macnwkdst", "CATEGORICAL"),
-        ("der_same_macnwksrc", "CATEGORICAL"),
-        ("der_same_nwknwkauxsrc", "CATEGORICAL"),
     ]
 
     # Map each NWK command to an integer value
@@ -184,6 +185,18 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
             if feature_name in columns:
                 # Primary feature
                 value = raw_sample[columns.index(feature_name)]
+            elif feature_name == "der_same_macnwkdst":
+                # Same MAC and NWK Destination
+                value = "Same MAC/NWK Dst: {}".format(
+                    mac_dstshortaddr == nwk_dstshortaddr)
+            elif feature_name == "der_same_macnwksrc":
+                # Same MAC and NWK Source
+                value = "Same MAC/NWK Src: {}".format(
+                    mac_srcshortaddr == nwk_srcshortaddr)
+            elif feature_name == "der_same_nwknwkauxsrc":
+                # Same NWK and NWK-AUX Source
+                value = "Same NWK/NWK-AUX Src: {}".format(
+                    nwk_srcextendedaddr == nwk_aux_srcaddr)
             elif feature_name == "der_mac_dsttype":
                 # MAC Destination Type
                 value = "MAC Dst Type: "
@@ -301,18 +314,6 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                                          "".format(nwk_aux_srcaddr))
                     else:
                         value += nwkdevtype
-            elif feature_name == "der_same_macnwkdst":
-                # Same MAC and NWK Destination
-                value = "Same MAC/NWK Dst: {}".format(
-                    mac_dstshortaddr == nwk_dstshortaddr)
-            elif feature_name == "der_same_macnwksrc":
-                # Same MAC and NWK Source
-                value = "Same MAC/NWK Src: {}".format(
-                    mac_srcshortaddr == nwk_srcshortaddr)
-            elif feature_name == "der_same_nwknwkauxsrc":
-                # Same NWK and NWK-AUX Source
-                value = "Same NWK/NWK-AUX Src: {}".format(
-                    nwk_srcextendedaddr == nwk_aux_srcaddr)
             else:
                 raise ValueError("Unknown feature name \"{}\""
                                  "".format(feature_name))
@@ -479,22 +480,23 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
     # Use the trained model to predict the class of the testing samples
     predictions = clf.predict(testing_table)
 
-    # Compute the confusion matrix
-    fp = open(os.path.join(out_dirpath, "confusion-matrix.tsv"), "w")
-    for actual_class in class_names:
-        fp.write("\t{}".format(actual_class))
-    fp.write("\n")
-    for predicted_class in class_names:
-        fp.write("{}".format(predicted_class))
-        for actual_class in class_names:
-            cell_counter = 0
-            for i, prediction in enumerate(predictions):
-                if (prediction == nwk_commands[predicted_class]
-                        and testing_labels[i] == nwk_commands[actual_class]):
-                    cell_counter += 1
-            fp.write("\t{}".format(cell_counter))
-        fp.write("\n")
+    # Write the main classification metrics in a file
+    fp = open(os.path.join(out_dirpath, "classification-report.txt"), "w")
+    fp.write(metrics.classification_report(
+        testing_labels, predictions, target_names=class_names, digits=6))
     fp.close()
+
+    # Write the confusion matrix in a file
+    confusion_matrix = metrics.confusion_matrix(testing_labels, predictions)
+    np.savetxt(os.path.join(out_dirpath, "confusion-matrix.tsv"),
+               confusion_matrix,
+               fmt="%u",
+               delimiter="\t",
+               header="\t".join(class_names))
+
+    # Log just the accuracy score
+    logging.info("Accuracy: {}".format(
+        metrics.accuracy_score(testing_labels, predictions)))
 
     # Disconnect from the provided database
     config.db.disconnect()
