@@ -108,6 +108,25 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         fp.write("{}\n".format("\t".join([str(x) for x in raw_sample])))
     fp.close()
 
+    # Map each NWK command to an integer value
+    nwk_commands = {
+        "NWK Route Request": 1,
+        "NWK Route Reply": 2,
+        "NWK Network Status": 3,
+        "NWK Leave": 4,
+        "NWK Route Record": 5,
+        "NWK Rejoin Request": 6,
+        "NWK Rejoin Response": 7,
+        "NWK Link Status": 8,
+        "NWK Network Report": 9,
+        "NWK Network Update": 10,
+        "NWK End Device Timeout Request": 11,
+        "NWK End Device Timeout Response": 12,
+    }
+    class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
+    logging.info("The classifier will be trained to distinguish "
+                 "{} NWK commands".format(len(nwk_commands)))
+
     # Define the features that the classifier will use
     feature_definitions = [
         ("phy_length", "NUMERICAL"),
@@ -129,23 +148,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         ("der_nwk_srctype", "CATEGORICAL"),
         ("der_nwkaux_srctype", "CATEGORICAL"),
     ]
-
-    # Map each NWK command to an integer value
-    nwk_commands = {
-        "NWK Route Request": 1,
-        "NWK Route Reply": 2,
-        "NWK Network Status": 3,
-        "NWK Leave": 4,
-        "NWK Route Record": 5,
-        "NWK Rejoin Request": 6,
-        "NWK Rejoin Response": 7,
-        "NWK Link Status": 8,
-        "NWK Network Report": 9,
-        "NWK Network Update": 10,
-        "NWK End Device Timeout Request": 11,
-        "NWK End Device Timeout Response": 12
-    }
-    class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
+    logging.info("The classifier will use {} unencoded features"
+                 "".format(len(feature_definitions)))
 
     # Process the raw samples
     numerical_table = []
@@ -351,6 +355,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         [fd[0] for fd in feature_definitions if fd[1] == "NUMERICAL"]
         + enc.get_feature_names().tolist()
     )
+    logging.info("The classifier will use {} encoded features"
+                 "".format(len(dataset_features)))
 
     # Write the features of the dataset in a file
     with open(os.path.join(out_dirpath, "dataset-features.tsv"), "w") as fp:
@@ -470,11 +476,20 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                  "".format(len(parameters.keys()), k))
     gscv = GridSearchCV(DecisionTreeClassifier(), parameters, cv=k)
     gscv.fit(training_table, training_labels)
+
+    # Log the best score and parameters
     logging.info("Highest mean cross-validated score: {}"
                  "".format(gscv.best_score_))
     logging.info("Best set of parameters: {}".format(gscv.best_params_))
 
-    # Use the best estimation as our classifier
+    # Write more detailed results in a file
+    with open(os.path.join(out_dirpath, "cv-results.txt"), "w") as fp:
+        fp.write("cv_results_ = {\n")
+        for key in sorted(gscv.cv_results_.keys()):
+            fp.write("    '{}': {},\n".format(key, gscv.cv_results_[key]))
+        fp.write("}")
+
+    # Use the best estimator as our classifier
     clf = gscv.best_estimator_
 
     # Plot the tree of the trained model
@@ -494,7 +509,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
     # Use the trained model to predict the class of the testing samples
     predictions = clf.predict(testing_table)
 
-    # Write the main classification metrics in a file
+    # Write the results of classification metrics in a file
     fp = open(os.path.join(out_dirpath, "classification-report.txt"), "w")
     fp.write(metrics.classification_report(
         testing_labels, predictions, target_names=class_names, digits=6))
@@ -508,8 +523,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                delimiter="\t",
                header="\t".join(class_names))
 
-    # Log just the accuracy score
-    logging.info("Accuracy: {}".format(
+    # Log the accuracy score
+    logging.info("Testing accuracy: {}".format(
         metrics.accuracy_score(testing_labels, predictions)))
 
     # Disconnect from the provided database
