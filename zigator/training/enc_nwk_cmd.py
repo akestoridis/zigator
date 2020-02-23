@@ -20,6 +20,7 @@ import os
 import graphviz
 import numpy as np
 from sklearn import metrics
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
@@ -459,9 +460,22 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
             fp.write("{}\t{}\n".format(
                 cmd_name, testing_breakdown[nwk_commands[cmd_name]]))
 
-    # Train a Decision Tree classifier
-    clf = DecisionTreeClassifier(criterion="entropy")
-    clf = clf.fit(training_table, training_labels)
+    # Perform k-fold cross validation
+    k = 5
+    parameters = {
+        "criterion": ["entropy", "gini"],
+        "max_depth": [None, 8, 7, 6, 5, 4, 3, 2, 1],
+    }
+    logging.info("Tuning {} parameters using {}-fold cross validation..."
+                 "".format(len(parameters.keys()), k))
+    gscv = GridSearchCV(DecisionTreeClassifier(), parameters, cv=k)
+    gscv.fit(training_table, training_labels)
+    logging.info("Highest mean cross-validated score: {}"
+                 "".format(gscv.best_score_))
+    logging.info("Best set of parameters: {}".format(gscv.best_params_))
+
+    # Use the best estimation as our classifier
+    clf = gscv.best_estimator_
 
     # Plot the tree of the trained model
     dot_data = export_graphviz(clf,
