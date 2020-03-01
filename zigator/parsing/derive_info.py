@@ -66,6 +66,15 @@ def examine_short_addresses():
         extendedaddr = config.entry["nwk_dstextendedaddr"]
         if None not in {shortaddr, panid, extendedaddr}:
             config.map_addresses(shortaddr, panid, extendedaddr)
+
+        # All the packets that are secured on the NWK layer include
+        # the extended address of the transmitter in the auxiliary header
+        if config.entry["nwk_security"] == "NWK Security Enabled":
+            panid = config.entry["mac_dstpanid"]
+            shortaddr = config.entry["mac_srcshortaddr"]
+            extendedaddr = config.entry["nwk_aux_srcaddr"]
+            if None not in {shortaddr, panid, extendedaddr}:
+                config.map_addresses(shortaddr, panid, extendedaddr)
     elif config.entry["mac_cmd_id"] == "MAC Association Response":
         if config.entry["mac_assocrsp_status"] != "Association successful":
             # Ignore unsuccessful associations
