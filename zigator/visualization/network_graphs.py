@@ -30,36 +30,55 @@ def network_graphs(out_dirpath):
     pcap_filepaths = config.db.fetch_values(
         [
             "pcap_directory",
-            "pcap_filename"
+            "pcap_filename",
         ],
         None,
         True
     )
 
     for pcap_filepath in pcap_filepaths:
-        # Get the addresses of nodes that have exchanged MAC Data packets
-        addr_pairs = config.db.fetch_values(
+        # Determine the subset of packets that will be examined
+        conditions = [
+            ("pcap_directory", pcap_filepath[0]),
+            ("pcap_filename", pcap_filepath[1]),
+            ("mac_frametype", "MAC Data"),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!mac_dstshortaddr", "0xffff"),
+            ("error_msg", None),
+        ]
+
+        # Get all destination PAN IDs that were observed in these packets
+        panids = config.db.fetch_values(
             [
-                "mac_srcshortaddr",
-                "mac_dstshortaddr",
+                "mac_dstpanid",
             ],
-            [
-                ("pcap_directory", pcap_filepath[0]),
-                ("pcap_filename", pcap_filepath[1]),
-                ("mac_frametype", "MAC Data"),
-                ("!mac_dstshortaddr", "0xffff"),
-                ("error_msg", None),
-            ],
+            conditions,
             True
         )
 
-        # Render a directed graph from the observed address pairs
-        digraph = graphviz.Digraph(
-            name=os.path.splitext(pcap_filepath[1])[0],
-            comment=os.path.join(pcap_filepath[0], pcap_filepath[1]),
-            directory=out_dirpath,
-            format="pdf",
-            engine="dot")
-        for addr_pair in addr_pairs:
-            digraph.edge(addr_pair[0], addr_pair[1])
-        digraph.render()
+        for panid in panids:
+            # Determine the name of the output file
+            out_filename = (
+                os.path.splitext(pcap_filepath[1])[0] + "-" + panid[0]
+            )
+
+            # Get the addresses of nodes that have exchanged MAC Data packets
+            addr_pairs = config.db.fetch_values(
+                [
+                    "mac_srcshortaddr",
+                    "mac_dstshortaddr",
+                ],
+                conditions + [("mac_dstpanid", panid[0])],
+                True
+            )
+
+            # Render a directed graph from the observed address pairs
+            digraph = graphviz.Digraph(
+                name=out_filename,
+                directory=out_dirpath,
+                format="pdf",
+                engine="dot")
+            for addr_pair in addr_pairs:
+                digraph.edge(addr_pair[0], addr_pair[1])
+            digraph.render()
