@@ -50,6 +50,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         "pkt_num",
         "pkt_time",
         "phy_length",
+        "mac_fcs",
         "mac_frametype",
         "mac_security",
         "mac_framepending",
@@ -130,23 +131,53 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
     # Define the features that the classifier will use
     feature_definitions = [
         ("phy_length", "NUMERICAL"),
+        # "mac_fcs",
+        ("mac_frametype", "CATEGORICAL"),
+        ("mac_security", "CATEGORICAL"),
         ("mac_framepending", "CATEGORICAL"),
         ("mac_ackreq", "CATEGORICAL"),
+        ("mac_panidcomp", "CATEGORICAL"),
+        ("mac_dstaddrmode", "CATEGORICAL"),
+        ("mac_frameversion", "CATEGORICAL"),
+        ("mac_srcaddrmode", "CATEGORICAL"),
+        # "mac_seqnum",
+        # "mac_dstpanid",
+        # "mac_dstshortaddr",
+        # "mac_dstextendedaddr",
+        # "mac_srcpanid"
+        # "mac_srcshortaddr",
+        # "mac_srcextendedaddr",
+        ("nwk_frametype", "CATEGORICAL"),
+        ("nwk_protocolversion", "CATEGORICAL"),
+        ("nwk_discroute", "CATEGORICAL"),
         ("nwk_multicast", "CATEGORICAL"),
+        ("nwk_security", "CATEGORICAL"),
         ("nwk_srcroute", "CATEGORICAL"),
         ("nwk_extendeddst", "CATEGORICAL"),
         ("nwk_extendedsrc", "CATEGORICAL"),
         ("nwk_edinitiator", "CATEGORICAL"),
+        # "nwk_dstshortaddr",
+        # "nwk_srcshortaddr",
         ("nwk_radius", "NUMERICAL"),
+        # "nwk_seqnum",
+        # "nwk_dstextendedaddr",
+        # "nwk_srcextendedaddr",
+        # [Multicast Control field (0/1 byte)]
+        # "nwk_srcroute_relaycount",
+        # "nwk_srcroute_relayindex",
+        # "nwk_srcroute_relaylist",
+        ("nwk_aux_seclevel", "CATEGORICAL"),
+        ("nwk_aux_keytype", "CATEGORICAL"),
         ("nwk_aux_extnonce", "CATEGORICAL"),
+        # "nwk_aux_framecounter",
+        # "nwk_aux_srcaddr",
+        # "nwk_aux_keyseqnum",
         ("der_same_macnwkdst", "CATEGORICAL"),
         ("der_same_macnwksrc", "CATEGORICAL"),
-        ("der_same_nwknwkauxsrc", "CATEGORICAL"),
         ("der_mac_dsttype", "CATEGORICAL"),
         ("der_mac_srctype", "CATEGORICAL"),
         ("der_nwk_dsttype", "CATEGORICAL"),
         ("der_nwk_srctype", "CATEGORICAL"),
-        ("der_nwkaux_srctype", "CATEGORICAL"),
     ]
     logging.info("The classifier will use {} unencoded features"
                  "".format(len(feature_definitions)))
@@ -177,6 +208,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
             raise ValueError("Missing the NWK destination short address")
         elif nwk_srcshortaddr is None:
             raise ValueError("Missing the NWK source short address")
+        elif nwk_aux_srcaddr is None:
+            raise ValueError("Missing the NWK AUX source extended address")
 
         # Process the features
         numerical_row = []
@@ -198,10 +231,6 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                 # Same MAC and NWK Source
                 value = "Same MAC/NWK Src: {}".format(
                     mac_srcshortaddr == nwk_srcshortaddr)
-            elif feature_name == "der_same_nwknwkauxsrc":
-                # Same NWK and NWK-AUX Source
-                value = "Same NWK/NWK-AUX Src: {}".format(
-                    nwk_srcextendedaddr == nwk_aux_srcaddr)
             elif feature_name == "der_mac_dsttype":
                 # MAC Destination Type
                 value = "MAC Dst Type: "
@@ -231,7 +260,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                 value = "MAC Src Type: "
                 nwkdevtype = config.db.get_nwkdevtype(
                     shortaddr=mac_srcshortaddr,
-                    panid=mac_dstpanid)
+                    panid=mac_dstpanid,
+                    extendedaddr=nwk_aux_srcaddr)
                 if nwkdevtype is None:
                     raise ValueError("Unknown device type for the node "
                                      "with short address \"{}\" in the "
@@ -300,25 +330,6 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
                                                mac_dstpanid))
                 else:
                     value += nwkdevtype
-            elif feature_name == "der_nwkaux_srctype":
-                # NWK-AUX Source Type
-                value = "NWK-AUX Src Type: "
-                if nwk_aux_srcaddr is None:
-                    value += "Omitted"
-                else:
-                    nwkdevtype = config.db.get_nwkdevtype(
-                        extendedaddr=nwk_aux_srcaddr)
-                    if nwkdevtype is None:
-                        raise ValueError("Unknown device type for the node "
-                                         "with extended address \"{}\""
-                                         "".format(nwk_aux_srcaddr))
-                    elif nwkdevtype == "Conflicting Data":
-                        raise ValueError("Conflicting data for the device "
-                                         "type of the node with extended "
-                                         "address \"{}\""
-                                         "".format(nwk_aux_srcaddr))
-                    else:
-                        value += nwkdevtype
             else:
                 raise ValueError("Unknown feature name \"{}\""
                                  "".format(feature_name))
