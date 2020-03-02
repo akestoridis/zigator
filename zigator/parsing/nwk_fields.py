@@ -715,8 +715,9 @@ def nwk_auxiliary(pkt):
     elif (config.entry["nwk_aux_extnonce"]
             == "The source address is not present"):
         potential_sources = set()
-        shortaddr = config.entry["nwk_srcshortaddr"]
+        shortaddr = config.entry["mac_srcshortaddr"]
         panid = config.entry["mac_dstpanid"]
+
         if (shortaddr, panid) in config.addresses:
             if config.addresses[(shortaddr, panid)] != "Conflicting Data":
                 potential_sources.add(
@@ -725,6 +726,11 @@ def nwk_auxiliary(pkt):
                 potential_sources.update(
                     [int(extendedaddr, 16)
                      for extendedaddr in config.devices.keys()])
+        else:
+            potential_sources.update(
+                [int(extendedaddr, 16)
+                 for extendedaddr in config.devices.keys()])
+
         if config.entry["nwk_srcextendedaddr"] is not None:
             potential_sources.add(
                 int(config.entry["nwk_srcextendedaddr"], 16))
