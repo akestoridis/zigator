@@ -23,6 +23,7 @@ from .field_values import field_values
 from .form_frequencies import form_frequencies
 from .group_frequencies import group_frequencies
 from .matching_frequencies import matching_frequencies
+from .selected_frequencies import selected_frequencies
 from .solo_frequencies import solo_frequencies
 
 
@@ -48,6 +49,7 @@ def main(db_filepath, out_dirpath):
     matching_frequencies(os.path.join(out_dirpath, "matching-frequencies"))
     field_values(os.path.join(out_dirpath, "field-values"))
     form_frequencies(os.path.join(out_dirpath, "form-frequencies"))
+    selected_frequencies(os.path.join(out_dirpath, "selected-frequencies"))
 
     # Disconnect from the provided database
     logging.info("Finished the analysis of the \"{}\" database"

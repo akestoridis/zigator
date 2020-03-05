@@ -49,7 +49,7 @@ def matching_frequencies(out_dirpath):
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
-    logging.info("Computing the matching frequency of {} conditions"
+    logging.info("Computing the matching frequency of {} conditions..."
                  "".format(len(CONDITION_MATCHES)))
     for condition_match in CONDITION_MATCHES:
         # Derive the path of the output file, the varying columns,
