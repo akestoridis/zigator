@@ -523,7 +523,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
     # Write the results of classification metrics in a file
     fp = open(os.path.join(out_dirpath, "classification-report.txt"), "w")
     fp.write(metrics.classification_report(
-        testing_labels, predictions, target_names=class_names, digits=6))
+        testing_labels, predictions, target_names=class_names, digits=3))
     fp.close()
 
     # Write the confusion matrix in a file
