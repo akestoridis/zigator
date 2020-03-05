@@ -30,7 +30,7 @@ from sklearn.tree import export_text
 from .. import config
 
 
-def enc_nwk_cmd(db_filepath, out_dirpath):
+def enc_nwk_cmd(db_filepath, out_dirpath, seed):
     """Train a classifier to distinguish encrypted NWK commands."""
     # Sanity check
     if not os.path.isfile(db_filepath):
@@ -455,6 +455,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath):
         train_test_split(dataset_table,
                          dataset_labels,
                          test_size=0.2,
+                         random_state=seed,
                          shuffle=True)
     )
     logging.info("Split the dataset into {} training samples "

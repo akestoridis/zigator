@@ -17,9 +17,11 @@
 from .enc_nwk_cmd import enc_nwk_cmd
 
 
-def main(train_type, db_filepath, out_dirpath):
+def main(train_type, db_filepath, out_dirpath, seed):
     """Train a classifier from data stored in a database file."""
     if train_type.lower() == "enc-nwk-cmd":
-        enc_nwk_cmd(db_filepath, os.path.join(out_dirpath, "enc-nwk-cmd"))
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-nwk-cmd"),
+                    seed)
     else:
         raise ValueError("Unknown training type \"{}\"".format(train_type))

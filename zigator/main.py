@@ -126,6 +126,12 @@ parser_train.add_argument(
     type=str,
     action="store",
     help="directory for the output files")
+parser_train.add_argument(
+    "--seed",
+    type=int,
+    action="store",
+    help="seed for the pseudorandom number generator",
+    default=None)
 
 args = parser.parse_args()
 
@@ -160,7 +166,8 @@ def main():
     elif args.subcommand == "train":
         zigator.training.main("enc-nwk-cmd",
                               args.DATABASE_FILEPATH,
-                              args.OUTPUT_DIRECTORY)
+                              args.OUTPUT_DIRECTORY,
+                              args.seed)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
