@@ -66,17 +66,6 @@ COLUMN_MATCHES = set([
         "nwk_cmd_id",
     ),
     (
-        "nwk_radius--nwk_cmd_id.tsv",
-        (
-            "nwk_radius",
-        ),
-        (
-            ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-        ),
-        "nwk_cmd_id",
-    ),
-    (
         "nwk_cmd_id--phy_length.tsv",
         (
             "nwk_cmd_id",
@@ -86,6 +75,50 @@ COLUMN_MATCHES = set([
             ("nwk_frametype", "NWK Command"),
         ),
         "phy_length",
+    ),
+    (
+        "nwk_radius--frametype.tsv",
+        (
+            "nwk_radius",
+        ),
+        (
+            ("error_msg", None),
+        ),
+        "mac_frametype",
+        "nwk_frametype",
+        "aps_frametype",
+        "aps_profilename",
+        "zcl_frametype",
+    ),
+    (
+        "nwk_radius--frametype_cmdid.tsv",
+        (
+            "nwk_radius",
+        ),
+        (
+            ("error_msg", None),
+        ),
+        "mac_frametype",
+        "mac_cmd_id",
+        "nwk_frametype",
+        "nwk_cmd_id",
+        "aps_frametype",
+        "aps_cmd_id",
+        "aps_profilename",
+        "aps_clustername",
+        "zcl_frametype",
+        "zcl_cmd_id",
+    ),
+    (
+        "nwk_radius--nwk_cmd_id.tsv",
+        (
+            "nwk_radius",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
     ),
     (
         "nwk_cmd_id--nwk_radius.tsv",
@@ -99,20 +132,42 @@ COLUMN_MATCHES = set([
         "nwk_radius",
     ),
     (
-        "nwk_cmd_id--pcap_filename.tsv",
+        "mac_framepending--frametype.tsv",
         (
-            "nwk_cmd_id",
+            "mac_framepending",
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
         ),
-        "pcap_filename",
+        "mac_frametype",
+        "nwk_frametype",
+        "aps_frametype",
+        "aps_profilename",
+        "zcl_frametype",
     ),
     (
-        "nwk_security--nwk_cmd_id.tsv",
+        "mac_framepending--frametype_cmdid.tsv",
         (
-            "nwk_security",
+            "mac_framepending",
+        ),
+        (
+            ("error_msg", None),
+        ),
+        "mac_frametype",
+        "mac_cmd_id",
+        "nwk_frametype",
+        "nwk_cmd_id",
+        "aps_frametype",
+        "aps_cmd_id",
+        "aps_profilename",
+        "aps_clustername",
+        "zcl_frametype",
+        "zcl_cmd_id",
+    ),
+    (
+        "mac_framepending--nwk_cmd_id.tsv",
+        (
+            "mac_framepending",
         ),
         (
             ("error_msg", None),
@@ -121,16 +176,15 @@ COLUMN_MATCHES = set([
         "nwk_cmd_id",
     ),
     (
-        "phy_length-nwk_cmd_id--pcap_filename.tsv",
+        "nwk_cmd_id--mac_framepending.tsv",
         (
-            "phy_length",
             "nwk_cmd_id",
         ),
         (
             ("error_msg", None),
             ("nwk_frametype", "NWK Command"),
         ),
-        "pcap_filename"
+        "mac_framepending",
     ),
     (
         "mac_ackreq--frametype.tsv",
@@ -166,6 +220,28 @@ COLUMN_MATCHES = set([
         "zcl_cmd_id",
     ),
     (
+        "mac_ackreq--nwk_cmd_id.tsv",
+        (
+            "mac_ackreq",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--mac_ackreq.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "mac_ackreq",
+    ),
+    (
         "mac_dstaddrmode--frametype.tsv",
         (
             "mac_dstaddrmode",
@@ -199,6 +275,28 @@ COLUMN_MATCHES = set([
         "zcl_cmd_id",
     ),
     (
+        "mac_dstaddrmode--nwk_cmd_id.tsv",
+        (
+            "mac_dstaddrmode",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--mac_dstaddrmode.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "mac_dstaddrmode",
+    ),
+    (
         "mac_srcaddrmode--frametype.tsv",
         (
             "mac_srcaddrmode",
@@ -230,6 +328,28 @@ COLUMN_MATCHES = set([
         "aps_clustername",
         "zcl_frametype",
         "zcl_cmd_id",
+    ),
+    (
+        "mac_srcaddrmode--nwk_cmd_id.tsv",
+        (
+            "mac_srcaddrmode",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--mac_srcaddrmode.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "mac_srcaddrmode",
     ),
     (
         "nwk_srcroute--frametype.tsv",
@@ -267,6 +387,28 @@ COLUMN_MATCHES = set([
         "zcl_cmd_id",
     ),
     (
+        "nwk_srcroute--nwk_cmd_id.tsv",
+        (
+            "nwk_srcroute",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--nwk_srcroute.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_srcroute",
+    ),
+    (
         "nwk_extendeddst--frametype.tsv",
         (
             "nwk_extendeddst",
@@ -300,6 +442,28 @@ COLUMN_MATCHES = set([
         "aps_clustername",
         "zcl_frametype",
         "zcl_cmd_id",
+    ),
+    (
+        "nwk_extendeddst--nwk_cmd_id.tsv",
+        (
+            "nwk_extendeddst",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--nwk_extendeddst.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_extendeddst",
     ),
     (
         "nwk_extendedsrc--frametype.tsv",
@@ -337,74 +501,48 @@ COLUMN_MATCHES = set([
         "zcl_cmd_id",
     ),
     (
-        "nwk_aux_keytype--frametype.tsv",
+        "nwk_extendedsrc--nwk_cmd_id.tsv",
         (
-            "nwk_aux_keytype",
+            "nwk_extendedsrc",
         ),
         (
             ("error_msg", None),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "NWK Command"),
         ),
-        "mac_frametype",
-        "nwk_frametype",
-        "aps_frametype",
-        "aps_profilename",
-        "zcl_frametype",
-    ),
-    (
-        "nwk_aux_keytype--frametype_cmdid.tsv",
-        (
-            "nwk_aux_keytype",
-        ),
-        (
-            ("error_msg", None),
-            ("nwk_security", "NWK Security Enabled"),
-        ),
-        "mac_frametype",
-        "mac_cmd_id",
-        "nwk_frametype",
         "nwk_cmd_id",
-        "aps_frametype",
-        "aps_cmd_id",
-        "aps_profilename",
-        "aps_clustername",
-        "zcl_frametype",
-        "zcl_cmd_id",
     ),
     (
-        "nwk_aux_extnonce--frametype.tsv",
+        "nwk_cmd_id--nwk_extendedsrc.tsv",
         (
-            "nwk_aux_extnonce",
+            "nwk_cmd_id",
         ),
         (
             ("error_msg", None),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "NWK Command"),
         ),
-        "mac_frametype",
-        "nwk_frametype",
-        "aps_frametype",
-        "aps_profilename",
-        "zcl_frametype",
+        "nwk_extendedsrc",
     ),
     (
-        "nwk_aux_extnonce--frametype_cmdid.tsv",
+        "nwk_security--nwk_cmd_id.tsv",
         (
-            "nwk_aux_extnonce",
+            "nwk_security",
         ),
         (
             ("error_msg", None),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "NWK Command"),
         ),
-        "mac_frametype",
-        "mac_cmd_id",
-        "nwk_frametype",
         "nwk_cmd_id",
-        "aps_frametype",
-        "aps_cmd_id",
-        "aps_profilename",
-        "aps_clustername",
-        "zcl_frametype",
-        "zcl_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--nwk_security.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_security",
     ),
     (
         "aps_ackreq--frametype.tsv",
