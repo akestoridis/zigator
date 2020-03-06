@@ -22,6 +22,55 @@ def main(train_type, db_filepath, out_dirpath, seed):
     if train_type.lower() == "enc-nwk-cmd":
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-nwk-cmd"),
-                    seed)
+                    seed,
+                    single_cmd=None)
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-routerequest"),
+                    seed,
+                    single_cmd="NWK Route Request")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-routereply"),
+                    seed,
+                    single_cmd="NWK Route Reply")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-networkstatus"),
+                    seed,
+                    single_cmd="NWK Network Status")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-leave"),
+                    seed,
+                    single_cmd="NWK Leave")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-routerecord"),
+                    seed,
+                    single_cmd="NWK Route Record")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-rejoinreq"),
+                    seed,
+                    single_cmd="NWK Rejoin Request")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-rejoinrsp"),
+                    seed,
+                    single_cmd="NWK Rejoin Response")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-linkstatus"),
+                    seed,
+                    single_cmd="NWK Link Status")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-networkreport"),
+                    seed,
+                    single_cmd="NWK Network Report")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-networkupdate"),
+                    seed,
+                    single_cmd="NWK Network Update")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-edtimeoutreq"),
+                    seed,
+                    single_cmd="NWK End Device Timeout Request")
+        enc_nwk_cmd(db_filepath,
+                    os.path.join(out_dirpath, "enc-edtimeoutrsp"),
+                    seed,
+                    single_cmd="NWK End Device Timeout Response")
     else:
         raise ValueError("Unknown training type \"{}\"".format(train_type))

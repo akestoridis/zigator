@@ -30,7 +30,7 @@ from sklearn.tree import export_text
 from .. import config
 
 
-def enc_nwk_cmd(db_filepath, out_dirpath, seed):
+def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
     """Train a classifier to distinguish encrypted NWK commands."""
     # Sanity check
     if not os.path.isfile(db_filepath):
@@ -103,11 +103,12 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed):
                  "".format(len(raw_samples)))
 
     # Write the raw samples in a file
-    fp = open(os.path.join(out_dirpath, "raw-samples.tsv"), "w")
-    fp.write("#{}\n".format("\t".join(columns)))
-    for raw_sample in raw_samples:
-        fp.write("{}\n".format("\t".join([str(x) for x in raw_sample])))
-    fp.close()
+    if single_cmd is None:
+        fp = open(os.path.join(out_dirpath, "raw-samples.tsv"), "w")
+        fp.write("#{}\n".format("\t".join(columns)))
+        for raw_sample in raw_samples:
+            fp.write("{}\n".format("\t".join([str(x) for x in raw_sample])))
+        fp.close()
 
     # Map each NWK command to an integer value
     nwk_commands = {
@@ -124,9 +125,14 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed):
         "NWK End Device Timeout Request": 11,
         "NWK End Device Timeout Response": 12,
     }
-    class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
+    if single_cmd is None:
+        class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
+    elif single_cmd not in nwk_commands.keys():
+        raise ValueError("Unknown NWK command \"{}\"".format(single_cmd))
+    else:
+        class_names = ["Other NWK Command", single_cmd]
     logging.info("The classifier will be trained to distinguish "
-                 "{} NWK commands".format(len(nwk_commands)))
+                 "{} NWK commands".format(len(class_names)))
 
     # Define the features that the classifier will use
     feature_definitions = [
@@ -350,6 +356,11 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed):
         if label is None:
             raise ValueError("Unknown NWK command \"{}\""
                              "".format(raw_sample[-1]))
+        elif single_cmd is not None:
+            if label == nwk_commands.get(single_cmd, None):
+                dataset_labels.append(1)
+            else:
+                dataset_labels.append(0)
         else:
             dataset_labels.append(label)
 
@@ -374,81 +385,84 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed):
         fp.write("\n".join(dataset_features))
 
     # Compute some statistics about the unique samples of the dataset
-    unique_samples = np.unique(dataset_table, axis=0)
-    cmd_counters = {cmd_id: [] for cmd_id in nwk_commands.values()}
-    overlapping = []
-    for unique_sample in unique_samples:
-        # Get the indices of each unique sample in the dataset
-        indices = (dataset_table == (unique_sample)).all(axis=1).nonzero()
+    if single_cmd is None:
+        unique_samples = np.unique(dataset_table, axis=0)
+        cmd_counters = {cmd_id: [] for cmd_id in nwk_commands.values()}
+        overlapping = []
+        for unique_sample in unique_samples:
+            # Get the indices of each unique sample in the dataset
+            indices = (dataset_table == (unique_sample)).all(axis=1).nonzero()
 
-        # Compute the frequency of each NWK command per unique sample
-        cmd_frequency = {cmd_id: 0 for cmd_id in nwk_commands.values()}
-        for index in indices[0]:
-            cmd_frequency[dataset_labels[index]] += 1
+            # Compute the frequency of each NWK command per unique sample
+            cmd_frequency = {cmd_id: 0 for cmd_id in nwk_commands.values()}
+            for index in indices[0]:
+                cmd_frequency[dataset_labels[index]] += 1
 
-        # Update the counters of each NWK command
-        for cmd_id in nwk_commands.values():
-            if cmd_frequency[cmd_id] > 0:
-                cmd_counters[cmd_id].append((unique_sample.tolist(),
-                                             cmd_frequency[cmd_id]))
+            # Update the counters of each NWK command
+            for cmd_id in nwk_commands.values():
+                if cmd_frequency[cmd_id] > 0:
+                    cmd_counters[cmd_id].append((unique_sample.tolist(),
+                                                 cmd_frequency[cmd_id]))
 
-        # Check whether this sample applies to multiple NWK commands
-        matching_cmds = [cmd_name for cmd_name in class_names
-                         if cmd_frequency[nwk_commands[cmd_name]] > 0]
-        if len(matching_cmds) > 1:
-            overlapping.append((matching_cmds,
-                                unique_sample.tolist()))
-    cmd_filepaths = {
-        "NWK Route Request": (
-            os.path.join(out_dirpath, "unique-routerequest-samples.tsv")
-        ),
-        "NWK Route Reply": (
-            os.path.join(out_dirpath, "unique-routereply-samples.tsv")
-        ),
-        "NWK Network Status": (
-            os.path.join(out_dirpath, "unique-networkstatus-samples.tsv")
-        ),
-        "NWK Leave": (
-            os.path.join(out_dirpath, "unique-leave-samples.tsv")
-        ),
-        "NWK Route Record": (
-            os.path.join(out_dirpath, "unique-routerecord-samples.tsv")
-        ),
-        "NWK Rejoin Request": (
-            os.path.join(out_dirpath, "unique-rejoinreq-samples.tsv")
-        ),
-        "NWK Rejoin Response": (
-            os.path.join(out_dirpath, "unique-rejoinrsp-samples.tsv")
-        ),
-        "NWK Link Status": (
-            os.path.join(out_dirpath, "unique-linkstatus-samples.tsv")
-        ),
-        "NWK Network Report": (
-            os.path.join(out_dirpath, "unique-networkreport-samples.tsv")
-        ),
-        "NWK Network Update": (
-            os.path.join(out_dirpath, "unique-networkupdate-samples.tsv")
-        ),
-        "NWK End Device Timeout Request": (
-            os.path.join(out_dirpath, "unique-edtimeoutreq-samples.tsv")
-        ),
-        "NWK End Device Timeout Response": (
-            os.path.join(out_dirpath, "unique-edtimeoutrsp-samples.tsv")
-        ),
-    }
-    for cmd_name in class_names:
-        with open(cmd_filepaths[cmd_name], "w") as fp:
-            for cmd_counter in cmd_counters[nwk_commands[cmd_name]]:
-                fp.write("{}\t{}\n".format(cmd_counter[0], cmd_counter[1]))
-    fp = open(os.path.join(out_dirpath, "overlapping-samples.tsv"), "w")
-    for overlap in overlapping:
-        fp.write("{}\t{}\n".format(overlap[0], overlap[1]))
-    fp.close()
-    fp = open(os.path.join(out_dirpath, "num-unique-samples.tsv"), "w")
-    for cmd_name in class_names:
-        fp.write("{}\t{}\n".format(cmd_name,
-                                   len(cmd_counters[nwk_commands[cmd_name]])))
-    fp.close()
+            # Check whether this sample applies to multiple NWK commands
+            matching_cmds = [cmd_name for cmd_name in class_names
+                             if cmd_frequency[nwk_commands[cmd_name]] > 0]
+            if len(matching_cmds) > 1:
+                overlapping.append((matching_cmds,
+                                    unique_sample.tolist()))
+        cmd_filepaths = {
+            "NWK Route Request": (
+                os.path.join(out_dirpath, "unique-routerequest-samples.tsv")
+            ),
+            "NWK Route Reply": (
+                os.path.join(out_dirpath, "unique-routereply-samples.tsv")
+            ),
+            "NWK Network Status": (
+                os.path.join(out_dirpath, "unique-networkstatus-samples.tsv")
+            ),
+            "NWK Leave": (
+                os.path.join(out_dirpath, "unique-leave-samples.tsv")
+            ),
+            "NWK Route Record": (
+                os.path.join(out_dirpath, "unique-routerecord-samples.tsv")
+            ),
+            "NWK Rejoin Request": (
+                os.path.join(out_dirpath, "unique-rejoinreq-samples.tsv")
+            ),
+            "NWK Rejoin Response": (
+                os.path.join(out_dirpath, "unique-rejoinrsp-samples.tsv")
+            ),
+            "NWK Link Status": (
+                os.path.join(out_dirpath, "unique-linkstatus-samples.tsv")
+            ),
+            "NWK Network Report": (
+                os.path.join(out_dirpath, "unique-networkreport-samples.tsv")
+            ),
+            "NWK Network Update": (
+                os.path.join(out_dirpath, "unique-networkupdate-samples.tsv")
+            ),
+            "NWK End Device Timeout Request": (
+                os.path.join(out_dirpath, "unique-edtimeoutreq-samples.tsv")
+            ),
+            "NWK End Device Timeout Response": (
+                os.path.join(out_dirpath, "unique-edtimeoutrsp-samples.tsv")
+            ),
+        }
+        for cmd_name in class_names:
+            with open(cmd_filepaths[cmd_name], "w") as fp:
+                for cmd_counter in cmd_counters[nwk_commands[cmd_name]]:
+                    fp.write("{}\t{}\n"
+                             "".format(cmd_counter[0], cmd_counter[1]))
+        fp = open(os.path.join(out_dirpath, "overlapping-samples.tsv"), "w")
+        for overlap in overlapping:
+            fp.write("{}\t{}\n".format(overlap[0], overlap[1]))
+        fp.close()
+        fp = open(os.path.join(out_dirpath, "num-unique-samples.tsv"), "w")
+        for cmd_name in class_names:
+            fp.write("{}\t{}\n"
+                     "".format(cmd_name,
+                               len(cmd_counters[nwk_commands[cmd_name]])))
+        fp.close()
 
     # Split the dataset into a training set and a testing set
     training_table, testing_table, training_labels, testing_labels = (
@@ -463,17 +477,19 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed):
                  "".format(len(training_labels), len(testing_labels)))
 
     # Compute some statistics about the training and testing sets
-    training_breakdown = {cmd_id: 0 for cmd_id in nwk_commands.values()}
-    testing_breakdown = {cmd_id: 0 for cmd_id in nwk_commands.values()}
-    for training_label in training_labels:
-        training_breakdown[training_label] += 1
-    for testing_label in testing_labels:
-        testing_breakdown[testing_label] += 1
-    with open(os.path.join(out_dirpath, "training-breakdown.tsv"), "w") as fp:
+    if single_cmd is None:
+        training_breakdown = {cmd_id: 0 for cmd_id in nwk_commands.values()}
+        testing_breakdown = {cmd_id: 0 for cmd_id in nwk_commands.values()}
+        for training_label in training_labels:
+            training_breakdown[training_label] += 1
+        for testing_label in testing_labels:
+            testing_breakdown[testing_label] += 1
+        fp = open(os.path.join(out_dirpath, "training-breakdown.tsv"), "w")
         for cmd_name in class_names:
             fp.write("{}\t{}\n".format(
                 cmd_name, training_breakdown[nwk_commands[cmd_name]]))
-    with open(os.path.join(out_dirpath, "testing-breakdown.tsv"), "w") as fp:
+        fp.close()
+        fp = open(os.path.join(out_dirpath, "testing-breakdown.tsv"), "w")
         for cmd_name in class_names:
             fp.write("{}\t{}\n".format(
                 cmd_name, testing_breakdown[nwk_commands[cmd_name]]))
