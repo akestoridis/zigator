@@ -723,6 +723,28 @@ COLUMN_MATCHES = set([
         "nwk_extendedsrc",
     ),
     (
+        "nwk_srcshortaddr--nwk_cmdid.tsv",
+        (
+            "nwk_srcshortaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_dstshortaddr--nwk_cmdid.tsv",
+        (
+            "nwk_dstshortaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
         "nwk_srcextendedaddr--nwk_cmdid.tsv",
         (
             "nwk_srcextendedaddr",
