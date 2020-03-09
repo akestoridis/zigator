@@ -794,6 +794,17 @@ COLUMN_MATCHES = set([
         "aps_frametype",
         "aps_cmd_id",
     ),
+    (
+        "mac_srcextendedaddr--mac_cmd_id.tsv",
+        (
+            "mac_srcextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!mac_cmd_id", None),
+        ),
+        "mac_cmd_id",
+    ),
 ])
 
 
