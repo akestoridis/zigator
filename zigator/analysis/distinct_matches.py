@@ -805,6 +805,39 @@ COLUMN_MATCHES = set([
         ),
         "mac_cmd_id",
     ),
+    (
+        "mac_srcshortaddr--mac_cmd_id.tsv",
+        (
+            "mac_srcshortaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!mac_cmd_id", None),
+        ),
+        "mac_cmd_id",
+    ),
+    (
+        "mac_dstextendedaddr--mac_cmd_id.tsv",
+        (
+            "mac_dstextendedaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!mac_cmd_id", None),
+        ),
+        "mac_cmd_id",
+    ),
+    (
+        "mac_dstshortaddr--mac_cmd_id.tsv",
+        (
+            "mac_dstshortaddr",
+        ),
+        (
+            ("error_msg", None),
+            ("!mac_cmd_id", None),
+        ),
+        "mac_cmd_id",
+    ),
 ])
 
 
