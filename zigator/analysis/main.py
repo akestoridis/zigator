@@ -18,6 +18,7 @@ import logging
 import os
 
 from .. import config
+from .derived_frequencies import derived_frequencies
 from .distinct_matches import distinct_matches
 from .field_values import field_values
 from .form_frequencies import form_frequencies
@@ -50,6 +51,7 @@ def main(db_filepath, out_dirpath):
     field_values(os.path.join(out_dirpath, "field-values"))
     form_frequencies(os.path.join(out_dirpath, "form-frequencies"))
     selected_frequencies(os.path.join(out_dirpath, "selected-frequencies"))
+    derived_frequencies(os.path.join(out_dirpath, "derived_frequencies"))
 
     # Disconnect from the provided database
     logging.info("Finished the analysis of the \"{}\" database"
