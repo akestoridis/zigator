@@ -113,6 +113,15 @@ parser_injectbeacon.add_argument(
     action="store",
     help="the PAN ID of the beacon packet")
 
+parser_injectorphan = subparsers.add_parser(
+    "inject-orphan",
+    help="inject an orphan notification")
+parser_injectorphan.add_argument(
+    "SRCEXTENDEDADDR",
+    type=str,
+    action="store",
+    help="the extended address of the source")
+
 parser_train = subparsers.add_parser(
     "train",
     help="train a classifier based on data from a database")
@@ -163,6 +172,8 @@ def main():
                                    args.OUTPUT_DIRECTORY)
     elif args.subcommand == "inject-beacon":
         zigator.injection.main("beacon", args.PANID)
+    elif args.subcommand == "inject-orphan":
+        zigator.injection.main("orphan", args.SRCEXTENDEDADDR)
     elif args.subcommand == "train":
         zigator.training.main("enc-nwk-cmd",
                               args.DATABASE_FILEPATH,

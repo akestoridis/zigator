@@ -15,11 +15,14 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 from .beacon import beacon
+from .orphan_notification import orphan_notification
 
 
-def main(pkt_type, panid):
+def main(pkt_type, parameter):
     """Inject forged packets."""
     if pkt_type.lower() == "beacon":
-        beacon(panid)
+        beacon(parameter)
+    elif pkt_type.lower() == "orphan":
+        orphan_notification(parameter)
     else:
         raise ValueError("Unknown packet type \"{}\"".format(pkt_type))
