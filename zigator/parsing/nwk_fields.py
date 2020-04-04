@@ -638,6 +638,123 @@ def nwk_command(pkt):
     # Command Identifier field (1 byte)
     config.entry["nwk_cmd_id"] = get_nwk_command(pkt)
 
+    # Compute the NWK Command Payload Length
+    # The constant 14 was derived by summing the following:
+    #  2: MAC Frame Control
+    #  1: MAC Sequence Number
+    #  2: NWK Frame Control
+    #  2: NWK Destination Short Address
+    #  2: NWK Source Short Address
+    #  1: NWK Radius
+    #  1: NWK Sequence Number
+    #  1: NWK Command Identifier
+    #  2: MAC Frame Check Sequence
+    config.entry["nwk_cmd_payloadlength"] = config.entry["phy_length"] - 14
+    # Compute the length of the MAC Destination Addressing fields
+    if (config.entry["mac_dstaddrmode"]
+            == "Short destination MAC address"):
+        config.entry["nwk_cmd_payloadlength"] -= 4
+    elif (config.entry["mac_dstaddrmode"]
+            == "Extended destination MAC address"):
+        config.entry["nwk_cmd_payloadlength"] -= 10
+    elif (config.entry["mac_dstaddrmode"]
+            != "No destination MAC address"):
+        config.entry["error_msg"] = "Unknown MAC DA mode"
+        return
+    # Compute the length of the MAC Source Addressing fields
+    if (config.entry["mac_srcaddrmode"]
+            == "Short source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["nwk_cmd_payloadlength"] -= 2
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["nwk_cmd_payloadlength"] -= 2
+    elif (config.entry["mac_srcaddrmode"]
+            == "Extended source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["nwk_cmd_payloadlength"] -= 2
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif (config.entry["mac_srcaddrmode"]
+            != "No source MAC address"):
+        config.entry["error_msg"] = "Unknown MAC SA mode"
+        return
+    # Compute the length of the MAC Auxiliary Security Header field
+    if config.entry["mac_security"] == "MAC Security Enabled":
+        logging.debug("Ignored packet #{} in {} because it utilizes "
+                      "security services on the MAC layer"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
+        config.entry["error_msg"] = (
+            "Ignored NWK command with enabled MAC-layer security"
+        )
+        return
+    elif config.entry["mac_security"] != "MAC Security Disabled":
+        config.entry["error_msg"] = "Unknown MAC security state"
+        return
+    # Check for the presence of the Destination Extended Address field
+    if (config.entry["nwk_extendeddst"]
+            == "NWK Extended Destination Included"):
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif (config.entry["nwk_extendeddst"]
+            != "NWK Extended Destination Omitted"):
+        config.entry["error_msg"] = "Unknown Extended Destination state"
+        return
+    # Check for the presence of the Source Extended Address field
+    if (config.entry["nwk_extendedsrc"]
+            == "NWK Extended Source Included"):
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif (config.entry["nwk_extendedsrc"]
+            != "NWK Extended Source Omitted"):
+        config.entry["error_msg"] = "Unknown Extended Source state"
+        return
+    # Check for the presence of the Multicast Control field
+    if config.entry["nwk_multicast"] == "NWK Multicast Enabled":
+        logging.debug("Ignored packet #{} in {} because it contains "
+                      "a Multicast Control field "
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
+        config.entry["error_msg"] = (
+            "Ignored NWK command that includes the Multicast Control field"
+        )
+        return
+    elif config.entry["nwk_multicast"] != "NWK Multicast Disabled":
+        config.entry["error_msg"] = "Unknown Multicast state"
+        return
+    # Check for the presence of the Source Route Subframe field
+    if config.entry["nwk_srcroute"] == "NWK Source Route Included":
+        config.entry["nwk_cmd_payloadlength"] -= (
+            2 + 2*config.entry["nwk_srcroute_relaycount"]
+        )
+    elif config.entry["nwk_srcroute"] != "NWK Source Route Omitted":
+        config.entry["error_msg"] = "Unknown Source Route state"
+        return
+    # Compute the length of the NWK Auxiliary Header field
+    if config.entry["nwk_security"] == "NWK Security Enabled":
+        config.entry["nwk_cmd_payloadlength"] -= 9
+        if (config.entry["nwk_aux_extnonce"]
+                == "The source address is present"):
+            config.entry["nwk_cmd_payloadlength"] -= 8
+        elif (config.entry["nwk_aux_extnonce"]
+                != "The source address is not present"):
+            config.entry["error_msg"] = "Unknown NWK EN state"
+            return
+        if config.entry["nwk_aux_keytype"] == "Network Key":
+            config.entry["nwk_cmd_payloadlength"] -= 1
+        else:
+            config.entry["error_msg"] = "Unexpected key type on the NWK layer"
+            return
+    elif config.entry["nwk_security"] != "NWK Security Disabled":
+        config.entry["error_msg"] = "Unknown NWK security state"
+        return
+
     # Command Payload field (variable)
     if config.entry["nwk_cmd_id"] == "NWK Route Request":
         nwk_routerequest(pkt)

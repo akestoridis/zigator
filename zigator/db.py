@@ -115,6 +115,7 @@ PKT_COLUMNS = [
     ("nwk_aux_decpayload", "TEXT"),
     ("nwk_aux_decshow", "TEXT"),
     ("nwk_cmd_id", "TEXT"),
+    ("nwk_cmd_payloadlength", "INTEGER"),
     ("nwk_routerequest_mto", "TEXT"),
     ("nwk_routerequest_ed", "TEXT"),
     ("nwk_routerequest_mc", "TEXT"),

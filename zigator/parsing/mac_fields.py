@@ -413,6 +413,9 @@ def mac_command(pkt):
             "Ignored MAC command with enabled MAC-layer security"
         )
         return
+    elif config.entry["mac_security"] != "MAC Security Disabled":
+        config.entry["error_msg"] = "Unknown MAC security state"
+        return
 
     # Command Payload field (variable)
     if config.entry["mac_cmd_id"] == "MAC Association Request":
