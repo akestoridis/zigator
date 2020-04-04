@@ -48,6 +48,7 @@ PKT_COLUMNS = [
     ("mac_srcshortaddr", "TEXT"),
     ("mac_srcextendedaddr", "TEXT"),
     ("mac_cmd_id", "TEXT"),
+    ("mac_cmd_payloadlength", "INTEGER"),
     ("mac_assocreq_apc", "TEXT"),
     ("mac_assocreq_devtype", "TEXT"),
     ("mac_assocreq_powsrc", "TEXT"),

@@ -360,6 +360,60 @@ def mac_command(pkt):
     # Command Frame Identifier field (1 byte)
     config.entry["mac_cmd_id"] = get_mac_command(pkt)
 
+    # Compute the MAC Command Payload Length
+    # The constant 6 was derived by summing the following:
+    #  2: MAC Frame Control
+    #  1: MAC Sequence Number
+    #  1: MAC Command Frame Identifier
+    #  2: MAC Frame Check Sequence
+    config.entry["mac_cmd_payloadlength"] = config.entry["phy_length"] - 6
+    # Compute the length of the MAC Destination Addressing fields
+    if (config.entry["mac_dstaddrmode"]
+            == "Short destination MAC address"):
+        config.entry["mac_cmd_payloadlength"] -= 4
+    elif (config.entry["mac_dstaddrmode"]
+            == "Extended destination MAC address"):
+        config.entry["mac_cmd_payloadlength"] -= 10
+    elif (config.entry["mac_dstaddrmode"]
+            != "No destination MAC address"):
+        config.entry["error_msg"] = "Unknown MAC DA mode"
+        return
+    # Compute the length of the MAC Source Addressing fields
+    if (config.entry["mac_srcaddrmode"]
+            == "Short source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_cmd_payloadlength"] -= 2
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_cmd_payloadlength"] -= 2
+    elif (config.entry["mac_srcaddrmode"]
+            == "Extended source MAC address"):
+        if (config.entry["mac_panidcomp"]
+                == "Do not compress the source PAN ID"):
+            config.entry["mac_cmd_payloadlength"] -= 2
+        elif (config.entry["mac_panidcomp"]
+                != "The source PAN ID is the same as the destination PAN ID"):
+            config.entry["error_msg"] = "Unknown MAC PC state"
+            return
+        config.entry["mac_cmd_payloadlength"] -= 8
+    elif (config.entry["mac_srcaddrmode"]
+            != "No source MAC address"):
+        config.entry["error_msg"] = "Unknown MAC SA mode"
+        return
+    # Compute the length of the MAC Auxiliary Security Header field
+    if config.entry["mac_security"] == "MAC Security Enabled":
+        logging.debug("Ignored packet #{} in {} because it utilizes "
+                      "security services on the MAC layer"
+                      "".format(config.entry["pkt_num"],
+                                config.entry["pcap_filename"]))
+        config.entry["error_msg"] = (
+            "Ignored MAC command with enabled MAC-layer security"
+        )
+        return
+
     # Command Payload field (variable)
     if config.entry["mac_cmd_id"] == "MAC Association Request":
         mac_assocreq(pkt)
