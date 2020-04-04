@@ -22,6 +22,46 @@ from .. import config
 
 CONDITION_MATCHES = set([
     (
+        "phy_length--routerequest.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Route Request"),
+        ),
+    ),
+    (
+        "phy_length--routereply.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Route Reply"),
+        ),
+    ),
+    (
+        "phy_length--networkstatus.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Status"),
+        ),
+    ),
+    (
+        "phy_length--leave.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Leave"),
+        ),
+    ),
+    (
         "phy_length--routerecord.tsv",
         (
             "phy_length",
@@ -32,6 +72,26 @@ CONDITION_MATCHES = set([
         ),
     ),
     (
+        "phy_length--rejoinreq.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Rejoin Request"),
+        ),
+    ),
+    (
+        "phy_length--rejoinrsp.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Rejoin Response"),
+        ),
+    ),
+    (
         "phy_length--linkstatus.tsv",
         (
             "phy_length",
@@ -39,6 +99,166 @@ CONDITION_MATCHES = set([
         (
             ("error_msg", None),
             ("nwk_cmd_id", "NWK Link Status"),
+        ),
+    ),
+    (
+        "phy_length--networkreport.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Report"),
+        ),
+    ),
+    (
+        "phy_length--networkupdate.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Update"),
+        ),
+    ),
+    (
+        "phy_length--edtimeoutreq.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+        ),
+    ),
+    (
+        "phy_length--edtimeoutrsp.tsv",
+        (
+            "phy_length",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--routerequest.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Route Request"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--routereply.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Route Reply"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--networkstatus.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Status"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--leave.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Leave"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--routerecord.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Route Record"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--rejoinreq.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Rejoin Request"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--rejoinrsp.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Rejoin Response"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--linkstatus.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Link Status"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--networkreport.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Report"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--networkupdate.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK Network Update"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--edtimeoutreq.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+        ),
+    ),
+    (
+        "nwk_cmd_payloadlength--edtimeoutrsp.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
 ])

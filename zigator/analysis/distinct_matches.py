@@ -838,6 +838,28 @@ COLUMN_MATCHES = set([
         ),
         "mac_cmd_id",
     ),
+    (
+        "nwk_cmd_payloadlength--nwk_cmd_id.tsv",
+        (
+            "nwk_cmd_payloadlength",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--nwk_cmd_payloadlength.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_payloadlength",
+    ),
 ])
 
 
