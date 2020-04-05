@@ -90,6 +90,13 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
         "nwk_aux_framecounter",
         "nwk_aux_srcaddr",
         "nwk_aux_keyseqnum",
+        "nwk_cmd_payloadlength",
+        "der_same_macnwkdst",
+        "der_same_macnwksrc",
+        "der_mac_dsttype",
+        "der_mac_srctype",
+        "der_nwk_dsttype",
+        "der_nwk_srctype",
         "nwk_cmd_id",
     ]
     conditions = [
@@ -178,6 +185,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
         # "nwk_aux_framecounter",
         # "nwk_aux_srcaddr",
         # "nwk_aux_keyseqnum",
+        ("nwk_cmd_payloadlength", "NUMERICAL"),
         ("der_same_macnwkdst", "CATEGORICAL"),
         ("der_same_macnwksrc", "CATEGORICAL"),
         ("der_mac_dsttype", "CATEGORICAL"),
@@ -193,30 +201,6 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
     categorical_table = []
     dataset_labels = []
     for raw_sample in raw_samples:
-        # Extract certain fields once
-        mac_dstpanid = raw_sample[columns.index("mac_dstpanid")]
-        mac_dstshortaddr = raw_sample[columns.index("mac_dstshortaddr")]
-        mac_srcshortaddr = raw_sample[columns.index("mac_srcshortaddr")]
-        nwk_dstshortaddr = raw_sample[columns.index("nwk_dstshortaddr")]
-        nwk_srcshortaddr = raw_sample[columns.index("nwk_srcshortaddr")]
-        nwk_dstextendedaddr = raw_sample[columns.index("nwk_dstextendedaddr")]
-        nwk_srcextendedaddr = raw_sample[columns.index("nwk_srcextendedaddr")]
-        nwk_aux_srcaddr = raw_sample[columns.index("nwk_aux_srcaddr")]
-
-        # Sanity checks
-        if mac_dstpanid is None:
-            raise ValueError("Missing the destination PAN ID")
-        elif mac_dstshortaddr is None:
-            raise ValueError("Missing the MAC destination short address")
-        elif mac_srcshortaddr is None:
-            raise ValueError("Missing the MAC source short address")
-        elif nwk_dstshortaddr is None:
-            raise ValueError("Missing the NWK destination short address")
-        elif nwk_srcshortaddr is None:
-            raise ValueError("Missing the NWK source short address")
-        elif nwk_aux_srcaddr is None:
-            raise ValueError("Missing the NWK AUX source extended address")
-
         # Process the features
         numerical_row = []
         categorical_row = []
@@ -225,120 +209,51 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
             feature_name = feature_definition[0]
             feature_type = feature_definition[1]
 
-            # Either extract or derive the value of the feature
-            if feature_name in columns:
-                # Primary feature
-                value = raw_sample[columns.index(feature_name)]
-            elif feature_name == "der_same_macnwkdst":
-                # Same MAC and NWK Destination
-                value = "Same MAC/NWK Dst: {}".format(
-                    mac_dstshortaddr == nwk_dstshortaddr)
-            elif feature_name == "der_same_macnwksrc":
-                # Same MAC and NWK Source
-                value = "Same MAC/NWK Src: {}".format(
-                    mac_srcshortaddr == nwk_srcshortaddr)
-            elif feature_name == "der_mac_dsttype":
-                # MAC Destination Type
-                value = "MAC Dst Type: "
-                if mac_dstshortaddr == "0xffff":
-                    value += "Broadcast"
-                else:
-                    nwkdevtype = config.db.get_nwkdevtype(
-                        shortaddr=mac_dstshortaddr,
-                        panid=mac_dstpanid)
-                    if nwkdevtype is None:
-                        raise ValueError("Unknown device type for the node "
-                                         "with short address \"{}\" in the "
-                                         "PAN with ID \"{}\""
-                                         "".format(mac_dstshortaddr,
-                                                   mac_dstpanid))
-                    elif nwkdevtype == "Conflicting Data":
-                        raise ValueError("Conflicting data for the device "
-                                         "type of the node with short "
-                                         "address \"{}\" in the PAN "
-                                         "with ID \"{}\""
-                                         "".format(mac_dstshortaddr,
-                                                   mac_dstpanid))
-                    else:
-                        value += nwkdevtype
-            elif feature_name == "der_mac_srctype":
-                # MAC Source Type
-                value = "MAC Src Type: "
-                nwkdevtype = config.db.get_nwkdevtype(
-                    shortaddr=mac_srcshortaddr,
-                    panid=mac_dstpanid,
-                    extendedaddr=nwk_aux_srcaddr)
-                if nwkdevtype is None:
-                    raise ValueError("Unknown device type for the node "
-                                     "with short address \"{}\" in the "
-                                     "PAN with ID \"{}\""
-                                     "".format(mac_srcshortaddr,
-                                               mac_dstpanid))
-                elif nwkdevtype == "Conflicting Data":
-                    raise ValueError("Conflicting data for the device "
-                                     "type of the node with short "
-                                     "address \"{}\" in the PAN "
-                                     "with ID \"{}\""
-                                     "".format(mac_srcshortaddr,
-                                               mac_dstpanid))
-                else:
-                    value += nwkdevtype
-            elif feature_name == "der_nwk_dsttype":
-                # NWK Destination Type
-                value = "NWK Dst Type: "
-                if nwk_dstshortaddr == "0xffff":
-                    value += "All devices"
-                elif nwk_dstshortaddr == "0xfffd":
-                    value += "All active receivers"
-                elif nwk_dstshortaddr == "0xfffc":
-                    value += "All routers and coordinator"
-                elif nwk_dstshortaddr == "0xfffb":
-                    value += "All low-power routers"
-                else:
-                    nwkdevtype = config.db.get_nwkdevtype(
-                        shortaddr=nwk_dstshortaddr,
-                        panid=mac_dstpanid,
-                        extendedaddr=nwk_dstextendedaddr)
-                    if nwkdevtype is None:
-                        raise ValueError("Unknown device type for the node "
-                                         "with short address \"{}\" in the "
-                                         "PAN with ID \"{}\""
-                                         "".format(nwk_dstshortaddr,
-                                                   mac_dstpanid))
-                    elif nwkdevtype == "Conflicting Data":
-                        raise ValueError("Conflicting data for the device "
-                                         "type of the node with short "
-                                         "address \"{}\" in the PAN "
-                                         "with ID \"{}\""
-                                         "".format(nwk_dstshortaddr,
-                                                   mac_dstpanid))
-                    else:
-                        value += nwkdevtype
-            elif feature_name == "der_nwk_srctype":
-                # NWK Source Type
-                value = "NWK Src Type: "
-                nwkdevtype = config.db.get_nwkdevtype(
-                    shortaddr=nwk_srcshortaddr,
-                    panid=mac_dstpanid,
-                    extendedaddr=nwk_srcextendedaddr)
-                if nwkdevtype is None:
-                    raise ValueError("Unknown device type for the node "
-                                     "with short address \"{}\" in the "
-                                     "PAN with ID \"{}\""
-                                     "".format(nwk_srcshortaddr,
-                                               mac_dstpanid))
-                elif nwkdevtype == "Conflicting Data":
-                    raise ValueError("Conflicting data for the device "
-                                     "type of the node with short "
-                                     "address \"{}\" in the PAN "
-                                     "with ID \"{}\""
-                                     "".format(nwk_srcshortaddr,
-                                               mac_dstpanid))
-                else:
-                    value += nwkdevtype
-            else:
+            # Sanity check
+            if feature_name not in columns:
                 raise ValueError("Unknown feature name \"{}\""
                                  "".format(feature_name))
+
+            # Extract the value of the feature
+            value = raw_sample[columns.index(feature_name)]
+
+            # Sanity checks
+            if feature_name == "mac_dstpanid" and value is None:
+                raise ValueError("Missing the destination PAN ID")
+            elif feature_name == "mac_dstshortaddr" and value is None:
+                raise ValueError("Missing the MAC destination short address")
+            elif feature_name == "mac_srcshortaddr" and value is None:
+                raise ValueError("Missing the MAC source short address")
+            elif feature_name == "nwk_dstshortaddr" and value is None:
+                raise ValueError("Missing the NWK destination short address")
+            elif feature_name == "nwk_srcshortaddr" and value is None:
+                raise ValueError("Missing the NWK source short address")
+            elif feature_name == "nwk_aux_srcaddr" and value is None:
+                raise ValueError("Missing the NWKAUX source extended address")
+            elif (feature_name == "der_mac_dsttype"
+                    and value == "MAC Dst Type: None"):
+                raise ValueError("Unknown MAC destination type")
+            elif (feature_name == "der_mac_dsttype"
+                    and value == "MAC Dst Type: Conflicting Data"):
+                raise ValueError("Conflicting MAC destination type")
+            elif (feature_name == "der_mac_srctype"
+                    and value == "MAC Src Type: None"):
+                raise ValueError("Unknown MAC source type")
+            elif (feature_name == "der_mac_srctype"
+                    and value == "MAC Src Type: Conflicting Data"):
+                raise ValueError("Conflicting MAC source type")
+            elif (feature_name == "der_nwk_dsttype"
+                    and value == "NWK Dst Type: None"):
+                raise ValueError("Unknown NWK destination type")
+            elif (feature_name == "der_nwk_dsttype"
+                    and value == "NWK Dst Type: Conflicting Data"):
+                raise ValueError("Conflicting NWK destination type")
+            elif (feature_name == "der_nwk_srctype"
+                    and value == "NWK Src Type: None"):
+                raise ValueError("Unknown NWK source type")
+            elif (feature_name == "der_nwk_srctype"
+                    and value == "NWK Src Type: Conflicting Data"):
+                raise ValueError("Conflicting NWK source type")
 
             # Separate numerical features from categorical features
             if feature_type == "NUMERICAL":
