@@ -30,7 +30,7 @@ from sklearn.tree import export_text
 from .. import config
 
 
-def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
+def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     """Train a classifier to distinguish encrypted NWK commands."""
     # Sanity check
     if not os.path.isfile(db_filepath):
@@ -142,57 +142,67 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, single_cmd=None):
                  "{} NWK commands".format(len(class_names)))
 
     # Define the features that the classifier will use
-    feature_definitions = [
-        ("phy_length", "NUMERICAL"),
-        # "mac_fcs",
-        ("mac_frametype", "CATEGORICAL"),
-        ("mac_security", "CATEGORICAL"),
-        ("mac_framepending", "CATEGORICAL"),
-        ("mac_ackreq", "CATEGORICAL"),
-        ("mac_panidcomp", "CATEGORICAL"),
-        ("mac_dstaddrmode", "CATEGORICAL"),
-        ("mac_frameversion", "CATEGORICAL"),
-        ("mac_srcaddrmode", "CATEGORICAL"),
-        # "mac_seqnum",
-        # "mac_dstpanid",
-        # "mac_dstshortaddr",
-        # "mac_dstextendedaddr",
-        # "mac_srcpanid"
-        # "mac_srcshortaddr",
-        # "mac_srcextendedaddr",
-        ("nwk_frametype", "CATEGORICAL"),
-        ("nwk_protocolversion", "CATEGORICAL"),
-        ("nwk_discroute", "CATEGORICAL"),
-        ("nwk_multicast", "CATEGORICAL"),
-        ("nwk_security", "CATEGORICAL"),
-        ("nwk_srcroute", "CATEGORICAL"),
-        ("nwk_extendeddst", "CATEGORICAL"),
-        ("nwk_extendedsrc", "CATEGORICAL"),
-        ("nwk_edinitiator", "CATEGORICAL"),
-        # "nwk_dstshortaddr",
-        # "nwk_srcshortaddr",
-        ("nwk_radius", "NUMERICAL"),
-        # "nwk_seqnum",
-        # "nwk_dstextendedaddr",
-        # "nwk_srcextendedaddr",
-        # [Multicast Control field (0/1 byte)]
-        # "nwk_srcroute_relaycount",
-        # "nwk_srcroute_relayindex",
-        # "nwk_srcroute_relaylist",
-        ("nwk_aux_seclevel", "CATEGORICAL"),
-        ("nwk_aux_keytype", "CATEGORICAL"),
-        ("nwk_aux_extnonce", "CATEGORICAL"),
-        # "nwk_aux_framecounter",
-        # "nwk_aux_srcaddr",
-        # "nwk_aux_keyseqnum",
-        ("nwk_cmd_payloadlength", "NUMERICAL"),
-        ("der_same_macnwkdst", "CATEGORICAL"),
-        ("der_same_macnwksrc", "CATEGORICAL"),
-        ("der_mac_dsttype", "CATEGORICAL"),
-        ("der_mac_srctype", "CATEGORICAL"),
-        ("der_nwk_dsttype", "CATEGORICAL"),
-        ("der_nwk_srctype", "CATEGORICAL"),
-    ]
+    if restricted:
+        feature_definitions = [
+            ("nwk_cmd_payloadlength", "NUMERICAL"),
+            ("nwk_radius", "NUMERICAL"),
+            ("der_nwk_dsttype", "CATEGORICAL"),
+            ("der_nwk_srctype", "CATEGORICAL"),
+            ("der_same_macnwkdst", "CATEGORICAL"),
+            ("der_same_macnwksrc", "CATEGORICAL"),
+        ]
+    else:
+        feature_definitions = [
+            ("phy_length", "NUMERICAL"),
+            # "mac_fcs",
+            ("mac_frametype", "CATEGORICAL"),
+            ("mac_security", "CATEGORICAL"),
+            ("mac_framepending", "CATEGORICAL"),
+            ("mac_ackreq", "CATEGORICAL"),
+            ("mac_panidcomp", "CATEGORICAL"),
+            ("mac_dstaddrmode", "CATEGORICAL"),
+            ("mac_frameversion", "CATEGORICAL"),
+            ("mac_srcaddrmode", "CATEGORICAL"),
+            # "mac_seqnum",
+            # "mac_dstpanid",
+            # "mac_dstshortaddr",
+            # "mac_dstextendedaddr",
+            # "mac_srcpanid"
+            # "mac_srcshortaddr",
+            # "mac_srcextendedaddr",
+            ("nwk_frametype", "CATEGORICAL"),
+            ("nwk_protocolversion", "CATEGORICAL"),
+            ("nwk_discroute", "CATEGORICAL"),
+            ("nwk_multicast", "CATEGORICAL"),
+            ("nwk_security", "CATEGORICAL"),
+            ("nwk_srcroute", "CATEGORICAL"),
+            ("nwk_extendeddst", "CATEGORICAL"),
+            ("nwk_extendedsrc", "CATEGORICAL"),
+            ("nwk_edinitiator", "CATEGORICAL"),
+            # "nwk_dstshortaddr",
+            # "nwk_srcshortaddr",
+            ("nwk_radius", "NUMERICAL"),
+            # "nwk_seqnum",
+            # "nwk_dstextendedaddr",
+            # "nwk_srcextendedaddr",
+            # [Multicast Control field (0/1 byte)]
+            # "nwk_srcroute_relaycount",
+            # "nwk_srcroute_relayindex",
+            # "nwk_srcroute_relaylist",
+            ("nwk_aux_seclevel", "CATEGORICAL"),
+            ("nwk_aux_keytype", "CATEGORICAL"),
+            ("nwk_aux_extnonce", "CATEGORICAL"),
+            # "nwk_aux_framecounter",
+            # "nwk_aux_srcaddr",
+            # "nwk_aux_keyseqnum",
+            ("nwk_cmd_payloadlength", "NUMERICAL"),
+            ("der_same_macnwkdst", "CATEGORICAL"),
+            ("der_same_macnwksrc", "CATEGORICAL"),
+            ("der_mac_dsttype", "CATEGORICAL"),
+            ("der_mac_srctype", "CATEGORICAL"),
+            ("der_nwk_dsttype", "CATEGORICAL"),
+            ("der_nwk_srctype", "CATEGORICAL"),
+        ]
     logging.info("The classifier will use {} unencoded features"
                  "".format(len(feature_definitions)))
 

@@ -141,6 +141,17 @@ parser_train.add_argument(
     action="store",
     help="seed for the pseudorandom number generator",
     default=None)
+parser_train.add_argument(
+    "--restricted",
+    dest="restricted",
+    action="store_true",
+    help="use a restricted set of features")
+parser_train.add_argument(
+    "--unrestricted",
+    dest="restricted",
+    action="store_false",
+    help="use an unrestricted set of features")
+parser.set_defaults(restricted=False)
 
 args = parser.parse_args()
 
@@ -178,7 +189,8 @@ def main():
         zigator.training.main("enc-nwk-cmd",
                               args.DATABASE_FILEPATH,
                               args.OUTPUT_DIRECTORY,
-                              args.seed)
+                              args.seed,
+                              args.restricted)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
