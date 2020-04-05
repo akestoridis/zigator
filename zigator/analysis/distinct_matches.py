@@ -860,6 +860,50 @@ COLUMN_MATCHES = set([
         ),
         "nwk_cmd_payloadlength",
     ),
+    (
+        "der_nwk_dsttype--nwk_cmd_id.tsv",
+        (
+            "der_nwk_dsttype",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--der_nwk_dsttype.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "der_nwk_dsttype",
+    ),
+    (
+        "der_nwk_srctype--nwk_cmd_id.tsv",
+        (
+            "der_nwk_srctype",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "nwk_cmd_id",
+    ),
+    (
+        "nwk_cmd_id--der_nwk_srctype.tsv",
+        (
+            "nwk_cmd_id",
+        ),
+        (
+            ("error_msg", None),
+            ("nwk_frametype", "NWK Command"),
+        ),
+        "der_nwk_srctype",
+    ),
 ])
 
 
