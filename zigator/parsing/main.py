@@ -65,6 +65,10 @@ def main(pcap_dirpath, db_filepath):
     config.db.store_addresses(config.addresses)
     config.db.store_pairs(config.pairs)
 
+    # Update the packets table using the derived information
+    logging.info("Updating the database")
+    config.db.update_packets()
+
     # Log a summary of the generated warnings
     warnings = config.db.fetch_values(["warning_msg"], None, True)
     for warning in warnings:

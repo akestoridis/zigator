@@ -231,6 +231,12 @@ PKT_COLUMNS = [
     ("zcl_manufcode", "TEXT"),
     ("zcl_seqnum", "INTEGER"),
     ("zcl_cmd_id", "TEXT"),
+    ("der_same_macnwkdst", "TEXT"),
+    ("der_same_macnwksrc", "TEXT"),
+    ("der_mac_dsttype", "TEXT"),
+    ("der_mac_srctype", "TEXT"),
+    ("der_nwk_dsttype", "TEXT"),
+    ("der_nwk_srctype", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT"),
 ]
@@ -335,7 +341,9 @@ def insert_pkt(entry):
 def grouped_count(selected_columns, count_errors):
     global cursor
 
-    # Sanity check
+    # Sanity checks
+    if len(selected_columns) == 0:
+        raise ValueError("At least one selected column is required")
     for column_name in selected_columns:
         if column_name not in PKT_COLUMN_NAMES:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
@@ -355,7 +363,9 @@ def grouped_count(selected_columns, count_errors):
 def fetch_values(selected_columns, conditions, distinct):
     global cursor
 
-    # Sanity check
+    # Sanity checks
+    if len(selected_columns) == 0:
+        raise ValueError("At least one selected column is required")
     for column_name in selected_columns:
         if column_name not in PKT_COLUMN_NAMES:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
@@ -540,6 +550,245 @@ def get_nwkdevtype(shortaddr=None, panid=None, extendedaddr=None):
         return "Conflicting Data"
     else:
         return results[0][0]
+
+
+def update_table(selected_columns, selected_values, conditions):
+    global connection
+    global cursor
+
+    # Sanity checks
+    if len(selected_columns) == 0:
+        raise ValueError("At least one selected column is required")
+    elif len(selected_columns) != len(selected_values):
+        raise ValueError("The number of selected columns does not match "
+                         "the number of selected values")
+    for column_name in selected_columns:
+        if column_name not in PKT_COLUMN_NAMES:
+            raise ValueError("Unknown column name \"{}\"".format(column_name))
+
+    # Update the table
+    set_statements = ["{} = ?".format(x) for x in selected_columns]
+    update_command = "UPDATE packets SET {}".format(", ".join(set_statements))
+    expr_statements = []
+    expr_values = list(selected_values)
+    if conditions is not None:
+        update_command += " WHERE "
+        for condition in conditions:
+            param = condition[0]
+            value = condition[1]
+            if param[0] == "!":
+                neq = True
+                param = param[1:]
+            else:
+                neq = False
+            if param not in PKT_COLUMN_NAMES:
+                raise ValueError("Unknown column name \"{}\"".format(param))
+            elif value is None:
+                if neq:
+                    expr_statements.append("{} IS NOT NULL".format(param))
+                else:
+                    expr_statements.append("{} IS NULL".format(param))
+            else:
+                if neq:
+                    expr_statements.append("{}!=?".format(param))
+                else:
+                    expr_statements.append("{}=?".format(param))
+                expr_values.append(value)
+        update_command += " AND ".join(expr_statements)
+
+    # Execute the constructed command
+    cursor.execute(update_command, tuple(expr_values))
+    connection.commit()
+
+
+def update_packets():
+    # Update the "Same MAC and NWK Destination" column
+    update_columns = (
+        "der_same_macnwkdst",
+    )
+    fetch_columns = (
+        "mac_dstshortaddr",
+        "nwk_dstshortaddr",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_frametype", "MAC Data"),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("mac_dstaddrmode", "Short destination MAC address"),
+        ("!nwk_dstshortaddr", None),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        update_values = (
+            "Same MAC/NWK Dst: {}".format(
+                fetched_tuple[0] == fetched_tuple[1]),
+        )
+        update_table(update_columns, update_values, var_conditions)
+
+    # Update the "Same MAC and NWK Source" column
+    update_columns = (
+        "der_same_macnwksrc",
+    )
+    fetch_columns = (
+        "mac_srcshortaddr",
+        "nwk_srcshortaddr",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_frametype", "MAC Data"),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("mac_srcaddrmode", "Short source MAC address"),
+        ("!nwk_srcshortaddr", None),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        update_values = (
+            "Same MAC/NWK Src: {}".format(
+                fetched_tuple[0] == fetched_tuple[1]),
+        )
+        update_table(update_columns, update_values, var_conditions)
+
+    # Update the "MAC Destination Type" column
+    update_columns = (
+        "der_mac_dsttype",
+    )
+    fetch_columns = (
+        "mac_dstshortaddr",
+        "mac_dstpanid",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("mac_dstaddrmode", "Short destination MAC address"),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        if fetched_tuple[0] == "0xffff":
+            update_values = (
+                "MAC Dst Type: Broadcast",
+            )
+        else:
+            update_values = (
+                "MAC Dst Type: {}".format(
+                    get_nwkdevtype(
+                        shortaddr=fetched_tuple[0],
+                        panid=fetched_tuple[1])),
+            )
+        update_table(update_columns, update_values, var_conditions)
+
+    # Update the "MAC Source Type" column
+    update_columns = (
+        "der_mac_srctype",
+    )
+    fetch_columns = (
+        "mac_srcshortaddr",
+        "mac_dstpanid",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("mac_srcaddrmode", "Short source MAC address"),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        update_values = (
+            "MAC Src Type: {}".format(
+                get_nwkdevtype(
+                    shortaddr=fetched_tuple[0],
+                    panid=fetched_tuple[1])),
+        )
+        update_table(update_columns, update_values, var_conditions)
+
+    # Update the "NWK Destination Type" column
+    update_columns = (
+        "der_nwk_dsttype",
+    )
+    fetch_columns = (
+        "nwk_dstshortaddr",
+        "mac_dstpanid",
+        "nwk_dstextendedaddr",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("!nwk_dstshortaddr", None),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        if fetched_tuple[0] == "0xffff":
+            update_values = (
+                "NWK Dst Type: All devices",
+            )
+        elif fetched_tuple[0] == "0xfffd":
+            update_values = (
+                "NWK Dst Type: All active receivers",
+            )
+        elif fetched_tuple[0] == "0xfffc":
+            update_values = (
+                "NWK Dst Type: All routers and coordinator",
+            )
+        elif fetched_tuple[0] == "0xfffb":
+            update_values = (
+                "NWK Dst Type: All low-power routers",
+            )
+        else:
+            update_values = (
+                "NWK Dst Type: {}".format(
+                    get_nwkdevtype(
+                        shortaddr=fetched_tuple[0],
+                        panid=fetched_tuple[1],
+                        extendedaddr=fetched_tuple[2])),
+            )
+        update_table(update_columns, update_values, var_conditions)
+
+    # Update the "NWK Source Type" column
+    update_columns = (
+        "der_nwk_srctype",
+    )
+    fetch_columns = (
+        "nwk_srcshortaddr",
+        "mac_dstpanid",
+        "nwk_srcextendedaddr",
+    )
+    conditions = (
+        ("error_msg", None),
+        ("mac_panidcomp",
+            "The source PAN ID is the same as the destination PAN ID"),
+        ("!nwk_srcshortaddr", None),
+    )
+    fetched_tuples = fetch_values(fetch_columns, conditions, True)
+    for fetched_tuple in fetched_tuples:
+        var_conditions = list(conditions)
+        for i in range(len(fetched_tuple)):
+            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
+        update_values = (
+            "NWK Src Type: {}".format(
+                get_nwkdevtype(
+                    shortaddr=fetched_tuple[0],
+                    panid=fetched_tuple[1],
+                    extendedaddr=fetched_tuple[2])),
+        )
+        update_table(update_columns, update_values, var_conditions)
 
 
 def disconnect():
