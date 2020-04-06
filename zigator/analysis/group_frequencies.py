@@ -63,6 +63,12 @@ COLUMN_GROUPS = set([
         "aps_profilename",
         "aps_clustername",
     ),
+    (
+        "nwkcmdid_addrtype-frequency.tsv",
+        "nwk_cmd_id",
+        "der_nwk_dsttype",
+        "der_nwk_srctype",
+    ),
 ])
 
 
