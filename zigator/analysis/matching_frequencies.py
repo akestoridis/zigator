@@ -812,7 +812,7 @@ CONDITION_MATCHES = set([
             ("!der_nwk_dsttype", "NWK Dst Type: All routers and coordinator"),
             ("nwk_cmd_payloadlength", 1),
             ("nwk_radius", 1),
-            ("der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
+            ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
         ),
     ),
     (
@@ -831,7 +831,8 @@ CONDITION_MATCHES = set([
             ("!der_nwk_dsttype", "NWK Dst Type: All routers and coordinator"),
             ("nwk_cmd_payloadlength", 1),
             ("nwk_radius", 1),
-            ("der_nwk_dsttype", "NWK Dst Type: All active receivers"),
+            ("!der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+            ("der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
         ),
     ),
     (
@@ -850,9 +851,8 @@ CONDITION_MATCHES = set([
             ("!der_nwk_dsttype", "NWK Dst Type: All routers and coordinator"),
             ("nwk_cmd_payloadlength", 1),
             ("nwk_radius", 1),
-            ("!der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
-            ("!der_nwk_dsttype", "NWK Dst Type: All active receivers"),
-            ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+            ("!der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+            ("der_nwk_dsttype", "NWK Dst Type: All active receivers"),
         ),
     ),
     (
@@ -871,9 +871,9 @@ CONDITION_MATCHES = set([
             ("!der_nwk_dsttype", "NWK Dst Type: All routers and coordinator"),
             ("nwk_cmd_payloadlength", 1),
             ("nwk_radius", 1),
+            ("!der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
             ("!der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
             ("!der_nwk_dsttype", "NWK Dst Type: All active receivers"),
-            ("!der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
         ),
     ),
     (
