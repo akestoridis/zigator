@@ -621,6 +621,28 @@ CONDITION_MATCHES = set([
             ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
+    (
+        "der_mac_dsttype--datarequest_srcshort.tsv",
+        (
+            "der_mac_dsttype",
+        ),
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Data Request"),
+            ("mac_srcaddrmode", "Short source MAC address")
+        ),
+    ),
+    (
+        "der_mac_srctype--datarequest_srcshort.tsv",
+        (
+            "der_mac_srctype",
+        ),
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Data Request"),
+            ("mac_srcaddrmode", "Short source MAC address")
+        ),
+    ),
 ])
 
 

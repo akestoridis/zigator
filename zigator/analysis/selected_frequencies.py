@@ -153,6 +153,21 @@ CONDITION_SELECTIONS = set([
             ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
+    (
+        "datarequest--srcaddrmode.tsv",
+        (
+            "MAC Data Request with short source address",
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Data Request"),
+            ("mac_srcaddrmode", "Short source MAC address"),
+        ),
+        (
+            "MAC Data Request with extended source address",
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Data Request"),
+            ("mac_srcaddrmode", "Extended source MAC address"),
+        ),
+    ),
 ])
 
 
