@@ -104,24 +104,6 @@ parser_visualize.add_argument(
     action="store",
     help="directory for the output files")
 
-parser_injectbeacon = subparsers.add_parser(
-    "inject-beacon",
-    help="inject a Zigbee beacon packet")
-parser_injectbeacon.add_argument(
-    "PANID",
-    type=str,
-    action="store",
-    help="the PAN ID of the beacon packet")
-
-parser_injectorphan = subparsers.add_parser(
-    "inject-orphan",
-    help="inject an orphan notification")
-parser_injectorphan.add_argument(
-    "SRCEXTENDEDADDR",
-    type=str,
-    action="store",
-    help="the extended address of the source")
-
 parser_train = subparsers.add_parser(
     "train",
     help="train a classifier based on data from a database")
@@ -153,6 +135,103 @@ parser_train.add_argument(
     help="use an unrestricted set of features")
 parser.set_defaults(restricted=False)
 
+parser_inject = subparsers.add_parser(
+    "inject",
+    help="inject a forged packet over UDP")
+parser_inject.add_argument(
+    "PKT_TYPE",
+    type=str,
+    choices=["beacon", "orphannotif"],
+    action="store",
+    help="the type of the forged packet")
+parser_inject.add_argument(
+    "--ipaddr",
+    dest="ipaddr",
+    type=str,
+    action="store",
+    help="the IP address of the UDP server",
+    default="127.0.0.1")
+parser_inject.add_argument(
+    "--portnum",
+    dest="portnum",
+    type=int,
+    action="store",
+    help="the port number of the UDP server",
+    default=52001)
+parser_inject.add_argument(
+    "--mac_seqnum",
+    dest="mac_seqnum",
+    type=int,
+    choices=range(256),
+    action="store",
+    metavar="MAC_SEQNUM",
+    help="the MAC sequence number",
+    default=137)
+parser_inject.add_argument(
+    "--panid",
+    dest="panid",
+    type=str,
+    action="store",
+    help="the PAN ID in hexadecimal notation",
+    default=None)
+parser_inject.add_argument(
+    "--srcshortaddr",
+    dest="srcshortaddr",
+    type=str,
+    action="store",
+    help="the short source address in hexadecimal notation",
+    default=None)
+parser_inject.add_argument(
+    "--srcextendedaddr",
+    dest="srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source address in hexadecimal notation",
+    default=None)
+parser_inject.add_argument(
+    "--pancoord",
+    dest="pancoord",
+    type=int,
+    choices=range(2),
+    action="store",
+    metavar="PANCOORD",
+    help="the PAN Coordinator field of beacons",
+    default=0)
+parser_inject.add_argument(
+    "--assocpermit",
+    dest="assocpermit",
+    type=int,
+    choices=range(2),
+    action="store",
+    metavar="ASSOCPERMIT",
+    help="the Association Permit field of beacons",
+    default=0)
+parser_inject.add_argument(
+    "--devdepth",
+    dest="devdepth",
+    type=int,
+    choices=range(16),
+    action="store",
+    metavar="DEVDEPTH",
+    help="the Device Depth field of beacons",
+    default=2)
+parser_inject.add_argument(
+    "--epid",
+    dest="epid",
+    type=str,
+    action="store",
+    help="the EPID field of beacons in hexadecimal notation",
+    default=None)
+parser_inject.add_argument(
+    "--updateid",
+    dest="updateid",
+    type=int,
+    choices=range(256),
+    action="store",
+    metavar="UPDATEID",
+    help="the Update ID field of beacons",
+    default=0)
+
 args = parser.parse_args()
 
 
@@ -181,16 +260,25 @@ def main():
     elif args.subcommand == "visualize":
         zigator.visualization.main(args.DATABASE_FILEPATH,
                                    args.OUTPUT_DIRECTORY)
-    elif args.subcommand == "inject-beacon":
-        zigator.injection.main("beacon", args.PANID)
-    elif args.subcommand == "inject-orphan":
-        zigator.injection.main("orphan", args.SRCEXTENDEDADDR)
     elif args.subcommand == "train":
         zigator.training.main("enc-nwk-cmd",
                               args.DATABASE_FILEPATH,
                               args.OUTPUT_DIRECTORY,
                               args.seed,
                               args.restricted)
+    elif args.subcommand == "inject":
+        zigator.injection.main(args.PKT_TYPE,
+                               args.ipaddr,
+                               args.portnum,
+                               args.mac_seqnum,
+                               args.panid,
+                               args.srcshortaddr,
+                               args.srcextendedaddr,
+                               args.pancoord,
+                               args.assocpermit,
+                               args.devdepth,
+                               args.epid,
+                               args.updateid)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 

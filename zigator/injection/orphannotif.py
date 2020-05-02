@@ -14,14 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import socket
-
 from scapy.all import *
 
 
-def orphan_notification(srcextendedaddr):
-    # Forge the injection packet
-    injection_pkt = (
+def orphannotif(mac_seqnum, srcextendedaddr):
+    # Forge an orphan notification
+    forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=3,
             fcf_security=0,
@@ -31,15 +29,13 @@ def orphan_notification(srcextendedaddr):
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=3,
-            seqnum=137)
+            seqnum=mac_seqnum)
         / Dot15d4Cmd(
             dest_panid=0xffff,
             dest_addr=0xffff,
             src_panid=0xffff,
-            src_addr=int(srcextendedaddr, 16),
+            src_addr=srcextendedaddr,
             cmd_id=6)
     )
 
-    # Send the forged packet to a SDR that is listening on a UDP port
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as tx_sock:
-        tx_sock.sendto(bytes(injection_pkt), ("127.0.0.1", 52001))
+    return forged_pkt

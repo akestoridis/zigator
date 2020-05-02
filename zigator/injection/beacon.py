@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import socket
-
 from scapy.all import *
 
 
-def beacon(panid):
-    # Forge the injection packet
-    injection_pkt = (
+def beacon(mac_seqnum, panid, srcshortaddr, pancoord, assocpermit, devdepth,
+           epid, updateid):
+    # Forge a beacon
+    forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=0,
             fcf_security=0,
@@ -31,32 +30,30 @@ def beacon(panid):
             fcf_destaddrmode=0,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=137)
+            seqnum=mac_seqnum)
         / Dot15d4Beacon(
-            src_panid=int(panid, 16),
-            src_addr=0xdead,
+            src_panid=panid,
+            src_addr=srcshortaddr,
             sf_beaconorder=15,
             sf_sforder=15,
             sf_finalcapslot=15,
             sf_battlifeextend=0,
-            sf_pancoord=0,
-            sf_assocpermit=0,
+            sf_pancoord=pancoord,
+            sf_assocpermit=assocpermit,
             gts_spec_desccount=0,
             gts_spec_permit=0,
             pa_num_short=0,
             pa_num_long=0)
         / ZigBeeBeacon(
             proto_id=0,
-            nwkc_protocol_version=2,
             stack_profile=2,
+            nwkc_protocol_version=2,
             router_capacity=1,
-            device_depth=2,
+            device_depth=devdepth,
             end_device_capacity=1,
-            extended_pan_id=0xfacefeedbeefcafe,
+            extended_pan_id=epid,
             tx_offset=16777215,
-            update_id=0)
+            update_id=updateid)
     )
 
-    # Send the forged packet to a SDR that is listening on a UDP port
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as tx_sock:
-        tx_sock.sendto(bytes(injection_pkt), ("127.0.0.1", 52001))
+    return forged_pkt
