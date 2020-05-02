@@ -17,6 +17,7 @@
 import logging
 
 from .beacon import beacon
+from .beaconreq import beaconreq
 from .orphannotif import orphannotif
 
 
@@ -54,6 +55,9 @@ def main(pkt_type, ipaddr, portnum, mac_seqnum, panid, srcshortaddr,
         # Forge the packet
         forged_pkt = beacon(mac_seqnum, panid, srcshortaddr, pancoord,
                             assocpermit, devdepth, epid, updateid)
+    elif pkt_type.lower() == "beaconreq":
+        # Forge the packet
+        forged_pkt = beaconreq(mac_seqnum)
     elif pkt_type.lower() == "orphannotif":
         # Process some of the provided parameter values
         if srcextendedaddr is None:

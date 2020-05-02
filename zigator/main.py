@@ -141,7 +141,7 @@ parser_inject = subparsers.add_parser(
 parser_inject.add_argument(
     "PKT_TYPE",
     type=str,
-    choices=["beacon", "orphannotif"],
+    choices=["beacon", "beaconreq", "orphannotif"],
     action="store",
     help="the type of the forged packet")
 parser_inject.add_argument(
