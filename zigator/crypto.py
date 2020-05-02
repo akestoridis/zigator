@@ -89,6 +89,42 @@ def zigbee_hmac(message, key):
     return zigbee_mmo_hash(outer_key + zigbee_mmo_hash(inner_key + message))
 
 
+def zigbee_encryption(key, source_addr, frame_counter, sec_control,
+                      header, key_seqnum, dec_payload):
+    # The fields of the nonce are in little-endian byte order
+    le_srcaddr = source_addr.to_bytes(8, byteorder="little")
+    le_framecounter = frame_counter.to_bytes(4, byteorder="little")
+
+    # Zigbee devices overwrite the security level field of their packets
+    # with zeros after securing them and before transmitting them.
+    # We have to restore the security level field in order to
+    # to successfully encrypt and authenticate Zigbee packets.
+    # The default security level of Zigbee networks utilizes
+    # AES-128 in CCM mode with 32-bit message integrity codes.
+    fixed_sec_control = (sec_control & 0b11111000) | 0b101
+
+    # Construct the nonce
+    nonce = bytearray(le_srcaddr)
+    nonce.extend(le_framecounter)
+    nonce.append(fixed_sec_control)
+
+    # Gather the unencrypted data that, along with the encrypted data,
+    # will be protected by the message integrity code
+    auth_data = bytearray(header)
+    auth_data.append(fixed_sec_control)
+    auth_data.extend(le_framecounter)
+    if sec_control & 0b00100000:
+        auth_data.extend(le_srcaddr)
+    if key_seqnum is not None:
+        auth_data.append(key_seqnum)
+
+    # Return the encrypted payload and the message integrity code
+    cipher = AES.new(key=key, mode=AES.MODE_CCM, nonce=nonce, mac_len=4)
+    cipher.update(auth_data)
+    enc_payload, mic = cipher.encrypt_and_digest(dec_payload)
+    return enc_payload, mic
+
+
 def zigbee_decryption(key, source_addr, frame_counter, sec_control,
                       header, key_seqnum, enc_payload, mic):
     # The fields of the nonce are in little-endian byte order
@@ -98,7 +134,7 @@ def zigbee_decryption(key, source_addr, frame_counter, sec_control,
     # Zigbee devices overwrite the security level field of their packets
     # with zeros after securing them and before transmitting them.
     # We have to restore the security level field in order to
-    # to successfully decrypt and authenticate Zigbee packets.
+    # to successfully decrypt and verify Zigbee packets.
     # The default security level of Zigbee networks utilizes
     # AES-128 in CCM mode with 32-bit message integrity codes.
     fixed_sec_control = (sec_control & 0b11111000) | 0b101
