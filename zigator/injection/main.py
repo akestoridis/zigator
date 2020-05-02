@@ -57,12 +57,16 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
                 raise ValueError("Invalid PAN ID")
         if srcshortaddr is None:
             srcshortaddr = DEFAULT_SRCSHORTADDR
+            logging.warning("Unspecified short source address; "
+                            "defaulted to \"0x{:04x}\"".format(srcshortaddr))
         else:
             srcshortaddr = int(srcshortaddr, 16)
             if srcshortaddr < 0 or srcshortaddr.bit_length() > 16:
                 raise ValueError("Invalid short source address")
         if epid is None:
             epid = DEFAULT_EPID
+            logging.warning("Unspecified EPID; defaulted "
+                            "to \"{:016x}\"".format(epid))
         else:
             epid = int(epid, 16)
             if panid < 0 or panid.bit_length() > 64:

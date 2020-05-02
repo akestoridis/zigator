@@ -106,7 +106,7 @@ parser_visualize.add_argument(
 
 parser_train = subparsers.add_parser(
     "train",
-    help="train a classifier based on data from a database")
+    help="train a classifier using data from a database")
 parser_train.add_argument(
     "DATABASE_FILEPATH",
     type=str,
