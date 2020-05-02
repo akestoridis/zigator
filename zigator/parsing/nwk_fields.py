@@ -225,8 +225,8 @@ def get_nwk_leave_rmch(pkt):
 
 def get_nwk_rejoinreq_apc(pkt):
     apc_states = {
-        0: "The sender is capable of becoming a PAN coordinator",
-        1: "The sender is not capable of becoming a PAN coordinator"
+        0: "The sender is not capable of becoming a PAN coordinator",
+        1: "The sender is capable of becoming a PAN coordinator"
     }
     apc_state = pkt[ZigbeeNWKCommandPayload].alternate_pan_coordinator
     return apc_states.get(apc_state, "Unknown APC state")
