@@ -141,7 +141,7 @@ parser_inject = subparsers.add_parser(
 parser_inject.add_argument(
     "PKT_TYPE",
     type=str,
-    choices=["beacon", "beaconreq", "orphannotif", "rejoinreq"],
+    choices=["mpdu", "beacon", "beaconreq", "orphannotif", "rejoinreq"],
     action="store",
     help="the type of the forged packet")
 parser_inject.add_argument(
@@ -158,6 +158,13 @@ parser_inject.add_argument(
     action="store",
     help="the port number of the UDP server",
     default=52001)
+parser_inject.add_argument(
+    "--raw",
+    dest="raw",
+    type=str,
+    action="store",
+    help="the raw bytes of MPDUs in hexadecimal notation",
+    default=None)
 parser_inject.add_argument(
     "--mac_seqnum",
     dest="mac_seqnum",
@@ -313,6 +320,7 @@ def main():
         zigator.injection.main(args.PKT_TYPE,
                                args.ipaddr,
                                args.portnum,
+                               args.raw,
                                args.mac_seqnum,
                                args.panid,
                                args.dstshortaddr,

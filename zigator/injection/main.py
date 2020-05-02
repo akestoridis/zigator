@@ -22,6 +22,7 @@ from .orphannotif import orphannotif
 from .rejoinreq import rejoinreq
 
 
+DEFAULT_RAW = "418889aa990000adde5241576e7f"
 DEFAULT_PANID = int("0x99aa", 16)
 DEFAULT_DSTSHORTADDR = int("0x0000", 16)
 DEFAULT_SRCSHORTADDR = int("0xdead", 16)
@@ -29,11 +30,22 @@ DEFAULT_SRCEXTENDEDADDR = int("0102030405060708", 16)
 DEFAULT_EPID = int("facefeedbeefcafe", 16)
 
 
-def main(pkt_type, ipaddr, portnum, mac_seqnum, panid, dstshortaddr,
+def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
          srcshortaddr, srcextendedaddr, pancoord, assocpermit, devdepth, epid,
          updateid, nwk_seqnum, devtype, powsrc, rxidle):
     """Inject a forged packet."""
-    if pkt_type.lower() == "beacon":
+    if pkt_type.lower() == "mpdu":
+        # Process some of the provided parameter values
+        if raw is None:
+            raw = DEFAULT_RAW
+            logging.warning("Unspecified raw bytes; defaulted "
+                            "to \"{}\"".format(raw))
+        # Forge the packet
+        forged_pkt = bytes.fromhex(raw)
+        # Sanity check
+        if len(forged_pkt) < 1 or len(forged_pkt) > 127:
+            raise ValueError("Invalid MPDU length")
+    elif pkt_type.lower() == "beacon":
         # Process some of the provided parameter values
         if panid is None:
             panid = DEFAULT_PANID
