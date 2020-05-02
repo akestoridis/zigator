@@ -19,16 +19,19 @@ import logging
 from .beacon import beacon
 from .beaconreq import beaconreq
 from .orphannotif import orphannotif
+from .rejoinreq import rejoinreq
 
 
 DEFAULT_PANID = int("0x99aa", 16)
+DEFAULT_DSTSHORTADDR = int("0x0000", 16)
 DEFAULT_SRCSHORTADDR = int("0xdead", 16)
 DEFAULT_SRCEXTENDEDADDR = int("0102030405060708", 16)
 DEFAULT_EPID = int("facefeedbeefcafe", 16)
 
 
-def main(pkt_type, ipaddr, portnum, mac_seqnum, panid, srcshortaddr,
-         srcextendedaddr, pancoord, assocpermit, devdepth, epid, updateid):
+def main(pkt_type, ipaddr, portnum, mac_seqnum, panid, dstshortaddr,
+         srcshortaddr, srcextendedaddr, pancoord, assocpermit, devdepth, epid,
+         updateid, nwk_seqnum, devtype, powsrc, rxidle):
     """Inject a forged packet."""
     if pkt_type.lower() == "beacon":
         # Process some of the provided parameter values
@@ -70,6 +73,44 @@ def main(pkt_type, ipaddr, portnum, mac_seqnum, panid, srcshortaddr,
                 raise ValueError("Invalid extended source address")
         # Forge the packet
         forged_pkt = orphannotif(mac_seqnum, srcextendedaddr)
+    elif pkt_type.lower() == "rejoinreq":
+        # Process some of the provided parameter values
+        if panid is None:
+            panid = DEFAULT_PANID
+            logging.warning("Unspecified PAN ID; defaulted "
+                            "to \"0x{:04x}\"".format(panid))
+        else:
+            panid = int(panid, 16)
+            if panid < 0 or panid.bit_length() > 16:
+                raise ValueError("Invalid PAN ID")
+        if dstshortaddr is None:
+            dstshortaddr = DEFAULT_DSTSHORTADDR
+            logging.warning("Unspecified short destination address; "
+                            "defaulted to \"0x{:04x}\"".format(dstshortaddr))
+        else:
+            dstshortaddr = int(dstshortaddr, 16)
+            if dstshortaddr < 0 or dstshortaddr.bit_length() > 16:
+                raise ValueError("Invalid short destination address")
+        if srcshortaddr is None:
+            srcshortaddr = DEFAULT_SRCSHORTADDR
+            logging.warning("Unspecified short source address; "
+                            "defaulted to \"0x{:04x}\"".format(srcshortaddr))
+        else:
+            srcshortaddr = int(srcshortaddr, 16)
+            if srcshortaddr < 0 or srcshortaddr.bit_length() > 16:
+                raise ValueError("Invalid short source address")
+        if srcextendedaddr is None:
+            srcextendedaddr = DEFAULT_SRCEXTENDEDADDR
+            logging.warning("Unspecified extended source address; defaulted "
+                            "to \"{:016x}\"".format(srcextendedaddr))
+        else:
+            srcextendedaddr = int(srcextendedaddr, 16)
+            if srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
+                raise ValueError("Invalid extended source address")
+        # Forge the packet
+        forged_pkt = rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr,
+                               nwk_seqnum, srcextendedaddr, devtype, powsrc,
+                               rxidle)
     else:
         raise ValueError("Unknown packet type \"{}\"".format(pkt_type))
 

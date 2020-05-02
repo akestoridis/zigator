@@ -141,7 +141,7 @@ parser_inject = subparsers.add_parser(
 parser_inject.add_argument(
     "PKT_TYPE",
     type=str,
-    choices=["beacon", "beaconreq", "orphannotif"],
+    choices=["beacon", "beaconreq", "orphannotif", "rejoinreq"],
     action="store",
     help="the type of the forged packet")
 parser_inject.add_argument(
@@ -173,6 +173,13 @@ parser_inject.add_argument(
     type=str,
     action="store",
     help="the PAN ID in hexadecimal notation",
+    default=None)
+parser_inject.add_argument(
+    "--dstshortaddr",
+    dest="dstshortaddr",
+    type=str,
+    action="store",
+    help="the short destination address in hexadecimal notation",
     default=None)
 parser_inject.add_argument(
     "--srcshortaddr",
@@ -231,6 +238,42 @@ parser_inject.add_argument(
     metavar="UPDATEID",
     help="the Update ID field of beacons",
     default=0)
+parser_inject.add_argument(
+    "--nwk_seqnum",
+    dest="nwk_seqnum",
+    type=int,
+    choices=range(256),
+    action="store",
+    metavar="NWK_SEQNUM",
+    help="the NWK sequence number",
+    default=232)
+parser_inject.add_argument(
+    "--devtype",
+    dest="devtype",
+    type=int,
+    choices=range(2),
+    action="store",
+    metavar="DEVTYPE",
+    help="the Device Type field of rejoin requests",
+    default=0)
+parser_inject.add_argument(
+    "--powsrc",
+    dest="powsrc",
+    type=int,
+    choices=range(2),
+    action="store",
+    metavar="POWSRC",
+    help="the Power Source field of rejoin requests",
+    default=0)
+parser_inject.add_argument(
+    "--rxidle",
+    dest="rxidle",
+    type=int,
+    choices=range(2),
+    action="store",
+    metavar="RXIDLE",
+    help="the Receiver On When Idle field of rejoin requests",
+    default=0)
 
 args = parser.parse_args()
 
@@ -272,13 +315,18 @@ def main():
                                args.portnum,
                                args.mac_seqnum,
                                args.panid,
+                               args.dstshortaddr,
                                args.srcshortaddr,
                                args.srcextendedaddr,
                                args.pancoord,
                                args.assocpermit,
                                args.devdepth,
                                args.epid,
-                               args.updateid)
+                               args.updateid,
+                               args.nwk_seqnum,
+                               args.devtype,
+                               args.powsrc,
+                               args.rxidle)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
