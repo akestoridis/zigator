@@ -43,12 +43,12 @@ __classifiers__ = [
     "Topic :: Security"
 ]
 __install_requires__ = [
-    "graphviz>=0.13.2",
-    "numpy>=1.18.1",
+    "graphviz>=0.14",
+    "numpy>=1.18.4",
     "pycrc>=0.9.2",
-    "pycryptodomex>=3.9.4",
-    "scapy===2.4.3-zigator",
-    "scikit-learn>=0.22.1"
+    "pycryptodomex>=3.9.7",
+    "scapy @ git+https://github.com/secdev/scapy@a3d691f5b7f51bfc5248e4b6fbb40c77139f26c3#egg=scapy",
+    "scikit-learn>=0.22.2.post1"
 ]
 __python_requires__ = ">=3.5.3"
 __entry_points__ = {
