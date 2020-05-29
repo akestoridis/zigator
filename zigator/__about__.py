@@ -19,7 +19,6 @@ Metadata for the zigator package
 """
 
 __title__ = "zigator"
-__version__ = "0.0.dev1"
 __author__ = "Dimitrios-Georgios Akestoridis"
 __author_email__ = "akestoridis@cmu.edu"
 __description__ = "Security analysis tool for Zigbee networks"
@@ -58,7 +57,6 @@ __entry_points__ = {
 }
 __all__ = [
     "__title__",
-    "__version__",
     "__author__",
     "__author_email__",
     "__description__",

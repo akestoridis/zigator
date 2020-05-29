@@ -14,27 +14,36 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-
 """
 Setup script for the zigator package
 """
 
+import importlib
 import os
 import setuptools
+import sys
 
+
+top_dirpath = os.path.dirname(os.path.abspath(__file__))
+pkg_dirpath = os.path.join(top_dirpath, "zigator")
 
 about = {}
-top_dirpath = os.path.dirname(os.path.abspath(__file__))
-about_filepath = os.path.join(top_dirpath, "zigator", "__about__.py")
-with open(about_filepath, "r") as fp:
+with open(os.path.join(pkg_dirpath, "__about__.py"), "r") as fp:
     exec(fp.read(), about)
 
-with open("README.md", "r") as fp:
+long_description = ""
+with open(os.path.join(top_dirpath, "README.md"), "r") as fp:
     long_description = fp.read()
+
+getversion_spec = importlib.util.spec_from_file_location(
+    "__getversion__", os.path.join(pkg_dirpath, "__getversion__.py"))
+getversion_module = importlib.util.module_from_spec(getversion_spec)
+sys.modules["__getversion__"] = getversion_module
+getversion_spec.loader.exec_module(getversion_module)
 
 setuptools.setup(
     name=about["__title__"],
-    version=about["__version__"],
+    version=getversion_module.getversion(pkg_dirpath),
     author=about["__author__"],
     author_email=about["__author_email__"],
     description=about["__description__"],
@@ -47,5 +56,7 @@ setuptools.setup(
     install_requires=about["__install_requires__"],
     python_requires=about["__python_requires__"],
     entry_points=about["__entry_points__"],
+    include_package_data=True,
+    zip_safe=False,
     packages=setuptools.find_packages()
 )
