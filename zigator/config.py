@@ -46,36 +46,26 @@ pairs = {}
 entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
 
-def init(debug):
+def init():
     global network_keys
     global link_keys
     global install_codes
-
-    # Configure the logging system
-    if debug:
-        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
-                            datefmt="%Y-%m-%d %H:%M:%S",
-                            level=logging.DEBUG)
-    else:
-        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
-                            datefmt="%Y-%m-%d %H:%M:%S",
-                            level=logging.INFO)
 
     # Make sure that the configuration directory exists
     os.makedirs(CONFIG_DIR, exist_ok=True)
 
     # Load network keys
     network_keys = fs.load_enc_keys(NETWORK_FILEPATH, optional=True)
-    logging.info("Loaded {} network keys".format(len(network_keys)))
+    logging.debug("Loaded {} network keys".format(len(network_keys)))
 
     # Load link keys
     link_keys = fs.load_enc_keys(LINK_FILEPATH, optional=True)
-    logging.info("Loaded {} link keys".format(len(link_keys)))
+    logging.debug("Loaded {} link keys".format(len(link_keys)))
 
     # Load install codes and derive link keys from them
     install_codes, derived_keys = fs.load_install_codes(INSTALL_FILEPATH,
                                                         optional=True)
-    logging.info("Loaded {} install codes".format(len(install_codes)))
+    logging.debug("Loaded {} install codes".format(len(install_codes)))
 
     # Add link keys, derived from install codes, that are not already loaded
     added_keys = 0
@@ -92,8 +82,8 @@ def init(debug):
         else:
             link_keys[key_name] = derived_keys[key_name]
             added_keys += 1
-    logging.info("Added {} link keys that were derived from install codes"
-                 "".format(added_keys))
+    logging.debug("Added {} link keys that were derived from install codes"
+                  "".format(added_keys))
 
     # Configure Scapy to assume that Zigbee is above the MAC layer
     conf.dot15d4_protocol = "zigbee"

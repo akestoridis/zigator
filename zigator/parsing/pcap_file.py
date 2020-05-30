@@ -36,7 +36,7 @@ def pcap_file(filepath):
 
     # Parse the packets of the pcap file
     config.entry["pkt_num"] = 0
-    logging.info("Reading packets from \"{}\"".format(filepath))
+    logging.info("Reading packets from the \"{}\" file...".format(filepath))
     for pkt in PcapReader(filepath):
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
@@ -58,5 +58,5 @@ def pcap_file(filepath):
         config.reset_entries(keep=["pcap_directory",
                                    "pcap_filename",
                                    "pkt_num"])
-    logging.info("Parsed {} packets from \"{}\""
+    logging.info("Parsed {} packets from the \"{}\" file"
                  "".format(config.entry["pkt_num"], filepath))

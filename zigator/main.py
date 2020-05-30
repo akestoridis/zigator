@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import sys
+
 from argparse import ArgumentParser
 
 import zigator
@@ -30,7 +32,7 @@ parser.add_argument(
     "-v",
     "--version",
     action="version",
-    version="%(prog)s {}".format(zigator.__version__))
+    version=zigator.__version__)
 parser.add_argument(
     "-d",
     "--debug",
@@ -291,8 +293,21 @@ def main():
         parser.print_help()
         return
 
-    zigator.config.init(args.debug)
+    # Configure the logging system
+    if args.debug:
+        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S",
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S",
+                            level=logging.INFO)
+    logging.info("Started Zigator version {}".format(zigator.__version__))
 
+    # Initialize the configuration of Zigator
+    zigator.config.init()
+
+    # Process the user's input
     if args.subcommand == "parse":
         if args.network_filepath is not None:
             zigator.config.add_encryption_keys(args.network_filepath,

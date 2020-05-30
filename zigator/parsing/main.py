@@ -38,7 +38,7 @@ def main(pcap_dirpath, db_filepath):
         os.path.join(pcap_dirpath, "**", "*.[pP][cC][aA][pP]"),
         recursive=True)
     filepaths.sort()
-    logging.info("Detected {} pcap files in the directory \"{}\""
+    logging.info("Detected {} pcap files in the \"{}\" directory"
                  "".format(len(filepaths), pcap_dirpath))
 
     # Parse the detected pcap files
@@ -66,7 +66,7 @@ def main(pcap_dirpath, db_filepath):
     config.db.store_pairs(config.pairs)
 
     # Update the packets table using the derived information
-    logging.info("Updating the database")
+    logging.info("Updating the database...")
     config.db.update_packets()
 
     # Log a summary of the generated warnings
