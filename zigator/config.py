@@ -335,3 +335,17 @@ def add_sniffed_key(key_bytes, key_type):
             loaded_keys[key_name] = key_bytes
             logging.info("Added a sniffed {} key: {}"
                          "".format(key_type.lower(), key_bytes.hex()))
+
+
+def print_config():
+    logging.info("Printing the current configuration...")
+    print("\nNetwork Keys:")
+    for key_name in network_keys.keys():
+        print("{}\t{}".format(network_keys[key_name].hex(), key_name))
+    print("\nLink Keys:")
+    for key_name in link_keys.keys():
+        print("{}\t{}".format(link_keys[key_name].hex(), key_name))
+    print("\nInstall codes:")
+    for code_name in install_codes.keys():
+        print("{}\t{}".format(install_codes[code_name].hex(), code_name))
+    print("\nConfiguration directory: \"{}\"".format(CONFIG_DIR))

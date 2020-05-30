@@ -43,6 +43,10 @@ subparsers = parser.add_subparsers(
     dest="subcommand",
     help="set of valid subcommands")
 
+parser_print_config = subparsers.add_parser(
+    "print-config",
+    help="print the current configuration")
+
 parser_parse = subparsers.add_parser(
     "parse",
     help="parse pcap files")
@@ -308,7 +312,9 @@ def main():
     zigator.config.init()
 
     # Process the user's input
-    if args.subcommand == "parse":
+    if args.subcommand == "print-config":
+        zigator.config.print_config()
+    elif args.subcommand == "parse":
         if args.network_filepath is not None:
             zigator.config.add_encryption_keys(args.network_filepath,
                                                "network")
