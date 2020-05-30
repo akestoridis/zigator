@@ -878,7 +878,7 @@ def nwk_auxiliary(pkt):
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
     for source_addr in potential_sources:
         for key in potential_keys:
-            dec_payload, auth_payload = crypto.zigbee_decryption(
+            dec_payload, auth_payload = crypto.zigbee_dec_ver(
                 key, source_addr, frame_counter, sec_control,
                 header, key_seqnum, enc_payload, mic)
 

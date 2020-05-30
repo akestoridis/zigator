@@ -89,8 +89,8 @@ def zigbee_hmac(message, key):
     return zigbee_mmo_hash(outer_key + zigbee_mmo_hash(inner_key + message))
 
 
-def zigbee_encryption(key, source_addr, frame_counter, sec_control,
-                      header, key_seqnum, dec_payload):
+def zigbee_enc_mic(key, source_addr, frame_counter, sec_control, header,
+                   key_seqnum, dec_payload):
     # The fields of the nonce are in little-endian byte order
     le_srcaddr = source_addr.to_bytes(8, byteorder="little")
     le_framecounter = frame_counter.to_bytes(4, byteorder="little")
@@ -125,8 +125,8 @@ def zigbee_encryption(key, source_addr, frame_counter, sec_control,
     return enc_payload, mic
 
 
-def zigbee_decryption(key, source_addr, frame_counter, sec_control,
-                      header, key_seqnum, enc_payload, mic):
+def zigbee_dec_ver(key, source_addr, frame_counter, sec_control, header,
+                   key_seqnum, enc_payload, mic):
     # The fields of the nonce are in little-endian byte order
     le_srcaddr = source_addr.to_bytes(8, byteorder="little")
     le_framecounter = frame_counter.to_bytes(4, byteorder="little")
