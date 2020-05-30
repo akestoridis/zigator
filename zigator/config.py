@@ -31,9 +31,9 @@ from . import fs
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "zigator")
 
 # Define the filepaths of configuration files
-NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network_keys.tsv")
-LINK_FILEPATH = os.path.join(CONFIG_DIR, "link_keys.tsv")
-INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install_codes.tsv")
+NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network-keys.tsv")
+LINK_FILEPATH = os.path.join(CONFIG_DIR, "link-keys.tsv")
+INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install-codes.tsv")
 
 # Initialize the global variables
 network_keys = {}
