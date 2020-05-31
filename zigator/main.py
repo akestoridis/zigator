@@ -17,6 +17,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 import sys
 
 from argparse import ArgumentParser
@@ -108,7 +109,9 @@ parser_analyze.add_argument(
     "OUTPUT_DIRECTORY",
     type=str,
     action="store",
-    help="directory for the output files")
+    help="directory for the output files",
+    nargs="?",
+    default=os.getcwd())
 
 parser_visualize = subparsers.add_parser(
     "visualize",
@@ -122,7 +125,9 @@ parser_visualize.add_argument(
     "OUTPUT_DIRECTORY",
     type=str,
     action="store",
-    help="directory for the output files")
+    help="directory for the output files",
+    nargs="?",
+    default=os.getcwd())
 
 parser_train = subparsers.add_parser(
     "train",
@@ -136,7 +141,9 @@ parser_train.add_argument(
     "OUTPUT_DIRECTORY",
     type=str,
     action="store",
-    help="directory for the output files")
+    help="directory for the output files",
+    nargs="?",
+    default=os.getcwd())
 parser_train.add_argument(
     "--seed",
     type=int,
