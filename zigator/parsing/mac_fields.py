@@ -23,6 +23,7 @@ from scapy.all import Dot15d4Cmd
 from scapy.all import Dot15d4CmdAssocReq
 from scapy.all import Dot15d4CmdAssocResp
 from scapy.all import Dot15d4CmdCoordRealign
+from scapy.all import Dot15d4CmdCoordRealignPage
 from scapy.all import Dot15d4CmdDisassociation
 from scapy.all import Dot15d4CmdGTSReq
 from scapy.all import Dot15d4Data
@@ -283,20 +284,10 @@ def mac_realign(pkt):
         pkt[Dot15d4CmdCoordRealign].dev_address)
 
     # Channel Page field (0/1 byte)
-    if len(pkt[Dot15d4CmdCoordRealign]) == 7:
-        # The channel page field was omitted
-        return
-    elif len(pkt[Dot15d4CmdCoordRealign]) == 8:
-        # TODO: Add it as a field in Scapy
-        config.entry["mac_realign_page"] = int.from_bytes(
-            pkt[Dot15d4CmdCoordRealign].payload, byteorder="big")
-        return
-    else:
-        logging.debug("Packet #{} in {} has unexpected length"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
-        config.entry["error_msg"] = "Unexpected length"
-        return
+    if pkt.haslayer(Dot15d4CmdCoordRealignPage):
+        config.entry["mac_realign_page"] = (
+            pkt[Dot15d4CmdCoordRealignPage].channel_page
+        )
 
 
 def mac_gtsreq(pkt):
@@ -510,14 +501,10 @@ def mac_beacon(pkt):
     config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
 
     # Address List field (variable)
-    if (config.entry["mac_beacon_nsap"] > 0
-            or config.entry["mac_beacon_neap"] > 0):
-        logging.debug("Packet #{} in {} contains an Address List field "
-                      "which could not be processed"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
-        config.entry["error_msg"] = "Could not process the Address List"
-        return
+    config.entry["mac_beacon_shortaddresses"] = ",".join("0x{:04x}".format(
+        addr) for addr in pkt[Dot15d4Beacon].pa_short_addresses)
+    config.entry["mac_beacon_extendedaddresses"] = ",".join(format(
+        addr, "016x") for addr in pkt[Dot15d4Beacon].pa_long_addresses)
 
     # Beacon Payload field (variable)
     if pkt.haslayer(ZigBeeBeacon):

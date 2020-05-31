@@ -77,6 +77,8 @@ PKT_COLUMNS = [
     ("mac_beacon_gtsmask", "INTEGER"),
     ("mac_beacon_nsap", "INTEGER"),
     ("mac_beacon_neap", "INTEGER"),
+    ("mac_beacon_shortaddresses", "TEXT"),
+    ("mac_beacon_extendedaddresses", "TEXT"),
     ("nwk_beacon_protocolid", "INTEGER"),
     ("nwk_beacon_stackprofile", "INTEGER"),
     ("nwk_beacon_protocolversion", "TEXT"),
