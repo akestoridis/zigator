@@ -112,11 +112,6 @@ def load_install_codes(filepath, optional=False):
             raise ValueError("The provided file \"{}\" "
                              "does not exist".format(filepath))
 
-    # Initialize the CRC algorithm
-    crc = Crc(width=16, poly=0x1021,
-              reflect_in=True, xor_in=0xffff,
-              reflect_out=True, xor_out=0xffff)
-
     # Read the provided file line by line
     loaded_codes = {}
     derived_keys = {}
@@ -151,22 +146,17 @@ def load_install_codes(filepath, optional=False):
             # Convert the hexadecimal representation into a bytes object
             code_bytes = bytes.fromhex(code_hex)
 
-            # Separate the 128-bit number from its CRC value
-            received_number = code_bytes[0:16]
-            received_crc = int.from_bytes(code_bytes[16:18],
-                                          byteorder="little")
-
-            # Compute the CRC value of the received number
-            computed_crc = crc.bit_by_bit_fast(received_number)
+            # Check the CRC of the install code
+            computed_crc, received_crc = check_crc(code_bytes)
 
             # Compare the computed CRC value with the received CRC value
             if computed_crc != received_crc:
                 logging.warning("Ignoring the install code {} because "
-                                "its CRC value {} does not match the "
-                                "computed CRC value {}"
+                                "its CRC value 0x{:04x} does not match the "
+                                "computed CRC value 0x{:04x}"
                                 "".format(code_bytes.hex(),
-                                          hex(received_crc),
-                                          hex(computed_crc)))
+                                          received_crc,
+                                          computed_crc))
                 continue
 
             # Make sure that this install code is not already loaded
@@ -193,3 +183,20 @@ def load_install_codes(filepath, optional=False):
                               "{}".format(key_bytes.hex(), code_bytes.hex()))
 
     return loaded_codes, derived_keys
+
+
+def check_crc(code_bytes):
+    # Initialize the CRC algorithm
+    crc = Crc(width=16, poly=0x1021,
+              reflect_in=True, xor_in=0xffff,
+              reflect_out=True, xor_out=0xffff)
+
+    # Separate the 128-bit number from its CRC value
+    received_number = code_bytes[0:16]
+    received_crc = int.from_bytes(code_bytes[16:18],
+                                  byteorder="little")
+
+    # Compute the CRC value of the received number
+    computed_crc = crc.bit_by_bit_fast(received_number)
+
+    return computed_crc, received_crc

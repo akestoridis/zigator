@@ -47,6 +47,41 @@ parser_print_config = subparsers.add_parser(
     "print-config",
     help="print the current configuration")
 
+parser_add_config_entry = subparsers.add_parser(
+    "add-config-entry",
+    help="add a configuration entry")
+parser_add_config_entry.add_argument(
+    "ENTRY_TYPE",
+    type=str,
+    choices=["network-key", "link-key", "install-code"],
+    action="store",
+    help="the type of the configuration entry")
+parser_add_config_entry.add_argument(
+    "ENTRY_VALUE",
+    type=str,
+    action="store",
+    help="the value of the configuration entry in hexadecimal notation")
+parser_add_config_entry.add_argument(
+    "ENTRY_NAME",
+    type=str,
+    action="store",
+    help="the name of the configuration entry")
+
+parser_rm_config_entry = subparsers.add_parser(
+    "rm-config-entry",
+    help="remove a configuration entry")
+parser_rm_config_entry.add_argument(
+    "ENTRY_TYPE",
+    type=str,
+    choices=["network-key", "link-key", "install-code"],
+    action="store",
+    help="the type of the configuration entry")
+parser_rm_config_entry.add_argument(
+    "ENTRY_NAME",
+    type=str,
+    action="store",
+    help="the name of the configuration entry")
+
 parser_parse = subparsers.add_parser(
     "parse",
     help="parse pcap files")
@@ -60,27 +95,6 @@ parser_parse.add_argument(
     type=str,
     action="store",
     help="path for the database file")
-parser_parse.add_argument(
-    "--network_keys",
-    dest="network_filepath",
-    type=str,
-    action="store",
-    help="file with network keys",
-    default=None)
-parser_parse.add_argument(
-    "--link_keys",
-    dest="link_filepath",
-    type=str,
-    action="store",
-    help="file with link keys",
-    default=None)
-parser_parse.add_argument(
-    "--install_codes",
-    dest="install_filepath",
-    type=str,
-    action="store",
-    help="file with install codes",
-    default=None)
 
 parser_analyze = subparsers.add_parser(
     "analyze",
@@ -314,20 +328,19 @@ def main():
     # Process the user's input
     if args.subcommand == "print-config":
         zigator.config.print_config()
+    elif args.subcommand == "add-config-entry":
+        zigator.config.add_config_entry(args.ENTRY_TYPE,
+                                        args.ENTRY_VALUE,
+                                        args.ENTRY_NAME)
+    elif args.subcommand == "rm-config-entry":
+        zigator.config.rm_config_entry(args.ENTRY_TYPE,
+                                       args.ENTRY_NAME)
     elif args.subcommand == "parse":
-        if args.network_filepath is not None:
-            zigator.config.add_encryption_keys(args.network_filepath,
-                                               "network")
-
-        if args.link_filepath is not None:
-            zigator.config.add_encryption_keys(args.link_filepath, "link")
-
-        if args.install_filepath is not None:
-            zigator.config.add_install_codes(args.install_filepath)
-
-        zigator.parsing.main(args.PCAP_DIRECTORY, args.DATABASE_FILEPATH)
+        zigator.parsing.main(args.PCAP_DIRECTORY,
+                             args.DATABASE_FILEPATH)
     elif args.subcommand == "analyze":
-        zigator.analysis.main(args.DATABASE_FILEPATH, args.OUTPUT_DIRECTORY)
+        zigator.analysis.main(args.DATABASE_FILEPATH,
+                              args.OUTPUT_DIRECTORY)
     elif args.subcommand == "visualize":
         zigator.visualization.main(args.DATABASE_FILEPATH,
                                    args.OUTPUT_DIRECTORY)

@@ -20,6 +20,7 @@ Configuration module for the zigator package
 
 import logging
 import os
+import string
 
 from scapy.all import conf
 
@@ -335,6 +336,123 @@ def add_sniffed_key(key_bytes, key_type):
             loaded_keys[key_name] = key_bytes
             logging.info("Added a sniffed {} key: {}"
                          "".format(key_type.lower(), key_bytes.hex()))
+
+
+def add_config_entry(entry_type, entry_value, entry_name):
+    global network_keys
+    global link_keys
+    global install_codes
+
+    # Make sure that the value does not include the hexadecimal prefix
+    if entry_value.startswith("0x"):
+        entry_value = entry_value[2:]
+
+    # Make sure that the value does not include any colons
+    entry_value = entry_value.replace(":", "")
+
+    # Identify the type of the provided configuration entry
+    if entry_type.lower() == "network-key":
+        config_entries = network_keys
+        config_filepath = NETWORK_FILEPATH
+        expected_length = 32
+    elif entry_type.lower() == "link-key":
+        config_entries = link_keys
+        config_filepath = LINK_FILEPATH
+        expected_length = 32
+    elif entry_type.lower() == "install-code":
+        config_entries = install_codes
+        config_filepath = INSTALL_FILEPATH
+        expected_length = 36
+    else:
+        raise ValueError("Unknown entry type \"{}\"".format(entry_type))
+
+    # Sanity checks
+    if not (len(entry_value) == expected_length
+            and all(d in string.hexdigits for d in entry_value)):
+        raise ValueError("The value of the configuration entry "
+                         "should contain {} hexadecimal digits"
+                         "".format(expected_length))
+    elif entry_name in {None, ""}:
+        raise ValueError("A unique name is required for "
+                         "the configuration entry")
+    elif entry_name.startswith("_"):
+        raise ValueError("The name of the configuration entry "
+                         "is not allowed to start with \"_\"")
+
+    # Convert the hexadecimal representation into a bytes object
+    entry_bytes = bytes.fromhex(entry_value)
+
+    # Sanity checks
+    if entry_bytes in config_entries.values():
+        raise ValueError("The {} {} was already loaded"
+                         "".format(entry_type.lower().replace("-", " "),
+                                   entry_bytes.hex()))
+    elif entry_name in config_entries.keys():
+        raise ValueError("Could not add the {} {} because its "
+                         "name \"{}\" is already used by the {} {}"
+                         "".format(entry_type.lower().replace("-", " "),
+                                   entry_bytes.hex(),
+                                   entry_name,
+                                   entry_type.lower().replace("-", " "),
+                                   config_entries[entry_name].hex()))
+
+    # If the provided configuration entry is an install code, check its CRC
+    if entry_type.lower() == "install-code":
+        computed_crc, received_crc = fs.check_crc(entry_bytes)
+        if computed_crc != received_crc:
+            raise ValueError("The CRC value of the install code {} "
+                             "is 0x{:04x}, which does not match the "
+                             "computed CRC value 0x{:04x}"
+                             "".format(entry_bytes.hex(),
+                                       received_crc,
+                                       computed_crc))
+
+    # Save the provided configuration entry
+    config_entries[entry_name] = entry_bytes
+    with open(config_filepath, "a") as fp:
+        fp.write("{}\t{}\n".format(config_entries[entry_name].hex(),
+                                   entry_name))
+    logging.info("Saved the {} {} in the \"{}\" configuration file"
+                 "".format(entry_type.lower().replace("-", " "),
+                           entry_bytes.hex(),
+                           config_filepath))
+
+
+def rm_config_entry(entry_type, entry_name):
+    global network_keys
+    global link_keys
+    global install_codes
+
+    # Identify the type of the provided configuration entry
+    if entry_type.lower() == "network-key":
+        config_entries = network_keys
+        config_filepath = NETWORK_FILEPATH
+    elif entry_type.lower() == "link-key":
+        config_entries = link_keys
+        config_filepath = LINK_FILEPATH
+    elif entry_type.lower() == "install-code":
+        config_entries = install_codes
+        config_filepath = INSTALL_FILEPATH
+    else:
+        raise ValueError("Unknown entry type \"{}\"".format(entry_type))
+
+    # Make sure that the provided name is used by a configuration entry
+    if entry_name not in config_entries.keys():
+        raise ValueError("The name \"{}\" is not used by any {}"
+                         "".format(entry_name,
+                                   entry_type.lower().replace("-", " ")))
+
+    # Update the corresponding configuration file
+    del config_entries[entry_name]
+    with open(config_filepath, "w") as fp:
+        for tmp_name in config_entries.keys():
+            if not tmp_name.startswith("_"):
+                fp.write("{}\t{}\n".format(config_entries[tmp_name].hex(),
+                                           tmp_name))
+    logging.info("Removed the \"{}\" {} from the \"{}\" configuration file"
+                 "".format(entry_name,
+                           entry_type.lower().replace("-", " "),
+                           config_filepath))
 
 
 def print_config():
