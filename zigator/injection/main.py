@@ -66,6 +66,24 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         # Sanity check
         if len(forged_pkt) < 1 or len(forged_pkt) > 127:
             raise ValueError("Invalid MPDU length")
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of a forged packet may interfere with the  #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
     elif pkt_type.lower() == "beacon":
         # Process some of the provided parameter values
         if panid is None:
@@ -95,9 +113,45 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         # Forge the packet
         forged_pkt = beacon(mac_seqnum, panid, srcshortaddr, pancoord,
                             assocpermit, devdepth, epid, updateid)
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of a forged beacon may interfere with the  #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
     elif pkt_type.lower() == "beaconreq":
         # Forge the packet
         forged_pkt = beaconreq(mac_seqnum)
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of a Beacon Request may interfere with the #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
     elif pkt_type.lower() == "orphannotif":
         # Process some of the provided parameter values
         if srcextendedaddr is None:
@@ -110,6 +164,24 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
                 raise ValueError("Invalid extended source address")
         # Forge the packet
         forged_pkt = orphannotif(mac_seqnum, srcextendedaddr)
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of an Orphan Notification may interfere    #")
+        print("# with the operation of legitimate IEEE 802.15.4-based     #")
+        print("# networks. The users of this tool are responsible for     #")
+        print("# making sure that they are compliant with their local     #")
+        print("# laws and that they have proper permission from the       #")
+        print("# affected network owners.                                 #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
     elif pkt_type.lower() == "rejoinreq":
         # Process some of the provided parameter values
         if panid is None:
@@ -148,6 +220,26 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         forged_pkt = rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr,
                                nwk_seqnum, srcextendedaddr, devtype, powsrc,
                                rxidle)
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of an unsecured Rejoin Request may result  #")
+        print("# in the disclosure of the network key that a legitimate   #")
+        print("# Zigbee network is using and may also interfere with the  #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
     else:
         raise ValueError("Unknown packet type \"{}\"".format(pkt_type))
 
