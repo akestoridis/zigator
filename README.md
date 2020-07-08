@@ -51,6 +51,13 @@ $ zigator -h
 ```
 
 
+## Publication
+
+Zigator was used in the following publication:
+
+* D.-G. Akestoridis, M. Harishankar, M. Weber, and P. Tague, "Zigator: Analyzing the security of Zigbee-enabled smart homes," 2020, to appear in the Proceedings of the 13th ACM Conference on Security and Privacy in Wireless and Mobile Networks (WiSec).
+
+
 ## License
 
 Copyright (C) 2020 Dimitrios-Georgios Akestoridis
