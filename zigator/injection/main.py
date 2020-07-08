@@ -26,7 +26,7 @@ DEFAULT_RAW = "418889aa990000adde5241576e7f"
 DEFAULT_PANID = int("0x99aa", 16)
 DEFAULT_DSTSHORTADDR = int("0x0000", 16)
 DEFAULT_SRCSHORTADDR = int("0xdead", 16)
-DEFAULT_SRCEXTENDEDADDR = int("0102030405060708", 16)
+DEFAULT_SRCEXTENDEDADDR = int("1122334455667788", 16)
 DEFAULT_EPID = int("facefeedbeefcafe", 16)
 
 
@@ -34,6 +34,27 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
          srcshortaddr, srcextendedaddr, pancoord, assocpermit, devdepth, epid,
          updateid, nwk_seqnum, devtype, powsrc, rxidle):
     """Inject a forged packet."""
+    # Sanity checks
+    if mac_seqnum < 0 or mac_seqnum > 255:
+        raise ValueError("Invalid MAC sequence number")
+    elif pancoord not in {0, 1}:
+        raise ValueError("Invalid PAN Coordinator field value")
+    elif assocpermit not in {0, 1}:
+        raise ValueError("Invalid Association Permit field value")
+    elif devdepth < 0 or devdepth > 15:
+        raise ValueError("Invalid Device Depth field value")
+    elif updateid < 0 or updateid > 255:
+        raise ValueError("Invalid Update ID field value")
+    elif nwk_seqnum < 0 or nwk_seqnum > 255:
+        raise ValueError("Invalid NWK sequence number")
+    elif devtype not in {0, 1}:
+        raise ValueError("Invalid Device Type field value")
+    elif powsrc not in {0, 1}:
+        raise ValueError("Invalid Power Source field value")
+    elif rxidle not in {0, 1}:
+        raise ValueError("Invalid Receiver On When Idle field value")
+
+    # Forge a packet based on the provided parameter values
     if pkt_type.lower() == "mpdu":
         # Process some of the provided parameter values
         if raw is None:
@@ -133,3 +154,5 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
     # Send the forged packet to an SDR over a UDP connection
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as tx_sock:
         tx_sock.sendto(bytes(forged_pkt), (ipaddr, portnum))
+    logging.info("Sent the following packet over UDP: "
+                 "{}".format(bytes(forged_pkt).hex()))

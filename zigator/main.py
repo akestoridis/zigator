@@ -160,7 +160,7 @@ parser_train.add_argument(
     dest="restricted",
     action="store_false",
     help="use an unrestricted set of features")
-parser.set_defaults(restricted=False)
+parser_train.set_defaults(restricted=False)
 
 parser_inject = subparsers.add_parser(
     "inject",
@@ -196,9 +196,7 @@ parser_inject.add_argument(
     "--mac_seqnum",
     dest="mac_seqnum",
     type=int,
-    choices=range(256),
     action="store",
-    metavar="MAC_SEQNUM",
     help="the MAC sequence number",
     default=137)
 parser_inject.add_argument(
@@ -235,7 +233,6 @@ parser_inject.add_argument(
     type=int,
     choices=range(2),
     action="store",
-    metavar="PANCOORD",
     help="the PAN Coordinator field of beacons",
     default=0)
 parser_inject.add_argument(
@@ -244,16 +241,13 @@ parser_inject.add_argument(
     type=int,
     choices=range(2),
     action="store",
-    metavar="ASSOCPERMIT",
     help="the Association Permit field of beacons",
     default=0)
 parser_inject.add_argument(
     "--devdepth",
     dest="devdepth",
     type=int,
-    choices=range(16),
     action="store",
-    metavar="DEVDEPTH",
     help="the Device Depth field of beacons",
     default=2)
 parser_inject.add_argument(
@@ -267,18 +261,14 @@ parser_inject.add_argument(
     "--updateid",
     dest="updateid",
     type=int,
-    choices=range(256),
     action="store",
-    metavar="UPDATEID",
     help="the Update ID field of beacons",
     default=0)
 parser_inject.add_argument(
     "--nwk_seqnum",
     dest="nwk_seqnum",
     type=int,
-    choices=range(256),
     action="store",
-    metavar="NWK_SEQNUM",
     help="the NWK sequence number",
     default=232)
 parser_inject.add_argument(
@@ -287,7 +277,6 @@ parser_inject.add_argument(
     type=int,
     choices=range(2),
     action="store",
-    metavar="DEVTYPE",
     help="the Device Type field of rejoin requests",
     default=0)
 parser_inject.add_argument(
@@ -296,7 +285,6 @@ parser_inject.add_argument(
     type=int,
     choices=range(2),
     action="store",
-    metavar="POWSRC",
     help="the Power Source field of rejoin requests",
     default=0)
 parser_inject.add_argument(
@@ -305,7 +293,6 @@ parser_inject.add_argument(
     type=int,
     choices=range(2),
     action="store",
-    metavar="RXIDLE",
     help="the Receiver On When Idle field of rejoin requests",
     default=0)
 
