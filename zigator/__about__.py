@@ -21,7 +21,7 @@ Metadata for the zigator package
 __title__ = "zigator"
 __author__ = "Dimitrios-Georgios Akestoridis"
 __author_email__ = "akestoridis@cmu.edu"
-__description__ = "Security analysis tool for Zigbee networks"
+__description__ = "Zigator: Security analysis tool for Zigbee networks"
 __license__ = "GPL-2.0-only"
 __copyright__ = "Copyright (C) 2020 Dimitrios-Georgios Akestoridis"
 __url__ = "https://github.com/akestoridis/zigator"
@@ -43,9 +43,9 @@ __classifiers__ = [
 ]
 __install_requires__ = [
     "graphviz>=0.14",
-    "numpy>=1.18.4",
+    "numpy>=1.18.5",
     "pycrc>=0.9.2",
-    "pycryptodomex>=3.9.7",
+    "pycryptodomex>=3.9.8",
     "scapy @ git+https://github.com/secdev/scapy@a3d691f5b7f51bfc5248e4b6fbb40c77139f26c3#egg=scapy",
     "scikit-learn>=0.22.2.post1"
 ]
