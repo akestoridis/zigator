@@ -100,7 +100,9 @@ def network_graphs(out_dirpath):
                     addr_node,
                     style="filled",
                     color="black",
-                    fillcolor=fillcolor)
+                    fillcolor=fillcolor,
+                    fontname="DejaVu Sans Mono",
+                    fontsize="10")
             for addr_pair in addr_pairs:
                 digraph.edge(
                     addr_pair[0],
