@@ -73,12 +73,36 @@ def network_graphs(out_dirpath):
                 True
             )
 
+            # Derive the set of unique addresses
+            addr_nodes = set(addr_pair[0] for addr_pair in addr_pairs)
+            for addr_pair in addr_pairs:
+                addr_nodes.add(addr_pair[1])
+
             # Render a directed graph from the observed address pairs
             digraph = graphviz.Digraph(
                 name=out_filename,
                 directory=out_dirpath,
                 format="pdf",
                 engine="dot")
+            for addr_node in addr_nodes:
+                nwkdevtype = config.db.get_nwkdevtype(
+                    shortaddr=addr_node,
+                    panid=panid[0])
+                if nwkdevtype == "Zigbee Coordinator":
+                    fillcolor = "#E080E0"
+                elif nwkdevtype == "Zigbee Router":
+                    fillcolor = "#80FFFF"
+                elif nwkdevtype == "Zigbee End Device":
+                    fillcolor = "#80FF00"
+                else:
+                    fillcolor = "#FFFFFF"
+                digraph.node(
+                    addr_node,
+                    style="filled",
+                    color="black",
+                    fillcolor=fillcolor)
             for addr_pair in addr_pairs:
-                digraph.edge(addr_pair[0], addr_pair[1])
+                digraph.edge(
+                    addr_pair[0],
+                    addr_pair[1])
             digraph.render()
