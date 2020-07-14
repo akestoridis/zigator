@@ -604,60 +604,6 @@ def update_table(selected_columns, selected_values, conditions):
 
 
 def update_packets():
-    # Update the "Same MAC and NWK Destination" column
-    update_columns = (
-        "der_same_macnwkdst",
-    )
-    fetch_columns = (
-        "mac_dstshortaddr",
-        "nwk_dstshortaddr",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_frametype", "MAC Data"),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("mac_dstaddrmode", "Short destination MAC address"),
-        ("!nwk_dstshortaddr", None),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        update_values = (
-            "Same MAC/NWK Dst: {}".format(
-                fetched_tuple[0] == fetched_tuple[1]),
-        )
-        update_table(update_columns, update_values, var_conditions)
-
-    # Update the "Same MAC and NWK Source" column
-    update_columns = (
-        "der_same_macnwksrc",
-    )
-    fetch_columns = (
-        "mac_srcshortaddr",
-        "nwk_srcshortaddr",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_frametype", "MAC Data"),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("mac_srcaddrmode", "Short source MAC address"),
-        ("!nwk_srcshortaddr", None),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        update_values = (
-            "Same MAC/NWK Src: {}".format(
-                fetched_tuple[0] == fetched_tuple[1]),
-        )
-        update_table(update_columns, update_values, var_conditions)
-
     # Update the "MAC Destination Type" column
     update_columns = (
         "der_mac_dsttype",
