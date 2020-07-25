@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 import struct
 
 from scapy.all import Dot15d4AuxSecurityHeader
@@ -299,7 +298,7 @@ def mac_gtsreq(pkt):
     return
 
 
-def mac_command(pkt):
+def mac_command(pkt, msg_queue):
     # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
@@ -396,10 +395,12 @@ def mac_command(pkt):
         return
     # Compute the length of the MAC Auxiliary Security Header field
     if config.entry["mac_security"] == "MAC Security Enabled":
-        logging.debug("Ignored packet #{} in {} because it utilizes "
-                      "security services on the MAC layer"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Ignored packet #{} in {} because it utilizes "
+             "security services on the MAC layer"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = (
             "Ignored MAC command with enabled MAC-layer security"
         )
@@ -441,7 +442,7 @@ def mac_command(pkt):
         return
 
 
-def mac_beacon(pkt):
+def mac_beacon(pkt, msg_queue):
     if config.entry["mac_panidcomp"] != "Do not compress the source PAN ID":
         config.entry["error_msg"] = (
             "The source PAN ID of MAC Beacons should not be compressed"
@@ -489,10 +490,12 @@ def mac_beacon(pkt):
 
     # GTS List field (variable)
     if config.entry["mac_beacon_gtsnum"] > 0:
-        logging.debug("Packet #{} in {} contains a GTS List field "
-                      "which could not be processed"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Packet #{} in {} contains a GTS List field "
+             "which could not be processed"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = "Could not process the GTS List"
         return
 
@@ -508,7 +511,7 @@ def mac_beacon(pkt):
 
     # Beacon Payload field (variable)
     if pkt.haslayer(ZigBeeBeacon):
-        nwk_fields(pkt)
+        nwk_fields(pkt, msg_queue)
         return
     else:
         config.entry["error_msg"] = (
@@ -517,7 +520,7 @@ def mac_beacon(pkt):
         return
 
 
-def mac_data(pkt):
+def mac_data(pkt, msg_queue):
     # Destination Addressing fields (0/4/10 bytes)
     if (config.entry["mac_dstaddrmode"]
             == "Short destination MAC address"):
@@ -568,14 +571,14 @@ def mac_data(pkt):
 
     # Data Payload field (variable)
     if pkt.haslayer(ZigbeeNWK):
-        nwk_fields(pkt)
+        nwk_fields(pkt, msg_queue)
         return
     else:
         config.entry["error_msg"] = "There are no Zigbee NWK fields"
         return
 
 
-def mac_fields(pkt):
+def mac_fields(pkt, msg_queue):
     """Parse IEEE 802.15.4 MAC fields."""
     if pkt[Dot15d4FCS].fcs is None:
         config.entry["error_msg"] = (
@@ -585,12 +588,14 @@ def mac_fields(pkt):
 
     comp_fcs = struct.unpack("<H", pkt.compute_fcs(raw(pkt)[:-2]))[0]
     if pkt[Dot15d4FCS].fcs != comp_fcs:
-        logging.debug("The received FCS (0x{:04x}), for packet #{} in {}, "
-                      "does not match the computed FCS (0x{:04x})"
-                      "".format(pkt[Dot15d4FCS].fcs,
-                                config.entry["pkt_num"],
-                                config.entry["pcap_filename"],
-                                comp_fcs))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "The received FCS (0x{:04x}), for packet #{} in {}, "
+             "does not match the computed FCS (0x{:04x})"
+             "".format(pkt[Dot15d4FCS].fcs,
+                       config.entry["pkt_num"],
+                       config.entry["pcap_filename"],
+                       comp_fcs)))
         config.entry["error_msg"] = "Incorrect frame check sequence (FCS)"
         return
 
@@ -614,10 +619,12 @@ def mac_fields(pkt):
         # Auxiliary Security Header field (0/5/6/10/14 bytes)
         if pkt.haslayer(Dot15d4AuxSecurityHeader):
             # Zigbee does not utilize any security services on the MAC layer
-            logging.debug("The packet #{} in {} is utilizing "
-                          "security services on the MAC layer"
-                          "".format(config.entry["pkt_num"],
-                                    config.entry["pcap_filename"]))
+            msg_queue.put(
+                (config.DEBUG_MSG,
+                 "The packet #{} in {} is utilizing "
+                 "security services on the MAC layer"
+                 "".format(config.entry["pkt_num"],
+                           config.entry["pcap_filename"])))
             config.entry["error_msg"] = (
                 "Ignored the MAC Auxiliary Security Header"
             )
@@ -634,7 +641,7 @@ def mac_fields(pkt):
             return
         elif config.entry["mac_frametype"] == "MAC Command":
             if pkt.haslayer(Dot15d4Cmd):
-                mac_command(pkt)
+                mac_command(pkt, msg_queue)
                 return
             else:
                 config.entry["error_msg"] = (
@@ -643,7 +650,7 @@ def mac_fields(pkt):
                 return
         elif config.entry["mac_frametype"] == "MAC Beacon":
             if pkt.haslayer(Dot15d4Beacon):
-                mac_beacon(pkt)
+                mac_beacon(pkt, msg_queue)
                 return
             else:
                 config.entry["error_msg"] = (
@@ -652,7 +659,7 @@ def mac_fields(pkt):
                 return
         elif config.entry["mac_frametype"] == "MAC Data":
             if pkt.haslayer(Dot15d4Data):
-                mac_data(pkt)
+                mac_data(pkt, msg_queue)
                 return
             else:
                 config.entry["error_msg"] = (

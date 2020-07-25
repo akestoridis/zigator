@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-
 from scapy.all import ZigBeeBeacon
 from scapy.all import ZigbeeAppDataPayload
 from scapy.all import ZigbeeNWK
@@ -522,7 +520,7 @@ def nwk_rejoinrsp(pkt):
     return
 
 
-def nwk_linkstatus(pkt):
+def nwk_linkstatus(pkt, msg_queue):
     # Command Options field (1 byte)
     config.entry["nwk_linkstatus_count"] = (
         pkt[ZigbeeNWKCommandPayload].entry_count
@@ -533,12 +531,14 @@ def nwk_linkstatus(pkt):
     # Link Status List field (variable)
     linkstatus_list = pkt[ZigbeeNWKCommandPayload].link_status_list
     if config.entry["nwk_linkstatus_count"] != len(linkstatus_list):
-        logging.debug("Packet #{} in {} contains {} link status entries "
-                      "but read only {} link status entries"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"],
-                                config.entry["nwk_linkstatus_count"],
-                                len(linkstatus_list)))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Packet #{} in {} contains {} link status entries "
+             "but read only {} link status entries"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"],
+                       config.entry["nwk_linkstatus_count"],
+                       len(linkstatus_list))))
         config.entry["error_msg"] = "Unable to process the Link Status List"
         return
     if config.entry["nwk_linkstatus_count"] > 0:
@@ -552,7 +552,7 @@ def nwk_linkstatus(pkt):
     return
 
 
-def nwk_networkreport(pkt):
+def nwk_networkreport(pkt, msg_queue):
     # Command Options field (1 byte)
     config.entry["nwk_networkreport_count"] = (
         pkt[ZigbeeNWKCommandPayload].report_information_count
@@ -567,12 +567,14 @@ def nwk_networkreport(pkt):
     if config.entry["nwk_networkreport_type"] == "PAN Identifier Conflict":
         panid_list = pkt[ZigbeeNWKCommandPayload].PAN_ID_conflict_report
         if config.entry["nwk_networkreport_count"] != len(panid_list):
-            logging.debug("Packet #{} in {} contains {} PAN identifiers "
-                          "but read only {} PAN identifiers"
-                          "".format(config.entry["pkt_num"],
-                                    config.entry["pcap_filename"],
-                                    config.entry["nwk_network_count"],
-                                    len(panid_list)))
+            msg_queue.put(
+                (config.DEBUG_MSG,
+                 "Packet #{} in {} contains {} PAN identifiers "
+                 "but read only {} PAN identifiers"
+                 "".format(config.entry["pkt_num"],
+                           config.entry["pcap_filename"],
+                           config.entry["nwk_network_count"],
+                           len(panid_list))))
             config.entry["error_msg"] = "Unable to process the PAN IDs"
             return
         if config.entry["nwk_networkreport_count"] > 0:
@@ -634,7 +636,7 @@ def nwk_edtimeoutrsp(pkt):
     return
 
 
-def nwk_command(pkt):
+def nwk_command(pkt, msg_queue):
     # Command Identifier field (1 byte)
     config.entry["nwk_cmd_id"] = get_nwk_command(pkt)
 
@@ -688,10 +690,12 @@ def nwk_command(pkt):
         return
     # Compute the length of the MAC Auxiliary Security Header field
     if config.entry["mac_security"] == "MAC Security Enabled":
-        logging.debug("Ignored packet #{} in {} because it utilizes "
-                      "security services on the MAC layer"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Ignored packet #{} in {} because it utilizes "
+             "security services on the MAC layer"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = (
             "Ignored NWK command with enabled MAC-layer security"
         )
@@ -717,10 +721,12 @@ def nwk_command(pkt):
         return
     # Check for the presence of the Multicast Control field
     if config.entry["nwk_multicast"] == "NWK Multicast Enabled":
-        logging.debug("Ignored packet #{} in {} because it contains "
-                      "a Multicast Control field "
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Ignored packet #{} in {} because it contains "
+             "a Multicast Control field "
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = (
             "Ignored NWK command that includes the Multicast Control field"
         )
@@ -778,10 +784,10 @@ def nwk_command(pkt):
         nwk_rejoinrsp(pkt)
         return
     elif config.entry["nwk_cmd_id"] == "NWK Link Status":
-        nwk_linkstatus(pkt)
+        nwk_linkstatus(pkt, msg_queue)
         return
     elif config.entry["nwk_cmd_id"] == "NWK Network Report":
-        nwk_networkreport(pkt)
+        nwk_networkreport(pkt, msg_queue)
         return
     elif config.entry["nwk_cmd_id"] == "NWK Network Update":
         nwk_networkupdate(pkt)
@@ -813,7 +819,7 @@ def nwk_beacon(pkt):
     return
 
 
-def nwk_auxiliary(pkt):
+def nwk_auxiliary(pkt, msg_queue):
     # Security Control field (1 byte)
     config.entry["nwk_aux_seclevel"] = get_nwk_aux_seclevel(pkt)
     config.entry["nwk_aux_keytype"] = get_nwk_aux_keytype(pkt)
@@ -894,14 +900,14 @@ def nwk_auxiliary(pkt):
                     config.entry["nwk_aux_decshow"] = (
                         dec_pkt.show(dump=True)
                     )
-                    nwk_command(dec_pkt)
+                    nwk_command(dec_pkt, msg_queue)
                     return
                 elif config.entry["nwk_frametype"] == "NWK Data":
                     dec_pkt = ZigbeeAppDataPayload(dec_payload)
                     config.entry["nwk_aux_decshow"] = (
                         dec_pkt.show(dump=True)
                     )
-                    aps_fields(dec_pkt)
+                    aps_fields(dec_pkt, msg_queue)
                     return
                 else:
                     config.entry["error_msg"] = (
@@ -909,22 +915,27 @@ def nwk_auxiliary(pkt):
                     )
                     return
 
-    logging.debug("Unable to decrypt the NWK payload of packet #{} in {}"
-                  "".format(config.entry["pkt_num"],
-                            config.entry["pcap_filename"]))
+    msg_queue.put(
+        (config.DEBUG_MSG,
+         "Unable to decrypt with a {} the NWK payload of packet #{} in {}"
+         "".format(config.entry["nwk_aux_keytype"],
+                   config.entry["pkt_num"],
+                   config.entry["pcap_filename"])))
     config.entry["warning_msg"] = "Unable to decrypt the NWK payload"
     return
 
 
-def nwk_fields(pkt):
+def nwk_fields(pkt, msg_queue):
     """Parse Zigbee NWK fields."""
     if config.entry["mac_frametype"] == "MAC Beacon":
         nwk_beacon(pkt)
         return
     elif config.entry["mac_frametype"] != "MAC Data":
-        logging.debug("Packet #{} in {} contains unknown NWK fields"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Packet #{} in {} contains unknown NWK fields"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = "Unknown NWK fields"
         return
 
@@ -993,10 +1004,12 @@ def nwk_fields(pkt):
 
     # Multicast Control field (0/1 byte)
     if config.entry["nwk_multicast"] == "NWK Multicast Enabled":
-        logging.debug("Packet #{} in {} contains a Multicast Control field "
-                      "which could not be processed"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Packet #{} in {} contains a Multicast Control field "
+             "which could not be processed"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = "Could not process the Multicast Control"
         return
     elif config.entry["nwk_multicast"] != "NWK Multicast Disabled":
@@ -1016,7 +1029,7 @@ def nwk_fields(pkt):
     if config.entry["nwk_security"] == "NWK Security Enabled":
         # NWK Auxiliary Header field (6/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            nwk_auxiliary(pkt)
+            nwk_auxiliary(pkt, msg_queue)
             return
         else:
             config.entry["error_msg"] = (
@@ -1027,21 +1040,23 @@ def nwk_fields(pkt):
         # NWK Payload field (variable)
         if config.entry["nwk_frametype"] == "NWK Command":
             if pkt.haslayer(ZigbeeNWKCommandPayload):
-                nwk_command(pkt)
+                nwk_command(pkt, msg_queue)
                 return
             else:
                 config.entry["error_msg"] = "There are no NWK Command fields"
                 return
         elif config.entry["nwk_frametype"] == "NWK Inter-PAN":
-            logging.debug("Packet #{} in {} contains Inter-PAN fields"
-                          "which were ignored"
-                          "".format(config.entry["pkt_num"],
-                                    config.entry["pcap_filename"]))
+            msg_queue.put(
+                (config.DEBUG_MSG,
+                 "Packet #{} in {} contains Inter-PAN fields"
+                 "which were ignored"
+                 "".format(config.entry["pkt_num"],
+                           config.entry["pcap_filename"])))
             config.entry["error_msg"] = "Ignored the Inter-PAN fields"
             return
         elif config.entry["nwk_frametype"] == "NWK Data":
             if pkt.haslayer(ZigbeeAppDataPayload):
-                aps_fields(pkt)
+                aps_fields(pkt, msg_queue)
                 return
             else:
                 config.entry["error_msg"] = "There are no Zigbee APS fields"

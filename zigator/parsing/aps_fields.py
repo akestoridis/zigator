@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import logging
+import os
 
 from scapy.all import ZigbeeAppCommandPayload
 from scapy.all import ZigbeeAppDataPayload
@@ -389,7 +389,7 @@ def get_aps_confirmkey_status(pkt):
     return status_values.get(status_value, "Unknown Status value")
 
 
-def aps_transportkey(pkt):
+def aps_transportkey(pkt, msg_queue):
     # Standard Key Type field (1 byte)
     config.entry["aps_transportkey_stdkeytype"] = get_aps_stdkeytype(pkt)
 
@@ -415,7 +415,16 @@ def aps_transportkey(pkt):
             pkt[ZigbeeAppCommandPayload].src_addr, "016x")
 
         # Store the sniffed network key
-        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "network")
+        key_bytes = pkt[ZigbeeAppCommandPayload].key
+        key_type = "network"
+        key_name = "_sniffed_{}_{}".format(
+            os.path.join(
+                config.entry["pcap_directory"],
+                config.entry["pcap_filename"]),
+            config.entry["pkt_num"])
+        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
+        if warning_msg is not None:
+            msg_queue.put((config.WARNING_MSG, warning_msg))
 
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
@@ -434,7 +443,16 @@ def aps_transportkey(pkt):
             pkt[ZigbeeAppCommandPayload].src_addr, "016x")
 
         # Store the sniffed link key
-        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")
+        key_bytes = pkt[ZigbeeAppCommandPayload].key
+        key_type = "link"
+        key_name = "_sniffed_{}_{}".format(
+            os.path.join(
+                config.entry["pcap_directory"],
+                config.entry["pcap_filename"]),
+            config.entry["pkt_num"])
+        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
+        if warning_msg is not None:
+            msg_queue.put((config.WARNING_MSG, warning_msg))
 
         return
     elif (config.entry["aps_transportkey_stdkeytype"]
@@ -452,7 +470,16 @@ def aps_transportkey(pkt):
         config.entry["aps_transportkey_initflag"] = get_aps_initflag(pkt)
 
         # Store the sniffed link key
-        config.add_sniffed_key(pkt[ZigbeeAppCommandPayload].key, "link")
+        key_bytes = pkt[ZigbeeAppCommandPayload].key
+        key_type = "link"
+        key_name = "_sniffed_{}_{}".format(
+            os.path.join(
+                config.entry["pcap_directory"],
+                config.entry["pcap_filename"]),
+            config.entry["pkt_num"])
+        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
+        if warning_msg is not None:
+            msg_queue.put((config.WARNING_MSG, warning_msg))
 
         return
     else:
@@ -512,7 +539,7 @@ def aps_switchkey(pkt):
     return
 
 
-def aps_tunnel(pkt):
+def aps_tunnel(pkt, msg_queue):
     # Destination Extended Address field (8 bytes)
     config.entry["aps_tunnel_dstextendedaddr"] = format(
         pkt[ZigbeeAppCommandPayload].dest_addr, "016x")
@@ -566,7 +593,7 @@ def aps_tunnel(pkt):
         )
         return
     elif config.entry["aps_security"] == "APS Security Disabled":
-        aps_auxiliary(pkt)
+        aps_auxiliary(pkt, msg_queue)
         return
     else:
         config.entry["error_msg"] = "Unknown APS security state"
@@ -605,13 +632,13 @@ def aps_confirmkey(pkt):
     return
 
 
-def aps_command_payload(pkt):
+def aps_command_payload(pkt, msg_queue):
     # Command Identifier field (1 byte)
     config.entry["aps_cmd_id"] = get_aps_command(pkt)
 
     # Command Payload field (variable)
     if config.entry["aps_cmd_id"] == "APS Transport Key":
-        aps_transportkey(pkt)
+        aps_transportkey(pkt, msg_queue)
         return
     elif config.entry["aps_cmd_id"] == "APS Update Device":
         aps_updatedevice(pkt)
@@ -626,7 +653,7 @@ def aps_command_payload(pkt):
         aps_switchkey(pkt)
         return
     elif config.entry["aps_cmd_id"] == "APS Tunnel":
-        aps_tunnel(pkt)
+        aps_tunnel(pkt, msg_queue)
         return
     elif config.entry["aps_cmd_id"] == "APS Verify Key":
         aps_verifykey(pkt)
@@ -637,7 +664,7 @@ def aps_command_payload(pkt):
     return
 
 
-def aps_auxiliary(pkt):
+def aps_auxiliary(pkt, msg_queue):
     # Security Control field (1 byte)
     config.entry["aps_aux_seclevel"] = get_aps_aux_seclevel(pkt)
     config.entry["aps_aux_keytype"] = get_aps_aux_keytype(pkt)
@@ -771,7 +798,7 @@ def aps_auxiliary(pkt):
                     config.entry["aps_aux_decshow"] = (
                         dec_pkt.show(dump=True)
                     )
-                    aps_command_payload(dec_pkt)
+                    aps_command_payload(dec_pkt, msg_queue)
                     return
                 elif config.entry["aps_frametype"] == "APS Acknowledgment":
                     # APS Acknowledgments do not contain any other fields
@@ -782,14 +809,17 @@ def aps_auxiliary(pkt):
                     )
                     return
 
-    logging.debug("Unable to decrypt the APS payload of packet #{} in {}"
-                  "".format(config.entry["pkt_num"],
-                            config.entry["pcap_filename"]))
+    msg_queue.put(
+        (config.DEBUG_MSG,
+         "Unable to decrypt with a {} the APS payload of packet #{} in {}"
+         "".format(config.entry["aps_aux_keytype"],
+                   config.entry["pkt_num"],
+                   config.entry["pcap_filename"])))
     config.entry["warning_msg"] = "Unable to decrypt the APS payload"
     return
 
 
-def aps_data_header(pkt):
+def aps_data_header(pkt, msg_queue):
     if (config.entry["aps_delmode"] == "Normal unicast delivery"
             or config.entry["aps_delmode"] == "Broadcast"):
         # Destination Endpoint field (1 byte)
@@ -841,7 +871,7 @@ def aps_data_header(pkt):
     if config.entry["aps_security"] == "APS Security Enabled":
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt)
+            aps_auxiliary(pkt, msg_queue)
             return
         else:
             config.entry["error_msg"] = (
@@ -875,14 +905,14 @@ def aps_data_header(pkt):
         return
 
 
-def aps_command_header(pkt):
+def aps_command_header(pkt, msg_queue):
     # APS Counter field (1 byte)
     config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
 
     if config.entry["aps_security"] == "APS Security Enabled":
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt)
+            aps_auxiliary(pkt, msg_queue)
             return
         else:
             config.entry["error_msg"] = (
@@ -892,7 +922,7 @@ def aps_command_header(pkt):
     elif config.entry["aps_security"] == "APS Security Disabled":
         # APS Command fields (variable)
         if pkt.haslayer(ZigbeeAppCommandPayload):
-            aps_command_payload(pkt)
+            aps_command_payload(pkt, msg_queue)
             return
         else:
             config.entry["error_msg"] = "There are no APS Command fields"
@@ -902,7 +932,7 @@ def aps_command_header(pkt):
         return
 
 
-def aps_ack_header(pkt):
+def aps_ack_header(pkt, msg_queue):
     if config.entry["aps_ackformat"] == "APS ACK Format Disabled":
         # Destination Endpoint field (1 byte)
         config.entry["aps_dstendpoint"] = (
@@ -956,7 +986,7 @@ def aps_ack_header(pkt):
     if config.entry["aps_security"] == "APS Security Enabled":
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt)
+            aps_auxiliary(pkt, msg_queue)
             return
         else:
             config.entry["error_msg"] = (
@@ -971,7 +1001,7 @@ def aps_ack_header(pkt):
         return
 
 
-def aps_fields(pkt):
+def aps_fields(pkt, msg_queue):
     """Parse Zigbee APS fields."""
     # Frame Control field (1 byte)
     config.entry["aps_frametype"] = get_aps_frametype(pkt)
@@ -995,16 +1025,18 @@ def aps_fields(pkt):
 
     # The APS Header fields vary significantly between different frame types
     if config.entry["aps_frametype"] == "APS Data":
-        aps_data_header(pkt)
+        aps_data_header(pkt, msg_queue)
     elif config.entry["aps_frametype"] == "APS Command":
-        aps_command_header(pkt)
+        aps_command_header(pkt, msg_queue)
     elif config.entry["aps_frametype"] == "APS Acknowledgment":
-        aps_ack_header(pkt)
+        aps_ack_header(pkt, msg_queue)
     elif config.entry["aps_frametype"] == "APS Inter-PAN":
-        logging.debug("Packet #{} in {} contains Inter-PAN fields"
-                      "which were ignored"
-                      "".format(config.entry["pkt_num"],
-                                config.entry["pcap_filename"]))
+        msg_queue.put(
+            (config.DEBUG_MSG,
+             "Packet #{} in {} contains Inter-PAN fields"
+             "which were ignored"
+             "".format(config.entry["pkt_num"],
+                       config.entry["pcap_filename"])))
         config.entry["error_msg"] = "Ignored the Inter-PAN fields"
         return
     else:

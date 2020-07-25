@@ -20,7 +20,7 @@ from .. import config
 from .mac_fields import mac_fields
 
 
-def phy_fields(pkt):
+def phy_fields(pkt, msg_queue):
     """Parse IEEE 802.15.4 PHY fields."""
     if (len(pkt) != 5 and len(pkt) < 9) or len(pkt) > 127:
         config.entry["error_msg"] = "Invalid packet length"
@@ -31,7 +31,7 @@ def phy_fields(pkt):
 
     # PHY Payload field (variable)
     if pkt.haslayer(Dot15d4FCS):
-        mac_fields(pkt)
+        mac_fields(pkt, msg_queue)
         return
     else:
         config.entry["error_msg"] = "There are no IEEE 802.15.4 MAC fields"

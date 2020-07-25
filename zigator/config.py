@@ -36,6 +36,22 @@ NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network-keys.tsv")
 LINK_FILEPATH = os.path.join(CONFIG_DIR, "link-keys.tsv")
 INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install-codes.tsv")
 
+# Define different types of messages
+RETURN_MSG = 0
+DEBUG_MSG = 1
+INFO_MSG = 2
+WARNING_MSG = 3
+ERROR_MSG = 4
+CRITICAL_MSG = 5
+PCAP_MSG = 6
+PKT_MSG = 7
+NETWORK_KEYS_MSG = 8
+LINK_KEYS_MSG = 9
+NETWORKS_MSG = 10
+DEVICES_MSG = 11
+ADDRESSES_MSG = 12
+PAIRS_MSG = 13
+
 # Initialize the global variables
 network_keys = {}
 link_keys = {}
@@ -93,7 +109,7 @@ def init():
 def reset_entries(keep=[]):
     global entry
 
-    # Reset all data entries in the shared dictionary except
+    # Reset all data entries in the dictionary except
     # the ones that were requested to maintain their values
     if keep is None:
         keep = []
@@ -141,21 +157,13 @@ def update_devices(extendedaddr, macdevtype, nwkdevtype):
             if devices[extendedaddr]["macdevtype"] is None:
                 devices[extendedaddr]["macdevtype"] = macdevtype
             elif devices[extendedaddr]["macdevtype"] != macdevtype:
-                if devices[extendedaddr]["macdevtype"] != "Conflicting Data":
-                    devices[extendedaddr]["macdevtype"] = "Conflicting Data"
-                    logging.warning("Conflicting data for the MAC device "
-                                    "type of the device with extended "
-                                    "address {}".format(extendedaddr))
+                devices[extendedaddr]["macdevtype"] = "Conflicting Data"
 
         if nwkdevtype is not None:
             if devices[extendedaddr]["nwkdevtype"] is None:
                 devices[extendedaddr]["nwkdevtype"] = nwkdevtype
             elif devices[extendedaddr]["nwkdevtype"] != nwkdevtype:
-                if devices[extendedaddr]["nwkdevtype"] != "Conflicting Data":
-                    devices[extendedaddr]["nwkdevtype"] = "Conflicting Data"
-                    logging.warning("Conflicting data for the NWK device "
-                                    "type of the device with extended "
-                                    "address {}".format(extendedaddr))
+                devices[extendedaddr]["nwkdevtype"] = "Conflicting Data"
 
 
 def update_pairs(srcaddr, dstaddr, panid, time):
@@ -180,7 +188,7 @@ def update_pairs(srcaddr, dstaddr, panid, time):
         # Ignore invalid destination short addresses
         return
 
-    # Update the shared dictionary of pairs
+    # Update the dictionary of pairs
     if (srcaddr, dstaddr, panid) not in pairs.keys():
         pairs[(srcaddr, dstaddr, panid)] = {
             "first": time,
@@ -207,15 +215,11 @@ def map_addresses(shortaddr, panid, extendedaddr):
         # Ignore invalid device short addresses
         return
 
-    # Update the shared dictionary of addresses
+    # Update the dictionary of addresses
     if (shortaddr, panid) not in addresses.keys():
         addresses[(shortaddr, panid)] = extendedaddr
     elif addresses[(shortaddr, panid)] != extendedaddr:
-        if addresses[(shortaddr, panid)] != "Conflicting Data":
-            addresses[(shortaddr, panid)] = "Conflicting Data"
-            logging.warning("Conflicting data for the mapping of the "
-                            "short address {}, in the PAN with ID {}, to "
-                            "an extended address".format(shortaddr, panid))
+        addresses[(shortaddr, panid)] = "Conflicting Data"
 
 
 def map_networks(epid, panid):
@@ -228,7 +232,7 @@ def map_networks(epid, panid):
         # Ignore invalid PAN IDs
         return
 
-    # Update the shared dictionary of networks
+    # Update the dictionary of networks
     if epid not in networks.keys():
         networks[epid] = set([panid])
     else:
@@ -307,7 +311,7 @@ def add_install_codes(filepath):
                  "".format(added_codes, filepath))
 
 
-def add_sniffed_key(key_bytes, key_type):
+def add_sniffed_key(key_bytes, key_type, key_name):
     global network_keys
     global link_keys
 
@@ -321,21 +325,17 @@ def add_sniffed_key(key_bytes, key_type):
 
     # Add the sniffed key if it is not already loaded
     if key_bytes not in loaded_keys.values():
-        # Give it a name
-        key_name = "_sniffed_{}".format(len(loaded_keys))
-
         # Make sure that its name is unique before adding it
         if key_name in loaded_keys.keys():
-            logging.warning("The sniffed key {} was not added because "
-                            "its name \"{}\" is also used by the {} key {}"
-                            "".format(key_bytes.hex(),
-                                      key_name,
-                                      key_type.lower(),
-                                      loaded_keys[key_name].hex()))
+            return ("The sniffed key {} was not added because "
+                    "its name \"{}\" is also used by the {} key {}"
+                    "".format(key_bytes.hex(),
+                              key_name,
+                              key_type.lower(),
+                              loaded_keys[key_name].hex()))
         else:
             loaded_keys[key_name] = key_bytes
-            logging.info("Added a sniffed {} key: {}"
-                         "".format(key_type.lower(), key_bytes.hex()))
+    return None
 
 
 def add_config_entry(entry_type, entry_value, entry_name):

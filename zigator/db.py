@@ -286,7 +286,6 @@ def create_table(tablename):
     # Drop the table if it already exists
     table_drop_command = "DROP TABLE IF EXISTS {}".format(tablename)
     cursor.execute(table_drop_command)
-    connection.commit()
 
     # Create the table
     table_creation_command = "CREATE TABLE {}(".format(tablename)
@@ -324,12 +323,11 @@ def create_table(tablename):
             table_creation_command += " NOT NULL"
     table_creation_command += ")"
 
+    # Execute the constructed command
     cursor.execute(table_creation_command)
-    connection.commit()
 
 
 def insert_pkt(entry):
-    global connection
     global cursor
 
     # Insert the parsed data into the database
@@ -337,6 +335,10 @@ def insert_pkt(entry):
                    "".format(", ".join("?"*len(PKT_COLUMNS))),
                    tuple(entry[column_name]
                          for column_name in PKT_COLUMN_NAMES))
+
+def commit():
+    global connection
+
     connection.commit()
 
 
@@ -448,7 +450,6 @@ def matching_frequency(conditions):
 
 
 def store_networks(networks):
-    global connection
     global cursor
 
     # Drop the table if it already exists
@@ -461,11 +462,9 @@ def store_networks(networks):
     for epid in networks.keys():
         cursor.execute("INSERT INTO networks VALUES (?, ?)",
                        tuple([epid, ",".join(networks[epid])]))
-    connection.commit()
 
 
 def store_devices(devices):
-    global connection
     global cursor
 
     # Drop the table if it already exists
@@ -481,11 +480,9 @@ def store_devices(devices):
                        tuple([extendedaddr,
                               devices[extendedaddr]["macdevtype"],
                               devices[extendedaddr]["nwkdevtype"]]))
-    connection.commit()
 
 
 def store_addresses(addresses):
-    global connection
     global cursor
 
     # Drop the table if it already exists
@@ -499,11 +496,9 @@ def store_addresses(addresses):
     for addrpan in addresses.keys():
         cursor.execute("INSERT INTO addresses VALUES (?, ?, ?)",
                        tuple([addrpan[0], addrpan[1], addresses[addrpan]]))
-    connection.commit()
 
 
 def store_pairs(pairs):
-    global connection
     global cursor
 
     # Drop the table if it already exists
@@ -522,7 +517,6 @@ def store_pairs(pairs):
                               pairpan[2],
                               pairs[pairpan]["first"],
                               pairs[pairpan]["last"]]))
-    connection.commit()
 
 
 def get_nwkdevtype(shortaddr=None, panid=None, extendedaddr=None):
@@ -600,7 +594,6 @@ def update_table(selected_columns, selected_values, conditions):
 
     # Execute the constructed command
     cursor.execute(update_command, tuple(expr_values))
-    connection.commit()
 
 
 def update_packets():

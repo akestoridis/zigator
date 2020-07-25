@@ -96,6 +96,12 @@ parser_parse.add_argument(
     type=str,
     action="store",
     help="path for the database file")
+parser_parse.add_argument(
+    "--num_workers",
+    type=int,
+    action="store",
+    help="the number of workers that will parse pcap files",
+    default=None)
 
 parser_analyze = subparsers.add_parser(
     "analyze",
@@ -331,7 +337,8 @@ def main():
                                        args.ENTRY_NAME)
     elif args.subcommand == "parse":
         zigator.parsing.main(args.PCAP_DIRECTORY,
-                             args.DATABASE_FILEPATH)
+                             args.DATABASE_FILEPATH,
+                             args.num_workers)
     elif args.subcommand == "analyze":
         zigator.analysis.main(args.DATABASE_FILEPATH,
                               args.OUTPUT_DIRECTORY)
