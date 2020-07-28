@@ -57,35 +57,7 @@ def pcap_file(filepath, msg_queue):
         # Collect more data about the packet from the PHY layer and onward
         phy_fields(pkt, msg_queue)
 
-        # Check whether the MAC and NWK Destination is the same or not
-        if (config.entry["error_msg"] is None
-            and config.entry["mac_frametype"] == "MAC Data"
-            and config.entry["mac_panidcomp"]
-                == "The source PAN ID is the same as the destination PAN ID"
-            and config.entry["mac_dstaddrmode"]
-                == "Short destination MAC address"
-            and config.entry["nwk_dstshortaddr"] is not None):
-            config.entry["der_same_macnwkdst"] = (
-                "Same MAC/NWK Dst: {}".format(
-                    config.entry["mac_dstshortaddr"]
-                        == config.entry["nwk_dstshortaddr"])
-            )
-
-        # Check whether the MAC and NWK Source is the same or not
-        if (config.entry["error_msg"] is None
-            and config.entry["mac_frametype"] == "MAC Data"
-            and config.entry["mac_panidcomp"]
-                == "The source PAN ID is the same as the destination PAN ID"
-            and config.entry["mac_srcaddrmode"]
-                == "Short source MAC address"
-            and config.entry["nwk_srcshortaddr"] is not None):
-            config.entry["der_same_macnwksrc"] = (
-                "Same MAC/NWK Src: {}".format(
-                    config.entry["mac_srcshortaddr"]
-                        == config.entry["nwk_srcshortaddr"])
-            )
-
-        # Derive information about the devices that exchange packets
+        # Derive additional information from the parsed packet
         if config.entry["error_msg"] is None:
             derive_info()
 

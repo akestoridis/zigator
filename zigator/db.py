@@ -18,6 +18,7 @@
 Database module for the zigator package
 """
 
+import logging
 import sqlite3
 import string
 
@@ -239,6 +240,18 @@ PKT_COLUMNS = [
     ("der_mac_srctype", "TEXT"),
     ("der_nwk_dsttype", "TEXT"),
     ("der_nwk_srctype", "TEXT"),
+    ("der_mac_dstpanid", "TEXT"),
+    ("der_mac_dstshortaddr", "TEXT"),
+    ("der_mac_dstextendedaddr", "TEXT"),
+    ("der_mac_srcpanid", "TEXT"),
+    ("der_mac_srcshortaddr", "TEXT"),
+    ("der_mac_srcextendedaddr", "TEXT"),
+    ("der_nwk_dstpanid", "TEXT"),
+    ("der_nwk_dstshortaddr", "TEXT"),
+    ("der_nwk_dstextendedaddr", "TEXT"),
+    ("der_nwk_srcpanid", "TEXT"),
+    ("der_nwk_srcshortaddr", "TEXT"),
+    ("der_nwk_srcextendedaddr", "TEXT"),
     ("warning_msg", "TEXT"),
     ("error_msg", "TEXT"),
 ]
@@ -335,6 +348,7 @@ def insert_pkt(entry):
                    "".format(", ".join("?"*len(PKT_COLUMNS))),
                    tuple(entry[column_name]
                          for column_name in PKT_COLUMN_NAMES))
+
 
 def commit():
     global connection
@@ -519,6 +533,35 @@ def store_pairs(pairs):
                               pairs[pairpan]["last"]]))
 
 
+def get_macdevtype(shortaddr=None, panid=None, extendedaddr=None):
+    global cursor
+
+    # Make sure that the extended address of the device is known
+    if extendedaddr is None:
+        cursor.execute("SELECT extendedaddr FROM addresses WHERE shortaddr=? "
+                       "AND panid=?", tuple([shortaddr, panid]))
+        results = cursor.fetchall()
+        if len(results) == 0:
+            return None
+        elif len(results) != 1:
+            return "Conflicting Data"
+        elif results[0][0] == "Conflicting Data":
+            return "Conflicting Data"
+        else:
+            extendedaddr = results[0][0]
+
+    # Use the extended address of the device to determine its MAC device type
+    cursor.execute("SELECT macdevtype FROM devices WHERE extendedaddr=?",
+                   tuple([extendedaddr]))
+    results = cursor.fetchall()
+    if len(results) == 0:
+        return None
+    elif len(results) != 1:
+        return "Conflicting Data"
+    else:
+        return results[0][0]
+
+
 def get_nwkdevtype(shortaddr=None, panid=None, extendedaddr=None):
     global cursor
 
@@ -597,139 +640,610 @@ def update_table(selected_columns, selected_values, conditions):
 
 
 def update_packets():
-    # Update the "MAC Destination Type" column
-    update_columns = (
-        "der_mac_dsttype",
-    )
-    fetch_columns = (
-        "mac_dstshortaddr",
-        "mac_dstpanid",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("mac_dstaddrmode", "Short destination MAC address"),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        if fetched_tuple[0] == "0xffff":
+    global cursor
+
+    # Check for conflicting addresses
+    cursor.execute("SELECT DISTINCT shortaddr, panid FROM addresses "
+                   "WHERE extendedaddr=\"Conflicting Data\"")
+    results = cursor.fetchall()
+    for result in results:
+        shortaddr = result[0]
+        panid = result[1]
+        logging.warning("Observed conflicting data regarding the "
+                        "extended address of the device that uses "
+                        "{} as its short address and {} as its PAN ID"
+                        "".format(shortaddr, panid))
+
+        # Update the "MAC Destination Type" column
+        update_columns = (
+            "der_mac_dstextendedaddr",
+            "der_mac_dsttype",
+        )
+        update_values = (
+            "Conflicting Data",
+            "MAC Dst Type: Conflicting Data",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("der_mac_dstpanid", panid),
+            ("der_mac_dstshortaddr", shortaddr),
+            ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+        # Update the "MAC Source Type" column
+        update_columns = (
+            "der_mac_srcextendedaddr",
+            "der_mac_srctype",
+        )
+        update_values = (
+            "Conflicting Data",
+            "MAC Src Type: Conflicting Data",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_srcaddrmode", "Short source MAC address"),
+            ("der_mac_srcpanid", panid),
+            ("der_mac_srcshortaddr", shortaddr),
+            ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+        # Update the "NWK Destination Type" column
+        update_columns = (
+            "der_nwk_dstextendedaddr",
+            "der_nwk_dsttype",
+        )
+        update_values = (
+            "Conflicting Data",
+            "NWK Dst Type: Conflicting Data",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_dstshortaddr", None),
+            ("der_nwk_dstpanid", panid),
+            ("der_nwk_dstshortaddr", shortaddr),
+            ("!der_nwk_dsttype", "NWK Dst Type: Conflicting Data"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+        # Update the "NWK Source Type" column
+        update_columns = (
+            "der_nwk_srcextendedaddr",
+            "der_nwk_srctype",
+        )
+        update_values = (
+            "Conflicting Data",
+            "NWK Src Type: Conflicting Data",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_srcshortaddr", None),
+            ("der_nwk_srcpanid", panid),
+            ("der_nwk_srcshortaddr", shortaddr),
+            ("!der_nwk_srctype", "NWK Src Type: Conflicting Data"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown MAC Destination extended addresses
+    cursor.execute("SELECT DISTINCT der_mac_dstpanid, "
+                   "der_mac_dstshortaddr FROM packets "
+                   "WHERE der_mac_dsttype=\"MAC Dst Type: None\" "
+                   "AND der_mac_dstextendedaddr IS NULL")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "MAC Destination extended addresses..."
+                  "".format(len(results)))
+    for result in results:
+        panid = result[0]
+        shortaddr = result[1]
+        cursor.execute("SELECT extendedaddr FROM addresses "
+                       "WHERE shortaddr=? AND panid=?",
+                       (shortaddr, panid))
+        fetched_addresses = cursor.fetchall()
+        if len(fetched_addresses) == 0:
+            continue
+        elif len(fetched_addresses) != 1:
             update_values = (
-                "MAC Dst Type: Broadcast",
+                "Conflicting Data",
+                "MAC Dst Type: Conflicting Data",
+            )
+        elif fetched_addresses[0][0] == "Conflicting Data":
+            update_values = (
+                "Conflicting Data",
+                "MAC Dst Type: Conflicting Data",
             )
         else:
-            update_values = (
-                "MAC Dst Type: {}".format(
-                    get_nwkdevtype(
-                        shortaddr=fetched_tuple[0],
-                        panid=fetched_tuple[1])),
-            )
-        update_table(update_columns, update_values, var_conditions)
-
-    # Update the "MAC Source Type" column
-    update_columns = (
-        "der_mac_srctype",
-    )
-    fetch_columns = (
-        "mac_srcshortaddr",
-        "mac_dstpanid",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("mac_srcaddrmode", "Short source MAC address"),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        update_values = (
-            "MAC Src Type: {}".format(
-                get_nwkdevtype(
-                    shortaddr=fetched_tuple[0],
-                    panid=fetched_tuple[1])),
+            extendedaddr = fetched_addresses[0][0]
+            cursor.execute("SELECT nwkdevtype FROM devices "
+                           "WHERE extendedaddr=?",
+                           tuple([extendedaddr]))
+            fetched_nwkdevtype = cursor.fetchall()
+            if len(fetched_nwkdevtype) == 0:
+                update_values = (
+                    extendedaddr,
+                    "MAC Dst Type: None",
+                )
+            elif len(fetched_nwkdevtype) != 1:
+                update_values = (
+                    extendedaddr,
+                    "MAC Dst Type: Conflicting Data",
+                )
+            else:
+                update_values = (
+                    extendedaddr,
+                    "MAC Dst Type: {}".format(fetched_nwkdevtype[0][0]),
+                )
+        update_columns = (
+            "der_mac_dstextendedaddr",
+            "der_mac_dsttype",
         )
-        update_table(update_columns, update_values, var_conditions)
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("der_mac_dstpanid", panid),
+            ("der_mac_dstshortaddr", shortaddr),
+            ("der_mac_dstextendedaddr", None),
+            ("der_mac_dsttype", "MAC Dst Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
 
-    # Update the "NWK Destination Type" column
-    update_columns = (
-        "der_nwk_dsttype",
-    )
-    fetch_columns = (
-        "nwk_dstshortaddr",
-        "mac_dstpanid",
-        "nwk_dstextendedaddr",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("!nwk_dstshortaddr", None),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        if fetched_tuple[0] == "0xffff":
+    # Check for previously unknown MAC Source extended addresses
+    cursor.execute("SELECT DISTINCT der_mac_srcpanid, "
+                   "der_mac_srcshortaddr FROM packets "
+                   "WHERE der_mac_srctype=\"MAC Src Type: None\" "
+                   "AND der_mac_srcextendedaddr IS NULL")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "MAC Source extended addresses..."
+                  "".format(len(results)))
+    for result in results:
+        panid = result[0]
+        shortaddr = result[1]
+        cursor.execute("SELECT extendedaddr FROM addresses "
+                       "WHERE shortaddr=? AND panid=?",
+                       (shortaddr, panid))
+        fetched_addresses = cursor.fetchall()
+        if len(fetched_addresses) == 0:
+            continue
+        elif len(fetched_addresses) != 1:
             update_values = (
-                "NWK Dst Type: All devices",
+                "Conflicting Data",
+                "MAC Src Type: Conflicting Data",
             )
-        elif fetched_tuple[0] == "0xfffd":
+        elif fetched_addresses[0][0] == "Conflicting Data":
             update_values = (
-                "NWK Dst Type: All active receivers",
-            )
-        elif fetched_tuple[0] == "0xfffc":
-            update_values = (
-                "NWK Dst Type: All routers and coordinator",
-            )
-        elif fetched_tuple[0] == "0xfffb":
-            update_values = (
-                "NWK Dst Type: All low-power routers",
+                "Conflicting Data",
+                "MAC Src Type: Conflicting Data",
             )
         else:
-            update_values = (
-                "NWK Dst Type: {}".format(
-                    get_nwkdevtype(
-                        shortaddr=fetched_tuple[0],
-                        panid=fetched_tuple[1],
-                        extendedaddr=fetched_tuple[2])),
-            )
-        update_table(update_columns, update_values, var_conditions)
-
-    # Update the "NWK Source Type" column
-    update_columns = (
-        "der_nwk_srctype",
-    )
-    fetch_columns = (
-        "nwk_srcshortaddr",
-        "mac_dstpanid",
-        "nwk_srcextendedaddr",
-    )
-    conditions = (
-        ("error_msg", None),
-        ("mac_panidcomp",
-            "The source PAN ID is the same as the destination PAN ID"),
-        ("!nwk_srcshortaddr", None),
-    )
-    fetched_tuples = fetch_values(fetch_columns, conditions, True)
-    for fetched_tuple in fetched_tuples:
-        var_conditions = list(conditions)
-        for i in range(len(fetched_tuple)):
-            var_conditions.append((fetch_columns[i], fetched_tuple[i]))
-        update_values = (
-            "NWK Src Type: {}".format(
-                get_nwkdevtype(
-                    shortaddr=fetched_tuple[0],
-                    panid=fetched_tuple[1],
-                    extendedaddr=fetched_tuple[2])),
+            extendedaddr = fetched_addresses[0][0]
+            cursor.execute("SELECT nwkdevtype FROM devices "
+                           "WHERE extendedaddr=?",
+                           tuple([extendedaddr]))
+            fetched_nwkdevtype = cursor.fetchall()
+            if len(fetched_nwkdevtype) == 0:
+                update_values = (
+                    extendedaddr,
+                    "MAC Src Type: None",
+                )
+            elif len(fetched_nwkdevtype) != 1:
+                update_values = (
+                    extendedaddr,
+                    "MAC Src Type: Conflicting Data",
+                )
+            else:
+                update_values = (
+                    extendedaddr,
+                    "MAC Src Type: {}".format(fetched_nwkdevtype[0][0]),
+                )
+        update_columns = (
+            "der_mac_srcextendedaddr",
+            "der_mac_srctype",
         )
-        update_table(update_columns, update_values, var_conditions)
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_srcaddrmode", "Short source MAC address"),
+            ("der_mac_srcpanid", panid),
+            ("der_mac_srcshortaddr", shortaddr),
+            ("der_mac_srcextendedaddr", None),
+            ("der_mac_srctype", "MAC Src Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown NWK Destination extended addresses
+    cursor.execute("SELECT DISTINCT der_nwk_dstpanid, "
+                   "der_nwk_dstshortaddr FROM packets "
+                   "WHERE der_nwk_dsttype=\"NWK Dst Type: None\" "
+                   "AND der_nwk_dstextendedaddr IS NULL")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "NWK Destination extended addresses..."
+                  "".format(len(results)))
+    for result in results:
+        panid = result[0]
+        shortaddr = result[1]
+        cursor.execute("SELECT extendedaddr FROM addresses "
+                       "WHERE shortaddr=? AND panid=?",
+                       (shortaddr, panid))
+        fetched_addresses = cursor.fetchall()
+        if len(fetched_addresses) == 0:
+            continue
+        elif len(fetched_addresses) != 1:
+            update_values = (
+                "Conflicting Data",
+                "NWK Dst Type: Conflicting Data",
+            )
+        elif fetched_addresses[0][0] == "Conflicting Data":
+            update_values = (
+                "Conflicting Data",
+                "NWK Dst Type: Conflicting Data",
+            )
+        else:
+            extendedaddr = fetched_addresses[0][0]
+            cursor.execute("SELECT nwkdevtype FROM devices "
+                           "WHERE extendedaddr=?",
+                           tuple([extendedaddr]))
+            fetched_nwkdevtype = cursor.fetchall()
+            if len(fetched_nwkdevtype) == 0:
+                update_values = (
+                    extendedaddr,
+                    "NWK Dst Type: None",
+                )
+            elif len(fetched_nwkdevtype) != 1:
+                update_values = (
+                    extendedaddr,
+                    "NWK Dst Type: Conflicting Data",
+                )
+            else:
+                update_values = (
+                    extendedaddr,
+                    "NWK Dst Type: {}".format(fetched_nwkdevtype[0][0]),
+                )
+        update_columns = (
+            "der_nwk_dstextendedaddr",
+            "der_nwk_dsttype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_dstshortaddr", None),
+            ("der_nwk_dstpanid", panid),
+            ("der_nwk_dstshortaddr", shortaddr),
+            ("der_nwk_dstextendedaddr", None),
+            ("der_nwk_dsttype", "NWK Dst Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown NWK Source extended addresses
+    cursor.execute("SELECT DISTINCT der_nwk_srcpanid, "
+                   "der_nwk_srcshortaddr FROM packets "
+                   "WHERE der_nwk_srctype=\"NWK Src Type: None\" "
+                   "AND der_nwk_srcextendedaddr IS NULL")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "NWK Source extended addresses..."
+                  "".format(len(results)))
+    for result in results:
+        panid = result[0]
+        shortaddr = result[1]
+        cursor.execute("SELECT extendedaddr FROM addresses "
+                       "WHERE shortaddr=? AND panid=?",
+                       (shortaddr, panid))
+        fetched_addresses = cursor.fetchall()
+        if len(fetched_addresses) == 0:
+            continue
+        elif len(fetched_addresses) != 1:
+            update_values = (
+                "Conflicting Data",
+                "NWK Src Type: Conflicting Data",
+            )
+        elif fetched_addresses[0][0] == "Conflicting Data":
+            update_values = (
+                "Conflicting Data",
+                "NWK Src Type: Conflicting Data",
+            )
+        else:
+            extendedaddr = fetched_addresses[0][0]
+            cursor.execute("SELECT nwkdevtype FROM devices "
+                           "WHERE extendedaddr=?",
+                           tuple([extendedaddr]))
+            fetched_nwkdevtype = cursor.fetchall()
+            if len(fetched_nwkdevtype) == 0:
+                update_values = (
+                    extendedaddr,
+                    "NWK Src Type: None",
+                )
+            elif len(fetched_nwkdevtype) != 1:
+                update_values = (
+                    extendedaddr,
+                    "NWK Src Type: Conflicting Data",
+                )
+            else:
+                update_values = (
+                    extendedaddr,
+                    "NWK Src Type: {}".format(fetched_nwkdevtype[0][0]),
+                )
+        update_columns = (
+            "der_nwk_srcextendedaddr",
+            "der_nwk_srctype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_srcshortaddr", None),
+            ("der_nwk_srcpanid", panid),
+            ("der_nwk_srcshortaddr", shortaddr),
+            ("der_nwk_srcextendedaddr", None),
+            ("der_nwk_srctype", "NWK Src Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for conflicting device types
+    cursor.execute("SELECT DISTINCT extendedaddr FROM devices")
+    results = cursor.fetchall()
+    for result in results:
+        extendedaddr = result[0]
+        if get_macdevtype(extendedaddr=extendedaddr) == "Conflicting Data":
+            logging.warning("Observed conflicting data regarding the "
+                            "MAC device type of the device that uses "
+                            "{} as its extended address".format(extendedaddr))
+
+        if get_nwkdevtype(extendedaddr=extendedaddr) == "Conflicting Data":
+            logging.warning("Observed conflicting data regarding the "
+                            "NWK device type of the device that uses "
+                            "{} as its extended address".format(extendedaddr))
+
+            # Update the "MAC Destination Type" column
+            update_columns = (
+                "der_mac_dsttype",
+            )
+            update_values = (
+                "MAC Dst Type: Conflicting Data",
+            )
+            conditions = (
+                ("error_msg", None),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same as the destination PAN ID"),
+                ("mac_dstaddrmode", "Short destination MAC address"),
+                ("der_mac_dstextendedaddr", extendedaddr),
+                ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
+            )
+            update_table(update_columns, update_values, conditions)
+
+            # Update the "MAC Source Type" column
+            update_columns = (
+                "der_mac_srctype",
+            )
+            update_values = (
+                "MAC Src Type: Conflicting Data",
+            )
+            conditions = (
+                ("error_msg", None),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same as the destination PAN ID"),
+                ("mac_srcaddrmode", "Short source MAC address"),
+                ("der_mac_srcextendedaddr", extendedaddr),
+                ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
+            )
+            update_table(update_columns, update_values, conditions)
+
+            # Update the "NWK Destination Type" column
+            update_columns = (
+                "der_nwk_dsttype",
+            )
+            update_values = (
+                "NWK Dst Type: Conflicting Data",
+            )
+            conditions = (
+                ("error_msg", None),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same as the destination PAN ID"),
+                ("!nwk_dstshortaddr", None),
+                ("der_nwk_dstextendedaddr", extendedaddr),
+                ("!der_nwk_dsttype", "NWK Dst Type: Conflicting Data"),
+            )
+            update_table(update_columns, update_values, conditions)
+
+            # Update the "NWK Source Type" column
+            update_columns = (
+                "der_nwk_srctype",
+            )
+            update_values = (
+                "NWK Src Type: Conflicting Data",
+            )
+            conditions = (
+                ("error_msg", None),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same as the destination PAN ID"),
+                ("!nwk_srcshortaddr", None),
+                ("der_nwk_srcextendedaddr", extendedaddr),
+                ("!der_nwk_srctype", "NWK Src Type: Conflicting Data"),
+            )
+            update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown MAC Destination Types
+    cursor.execute("SELECT DISTINCT der_mac_dstextendedaddr FROM packets "
+                   "WHERE der_mac_dsttype=\"MAC Dst Type: None\" "
+                   "AND der_mac_dstextendedaddr IS NOT NULL "
+                   "AND der_mac_dstextendedaddr!=\"Conflicting Data\"")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "MAC Destination Types..."
+                  "".format(len(results)))
+    for result in results:
+        extendedaddr = result[0]
+        cursor.execute("SELECT nwkdevtype FROM devices "
+                       "WHERE extendedaddr=?",
+                       tuple([extendedaddr]))
+        fetched_nwkdevtype = cursor.fetchall()
+        if len(fetched_nwkdevtype) == 0:
+            continue
+        elif len(fetched_nwkdevtype) != 1:
+            update_values = (
+                "MAC Dst Type: Conflicting Data",
+            )
+        else:
+            nwkdevtype = fetched_nwkdevtype[0][0]
+            if nwkdevtype is None:
+                continue
+            else:
+                update_values = (
+                    "MAC Dst Type: {}".format(nwkdevtype),
+                )
+        update_columns = (
+            "der_mac_dsttype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("der_mac_dstextendedaddr", extendedaddr),
+            ("der_mac_dsttype", "MAC Dst Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown MAC Source Types
+    cursor.execute("SELECT DISTINCT der_mac_srcextendedaddr FROM packets "
+                   "WHERE der_mac_srctype=\"MAC Src Type: None\" "
+                   "AND der_mac_srcextendedaddr IS NOT NULL "
+                   "AND der_mac_srcextendedaddr!=\"Conflicting Data\"")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "MAC Source Types..."
+                  "".format(len(results)))
+    for result in results:
+        extendedaddr = result[0]
+        cursor.execute("SELECT nwkdevtype FROM devices "
+                       "WHERE extendedaddr=?",
+                       tuple([extendedaddr]))
+        fetched_nwkdevtype = cursor.fetchall()
+        if len(fetched_nwkdevtype) == 0:
+            continue
+        elif len(fetched_nwkdevtype) != 1:
+            update_values = (
+                "MAC Src Type: Conflicting Data",
+            )
+        else:
+            nwkdevtype = fetched_nwkdevtype[0][0]
+            if nwkdevtype is None:
+                continue
+            else:
+                update_values = (
+                    "MAC Src Type: {}".format(nwkdevtype),
+                )
+        update_columns = (
+            "der_mac_srctype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_srcaddrmode", "Short source MAC address"),
+            ("der_mac_srcextendedaddr", extendedaddr),
+            ("der_mac_srctype", "MAC Src Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown NWK Destination Types
+    cursor.execute("SELECT DISTINCT der_nwk_dstextendedaddr FROM packets "
+                   "WHERE der_nwk_dsttype=\"NWK Dst Type: None\" "
+                   "AND der_nwk_dstextendedaddr IS NOT NULL "
+                   "AND der_nwk_dstextendedaddr!=\"Conflicting Data\"")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "NWK Destination Types..."
+                  "".format(len(results)))
+    for result in results:
+        extendedaddr = result[0]
+        cursor.execute("SELECT nwkdevtype FROM devices "
+                       "WHERE extendedaddr=?",
+                       tuple([extendedaddr]))
+        fetched_nwkdevtype = cursor.fetchall()
+        if len(fetched_nwkdevtype) == 0:
+            continue
+        elif len(fetched_nwkdevtype) != 1:
+            update_values = (
+                "NWK Dst Type: Conflicting Data",
+            )
+        else:
+            nwkdevtype = fetched_nwkdevtype[0][0]
+            if nwkdevtype is None:
+                continue
+            else:
+                update_values = (
+                    "NWK Dst Type: {}".format(nwkdevtype),
+                )
+        update_columns = (
+            "der_nwk_dsttype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_dstshortaddr", None),
+            ("der_nwk_dstextendedaddr", extendedaddr),
+            ("der_nwk_dsttype", "NWK Dst Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
+
+    # Check for previously unknown NWK Source Types
+    cursor.execute("SELECT DISTINCT der_nwk_srcextendedaddr FROM packets "
+                   "WHERE der_nwk_srctype=\"NWK Src Type: None\" "
+                   "AND der_nwk_srcextendedaddr IS NOT NULL "
+                   "AND der_nwk_srcextendedaddr!=\"Conflicting Data\"")
+    results = cursor.fetchall()
+    logging.debug("Trying to identify {} previously unknown "
+                  "NWK Source Types..."
+                  "".format(len(results)))
+    for result in results:
+        extendedaddr = result[0]
+        cursor.execute("SELECT nwkdevtype FROM devices "
+                       "WHERE extendedaddr=?",
+                       tuple([extendedaddr]))
+        fetched_nwkdevtype = cursor.fetchall()
+        if len(fetched_nwkdevtype) == 0:
+            continue
+        elif len(fetched_nwkdevtype) != 1:
+            update_values = (
+                "NWK Src Type: Conflicting Data",
+            )
+        else:
+            nwkdevtype = fetched_nwkdevtype[0][0]
+            if nwkdevtype is None:
+                continue
+            else:
+                update_values = (
+                    "NWK Src Type: {}".format(nwkdevtype),
+                )
+        update_columns = (
+            "der_nwk_srctype",
+        )
+        conditions = (
+            ("error_msg", None),
+            ("mac_panidcomp",
+                "The source PAN ID is the same as the destination PAN ID"),
+            ("!nwk_srcshortaddr", None),
+            ("der_nwk_srcextendedaddr", extendedaddr),
+            ("der_nwk_srctype", "NWK Src Type: None"),
+        )
+        update_table(update_columns, update_values, conditions)
 
 
 def disconnect():

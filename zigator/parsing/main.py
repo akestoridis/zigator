@@ -192,6 +192,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
     logging.info("Updating the database...")
     config.db.update_packets()
     config.db.commit()
+    logging.info("Finished updating the database")
 
     # Log a summary of the generated warnings
     warnings = config.db.fetch_values(["warning_msg"], None, True)

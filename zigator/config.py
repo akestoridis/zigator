@@ -139,10 +139,10 @@ def update_devices(extendedaddr, macdevtype, nwkdevtype):
     if extendedaddr is None:
         raise ValueError("The extended address is required")
     elif macdevtype not in {None, "Full-Function Device",
-                            "Reduced-Function Device"}:
+                            "Reduced-Function Device", "Conflicting Data"}:
         raise ValueError("Unexpected MAC device type")
     elif nwkdevtype not in {None, "Zigbee Coordinator", "Zigbee Router",
-                            "Zigbee End Device"}:
+                            "Zigbee End Device", "Conflicting Data"}:
         raise ValueError("Unexpected NWK device type")
 
     # Check whether it is a previously unknown device or not
