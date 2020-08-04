@@ -15,6 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
 
 from .. import config
@@ -37,8 +38,10 @@ INCLUDED_COLUMNS = set([
     "nwk_aux_extnonce",
 ])
 
+INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
+                     if column_name in INCLUDED_COLUMNS]
 
-PACKET_TYPES = set([
+PACKET_TYPES = [
     (
         "nwk_routerequest.tsv",
         (
@@ -123,32 +126,29 @@ PACKET_TYPES = set([
             ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
-])
+]
 
 
-def form_frequencies(out_dirpath):
-    """Compute the frequency of forms for certain packet types."""
-    # Make sure that the output directory exists
-    os.makedirs(out_dirpath, exist_ok=True)
+def worker(db_filepath, out_dirpath, task_index, task_lock):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
 
-    logging.info("Computing the frequency of forms for {} packet types..."
-                 "".format(len(PACKET_TYPES)))
-    for packet_type in PACKET_TYPES:
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(PACKET_TYPES):
+                packet_type = PACKET_TYPES[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
         # Derive the path of the output file and the matching conditions
         out_filepath = os.path.join(out_dirpath, packet_type[0])
         conditions = packet_type[1]
 
-        selected_columns = []
-        for column_name in config.db.PKT_COLUMN_NAMES:
-            # Ignore certain columns
-            if column_name in INCLUDED_COLUMNS:
-                selected_columns.append(column_name)
-            else:
-                continue
-
-        # Compute the distinct matching values of the selected columns
+        # Compute the distinct matching values of the inspected columns
         form_values = config.db.fetch_values(
-            selected_columns,
+            INSPECTED_COLUMNS,
             conditions,
             True)
         form_values.sort(key=config.custom_sorter)
@@ -158,9 +158,44 @@ def form_frequencies(out_dirpath):
         for form_value in form_values:
             form_conditions = list(conditions)
             for i in range(len(form_value)):
-                form_conditions.append((selected_columns[i], form_value[i]))
+                form_conditions.append((INSPECTED_COLUMNS[i], form_value[i]))
             matches = config.db.matching_frequency(form_conditions)
             results.append((form_value, matches))
 
         # Write the frequency of each form in the output file
         config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()
+
+
+def form_frequencies(db_filepath, out_dirpath, num_workers):
+    """Compute the frequency of forms for certain packet types."""
+    # Make sure that the output directory exists
+    os.makedirs(out_dirpath, exist_ok=True)
+
+    # Determine the number of processes that will be used
+    if num_workers is None:
+        num_workers = len(os.sched_getaffinity(0))
+    if num_workers < 1:
+        num_workers = 1
+    logging.info("Computing the frequency of forms "
+                 "for {} packet types using {} workers..."
+                 "".format(len(PACKET_TYPES), num_workers))
+
+    # Create variables that will be shared by the processes
+    task_index = mp.Value("L", 0, lock=False)
+    task_lock = mp.Lock()
+
+    # Start the processes
+    processes = []
+    for _ in range(num_workers):
+        p = mp.Process(target=worker,
+                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p.start()
+        processes.append(p)
+
+    # Make sure that all processes terminated
+    for p in processes:
+        p.join()
+    logging.info("All {} workers completed their tasks".format(num_workers))

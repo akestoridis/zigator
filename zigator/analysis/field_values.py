@@ -15,6 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
 
 from .. import config
@@ -40,8 +41,10 @@ IGNORED_COLUMNS = set([
     "zcl_seqnum",
 ])
 
+INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
+                     if column_name not in IGNORED_COLUMNS]
 
-PACKET_TYPES = set([
+PACKET_TYPES = [
     (
         "nwk_routerequest.tsv",
         (
@@ -126,37 +129,78 @@ PACKET_TYPES = set([
             ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
-])
+]
 
 
-def field_values(out_dirpath):
-    """Compute the distinct field values of certain packet types."""
-    # Make sure that the output directory exists
-    os.makedirs(out_dirpath, exist_ok=True)
+def worker(db_filepath, out_dirpath, task_index, task_lock):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
 
-    logging.info("Computing the distinct field values of {} packet types..."
-                 "".format(len(PACKET_TYPES)))
-    for packet_type in PACKET_TYPES:
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(PACKET_TYPES):
+                packet_type = PACKET_TYPES[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
         # Derive the path of the output file and the matching conditions
         out_filepath = os.path.join(out_dirpath, packet_type[0])
         conditions = packet_type[1]
 
-        results = []
-        for column_name in config.db.PKT_COLUMN_NAMES:
-            # Ignore certain columns
-            if column_name in IGNORED_COLUMNS:
-                continue
+        # Fetch the distinct values of the inspected columns
+        fetched_tuples = config.db.fetch_values(
+            INSPECTED_COLUMNS,
+            conditions,
+            True)
 
-            # Compute the distinct values of this column
-            var_values = config.db.fetch_values(
-                [column_name],
-                conditions,
-                True)
+        # Compute the distinct values of each column
+        distinct_values = [set() for _ in range(len(INSPECTED_COLUMNS))]
+        for fetched_tuple in fetched_tuples:
+            for i in range(len(INSPECTED_COLUMNS)):
+                distinct_values[i].add((fetched_tuple[i],))
+        results = []
+        for i in range(len(INSPECTED_COLUMNS)):
+            var_values = list(distinct_values[i])
             var_values.sort(key=config.custom_sorter)
             var_values = [var_value[0] for var_value in var_values]
-
-            # Add the distinct values of this column in the list of results
-            results.append((column_name, var_values))
+            results.append((INSPECTED_COLUMNS[i], var_values))
 
         # Write the distinct values of each column in the output file
         config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()
+
+
+def field_values(db_filepath, out_dirpath, num_workers):
+    """Compute the distinct field values of certain packet types."""
+    # Make sure that the output directory exists
+    os.makedirs(out_dirpath, exist_ok=True)
+
+    # Determine the number of processes that will be used
+    if num_workers is None:
+        num_workers = len(os.sched_getaffinity(0))
+    if num_workers < 1:
+        num_workers = 1
+    logging.info("Computing the distinct field values "
+                 "of {} packet types using {} workers..."
+                 "".format(len(PACKET_TYPES), num_workers))
+
+    # Create variables that will be shared by the processes
+    task_index = mp.Value("L", 0, lock=False)
+    task_lock = mp.Lock()
+
+    # Start the processes
+    processes = []
+    for _ in range(num_workers):
+        p = mp.Process(target=worker,
+                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p.start()
+        processes.append(p)
+
+    # Make sure that all processes terminated
+    for p in processes:
+        p.join()
+    logging.info("All {} workers completed their tasks".format(num_workers))

@@ -15,12 +15,13 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
 
 from .. import config
 
 
-CONDITION_MATCHES = set([
+CONDITION_MATCHES = [
     (
         "phy_length--routerequest.tsv",
         (
@@ -1249,17 +1250,22 @@ CONDITION_MATCHES = set([
             ("!der_nwk_srctype", "NWK Src Type: Zigbee Router"),
         ),
     ),
-])
+]
 
 
-def matching_frequencies(out_dirpath):
-    """Compute the matching frequency of certain conditions."""
-    # Make sure that the output directory exists
-    os.makedirs(out_dirpath, exist_ok=True)
+def worker(db_filepath, out_dirpath, task_index, task_lock):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
 
-    logging.info("Computing the matching frequency of {} conditions..."
-                 "".format(len(CONDITION_MATCHES)))
-    for condition_match in CONDITION_MATCHES:
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(CONDITION_MATCHES):
+                condition_match = CONDITION_MATCHES[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
         # Derive the path of the output file, the varying columns,
         # and the matching conditions
         out_filepath = os.path.join(out_dirpath, condition_match[0])
@@ -1267,7 +1273,10 @@ def matching_frequencies(out_dirpath):
         conditions = condition_match[2]
 
         # Compute the distinct values of the varying columns
-        var_values = config.db.fetch_values(var_columns, conditions, True)
+        var_values = config.db.fetch_values(
+            var_columns,
+            conditions,
+            True)
         var_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each set of conditions
@@ -1281,3 +1290,38 @@ def matching_frequencies(out_dirpath):
 
         # Write the matching frequencies in the output file
         config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()
+
+
+def matching_frequencies(db_filepath, out_dirpath, num_workers):
+    """Compute the matching frequency of certain conditions."""
+    # Make sure that the output directory exists
+    os.makedirs(out_dirpath, exist_ok=True)
+
+    # Determine the number of processes that will be used
+    if num_workers is None:
+        num_workers = len(os.sched_getaffinity(0))
+    if num_workers < 1:
+        num_workers = 1
+    logging.info("Computing the matching frequency "
+                 "of {} conditions using {} workers..."
+                 "".format(len(CONDITION_MATCHES), num_workers))
+
+    # Create variables that will be shared by the processes
+    task_index = mp.Value("L", 0, lock=False)
+    task_lock = mp.Lock()
+
+    # Start the processes
+    processes = []
+    for _ in range(num_workers):
+        p = mp.Process(target=worker,
+                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p.start()
+        processes.append(p)
+
+    # Make sure that all processes terminated
+    for p in processes:
+        p.join()
+    logging.info("All {} workers completed their tasks".format(num_workers))

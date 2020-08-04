@@ -15,12 +15,13 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
 
 from .. import config
 
 
-COLUMN_GROUPS = set([
+COLUMN_GROUPS = [
     (
         "security-frequency.tsv",
         "mac_security",
@@ -69,17 +70,22 @@ COLUMN_GROUPS = set([
         "der_nwk_dsttype",
         "der_nwk_srctype",
     ),
-])
+]
 
 
-def group_frequencies(out_dirpath):
-    """Compute the frequency of values for certain column groups."""
-    # Make sure that the output directory exists
-    os.makedirs(out_dirpath, exist_ok=True)
+def worker(db_filepath, out_dirpath, task_index, task_lock):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
 
-    logging.info("Computing the frequency of values for {} column groups..."
-                 "".format(len(COLUMN_GROUPS)))
-    for column_group in COLUMN_GROUPS:
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(COLUMN_GROUPS):
+                column_group = COLUMN_GROUPS[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
         # Derive the path of the output file and the list of column names
         out_filepath = os.path.join(out_dirpath, column_group[0])
         column_names = column_group[1:]
@@ -90,7 +96,42 @@ def group_frequencies(out_dirpath):
             count_errors = True
         else:
             count_errors = False
+        results = config.db.grouped_count(column_names, count_errors)
 
         # Write the computed frequencies in the output file
-        results = config.db.grouped_count(column_names, count_errors)
         config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()
+
+
+def group_frequencies(db_filepath, out_dirpath, num_workers):
+    """Compute the frequency of values for certain column groups."""
+    # Make sure that the output directory exists
+    os.makedirs(out_dirpath, exist_ok=True)
+
+    # Determine the number of processes that will be used
+    if num_workers is None:
+        num_workers = len(os.sched_getaffinity(0))
+    if num_workers < 1:
+        num_workers = 1
+    logging.info("Computing the frequency of values "
+                 "for {} column groups using {} workers..."
+                 "".format(len(COLUMN_GROUPS), num_workers))
+
+    # Create variables that will be shared by the processes
+    task_index = mp.Value("L", 0, lock=False)
+    task_lock = mp.Lock()
+
+    # Start the processes
+    processes = []
+    for _ in range(num_workers):
+        p = mp.Process(target=worker,
+                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p.start()
+        processes.append(p)
+
+    # Make sure that all processes terminated
+    for p in processes:
+        p.join()
+    logging.info("All {} workers completed their tasks".format(num_workers))

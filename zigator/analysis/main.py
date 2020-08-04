@@ -27,7 +27,7 @@ from .selected_frequencies import selected_frequencies
 from .solo_frequencies import solo_frequencies
 
 
-def main(db_filepath, out_dirpath):
+def main(db_filepath, out_dirpath, num_workers):
     """Analyze traffic stored in a database file."""
     # Sanity check
     if not os.path.isfile(db_filepath):
@@ -37,21 +37,36 @@ def main(db_filepath, out_dirpath):
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
-    # Connect to the provided database
+    # Write the results of each analysis method in the output directory
     logging.info("Analyzing traffic stored in the \"{}\" database..."
                  "".format(db_filepath))
-    config.db.connect(db_filepath)
-
-    # Write the results of each analysis method in the output directory
-    solo_frequencies(os.path.join(out_dirpath, "solo-frequencies"))
-    group_frequencies(os.path.join(out_dirpath, "group-frequencies"))
-    distinct_matches(os.path.join(out_dirpath, "distinct-matches"))
-    matching_frequencies(os.path.join(out_dirpath, "matching-frequencies"))
-    field_values(os.path.join(out_dirpath, "field-values"))
-    form_frequencies(os.path.join(out_dirpath, "form-frequencies"))
-    selected_frequencies(os.path.join(out_dirpath, "selected-frequencies"))
-
-    # Disconnect from the provided database
+    solo_frequencies(
+        db_filepath,
+        os.path.join(out_dirpath, "solo-frequencies"),
+        num_workers)
+    group_frequencies(
+        db_filepath,
+        os.path.join(out_dirpath, "group-frequencies"),
+        num_workers)
+    distinct_matches(
+        db_filepath,
+        os.path.join(out_dirpath, "distinct-matches"),
+        num_workers)
+    matching_frequencies(
+        db_filepath,
+        os.path.join(out_dirpath, "matching-frequencies"),
+        num_workers)
+    field_values(
+        db_filepath,
+        os.path.join(out_dirpath, "field-values"),
+        num_workers)
+    form_frequencies(
+        db_filepath,
+        os.path.join(out_dirpath, "form-frequencies"),
+        num_workers)
+    selected_frequencies(
+        db_filepath,
+        os.path.join(out_dirpath, "selected-frequencies"),
+        num_workers)
     logging.info("Finished the analysis of the \"{}\" database"
                  "".format(db_filepath))
-    config.db.disconnect()

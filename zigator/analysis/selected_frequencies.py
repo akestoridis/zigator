@@ -15,12 +15,13 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
 
 from .. import config
 
 
-CONDITION_SELECTIONS = set([
+CONDITION_SELECTIONS = [
     (
         "packet_types.tsv",
         (
@@ -168,17 +169,22 @@ CONDITION_SELECTIONS = set([
             ("mac_srcaddrmode", "Extended source MAC address"),
         ),
     ),
-])
+]
 
 
-def selected_frequencies(out_dirpath):
-    """Compute the frequency of selected conditions."""
-    # Make sure that the output directory exists
-    os.makedirs(out_dirpath, exist_ok=True)
+def worker(db_filepath, out_dirpath, task_index, task_lock):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
 
-    logging.info("Computing the frequency of {} condition selections..."
-                 "".format(len(CONDITION_SELECTIONS)))
-    for condition_selection in CONDITION_SELECTIONS:
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(CONDITION_SELECTIONS):
+                condition_selection = CONDITION_SELECTIONS[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
         # Derive the path of the output file and the selected conditions
         out_filepath = os.path.join(out_dirpath, condition_selection[0])
         selections = condition_selection[1:]
@@ -193,3 +199,38 @@ def selected_frequencies(out_dirpath):
 
         # Write the matching frequencies in the output file
         config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()
+
+
+def selected_frequencies(db_filepath, out_dirpath, num_workers):
+    """Compute the frequency of selected conditions."""
+    # Make sure that the output directory exists
+    os.makedirs(out_dirpath, exist_ok=True)
+
+    # Determine the number of processes that will be used
+    if num_workers is None:
+        num_workers = len(os.sched_getaffinity(0))
+    if num_workers < 1:
+        num_workers = 1
+    logging.info("Computing the frequency of "
+                 "{} condition selections using {} workers..."
+                 "".format(len(CONDITION_SELECTIONS), num_workers))
+
+    # Create variables that will be shared by the processes
+    task_index = mp.Value("L", 0, lock=False)
+    task_lock = mp.Lock()
+
+    # Start the processes
+    processes = []
+    for _ in range(num_workers):
+        p = mp.Process(target=worker,
+                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p.start()
+        processes.append(p)
+
+    # Make sure that all processes terminated
+    for p in processes:
+        p.join()
+    logging.info("All {} workers completed their tasks".format(num_workers))

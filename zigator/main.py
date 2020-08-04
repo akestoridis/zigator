@@ -118,6 +118,12 @@ parser_analyze.add_argument(
     help="directory for the output files",
     nargs="?",
     default=os.getcwd())
+parser_analyze.add_argument(
+    "--num_workers",
+    type=int,
+    action="store",
+    help="the number of workers that will analyze the database",
+    default=None)
 
 parser_visualize = subparsers.add_parser(
     "visualize",
@@ -341,7 +347,8 @@ def main():
                              args.num_workers)
     elif args.subcommand == "analyze":
         zigator.analysis.main(args.DATABASE_FILEPATH,
-                              args.OUTPUT_DIRECTORY)
+                              args.OUTPUT_DIRECTORY,
+                              args.num_workers)
     elif args.subcommand == "visualize":
         zigator.visualization.main(args.DATABASE_FILEPATH,
                                    args.OUTPUT_DIRECTORY)
