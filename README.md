@@ -31,10 +31,25 @@ export PATH=$PATH:~/.local/bin
 After reloading your `~/.bashrc` file, you should be able to find the `zigator` command.
 
 
+## Features
+
+Zigator enables its users to do the following:
+
+* Derive preconfigured Trust Center link keys from install codes
+* Decrypt and verify Zigbee packets
+* Encrypt and authenticate Zigbee packets
+* Parse almost all the header fields of Zigbee packets up to the APS layer
+* Infer information from captured Zigbee packets
+* Produce statistics from a database of Zigbee packets
+* Visualize data from a database of Zigbee packets
+* Train decision tree classifiers from a database of Zigbee packets
+* Inject forged packets over UDP
+
+
 ## Getting Started
 
-If you cannot capture your own Zigbee packets, you may use the PCAP files of the [CRAWDAD dataset cmu/zigbee‑smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
-After submitting the [CRAWDAD registration form](https://crawdad.org/registration-form.html), you will receive a username that will allow you to download the following ZIP files:
+If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee‑smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
+After submitting the [CRAWDAD registration form](https://crawdad.org/registration-form.html), you will receive a username that will allow you to download the following zip files:
 
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth3-room.zip
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth2-room.zip
@@ -45,7 +60,7 @@ After submitting the [CRAWDAD registration form](https://crawdad.org/registratio
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth3-trios.zip
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth2-trios.zip
 
-Each of these ZIP files contains a PCAP file of captured Zigbee packets and a TXT file that provides a description of the experimental setup and the encryption keys that were used. You can then view a synopsis of all the commands that Zigator supports in order to analyze them:
+Each of these zip files contains a pcap file of captured Zigbee packets and a text file that provides a description of the experimental setup and the encryption keys that were used. You can then view a synopsis of all the commands that Zigator supports in order to analyze them:
 ```
 $ zigator -h
 ```
