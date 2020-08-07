@@ -236,6 +236,7 @@ PKT_COLUMNS = [
     ("zcl_cmd_id", "TEXT"),
     ("der_same_macnwkdst", "TEXT"),
     ("der_same_macnwksrc", "TEXT"),
+    ("der_tx_type", "TEXT"),
     ("der_mac_dsttype", "TEXT"),
     ("der_mac_srctype", "TEXT"),
     ("der_nwk_dsttype", "TEXT"),

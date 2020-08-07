@@ -51,6 +51,23 @@ def compare_short_addresses():
                 == config.entry["nwk_srcshortaddr"])
 
 
+def infer_transmission_type():
+    # Check whether this is a single-hop or a multi-hop transmission
+    if (config.entry["mac_frametype"]
+        in {"MAC Acknowledgment", "MAC Beacon", "MAC Command"}):
+        config.entry["der_tx_type"] = "Single-Hop Transmission"
+    elif config.entry["nwk_radius"] is not None:
+        if config.entry["nwk_radius"] > 1:
+            config.entry["der_tx_type"] = "Multi-Hop Transmission"
+        elif config.entry["nwk_radius"] == 1:
+            if (config.entry["der_same_macnwksrc"]
+                == "Same MAC/NWK Src: True"):
+                config.entry["der_tx_type"] = "Single-Hop Transmission"
+            elif (config.entry["der_same_macnwksrc"]
+                  == "Same MAC/NWK Src: False"):
+                config.entry["der_tx_type"] = "Multi-Hop Transmission"
+
+
 def record_short_address_pairs():
     if config.entry["mac_frametype"] != "MAC Data":
         # Examine only MAC Data packets
@@ -400,6 +417,7 @@ def derive_info():
     """Derive additional information from the parsed packet."""
     map_epids_to_panids()
     compare_short_addresses()
+    infer_transmission_type()
     record_short_address_pairs()
     record_extended_addresses()
     map_short_to_extended_addresses()
