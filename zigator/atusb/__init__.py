@@ -15,21 +15,10 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Security analysis tool for Zigbee networks
+Collection of atusb modules for the zigator package
 """
 
-import os
+from .main import main
 
-from .__about__ import *
-from .__getversion__ import getversion
 
-from . import config
-
-from . import analysis
-from . import atusb
-from . import injection
-from . import parsing
-from . import training
-from . import visualization
-
-__version__ = getversion(os.path.dirname(os.path.abspath(__file__)))
+__all__ = ["main"]

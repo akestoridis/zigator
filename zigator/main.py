@@ -308,6 +308,15 @@ parser_inject.add_argument(
     help="the Receiver On When Idle field of rejoin requests",
     default=0)
 
+parser_atusb = subparsers.add_parser(
+    "atusb",
+    help="launch selective jamming and spoofing attacks with an ATUSB")
+parser_atusb.add_argument(
+    "REPO_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory of the repository with the modified ATUSB firmware")
+
 args = parser.parse_args()
 
 
@@ -377,6 +386,8 @@ def main():
                                args.devtype,
                                args.powsrc,
                                args.rxidle)
+    elif args.subcommand == "atusb":
+        zigator.atusb.main(args.REPO_DIRECTORY)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
 
