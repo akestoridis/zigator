@@ -42,7 +42,7 @@ __classifiers__ = [
     "Topic :: Security"
 ]
 __install_requires__ = [
-    "graphviz>=0.14",
+    "graphviz>=0.14.1",
     "numpy>=1.18.5",
     "pycrc>=0.9.2",
     "pycryptodomex>=3.9.8",

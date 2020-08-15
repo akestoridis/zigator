@@ -1,4 +1,4 @@
-graphviz==0.14
+graphviz==0.14.1
 joblib==0.14.1
 numpy==1.18.5
 pycrc==0.9.2
