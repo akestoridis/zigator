@@ -2,10 +2,12 @@
 
 Zigator: Security analysis tool for Zigbee networks
 
+<!-- START OF BADGES -->
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/akestoridis/zigator)
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/akestoridis/zigator/latest)
 ![Python version requirement](https://img.shields.io/badge/python-%3E%3D3.7.3-blue)
 ![License](https://img.shields.io/badge/license-GPL--2.0--only-blue)
+<!-- END OF BADGES -->
 
 
 ## Disclaimer
