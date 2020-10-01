@@ -43,11 +43,11 @@ __classifiers__ = [
 ]
 __install_requires__ = [
     "graphviz>=0.14.1",
-    "numpy>=1.18.5",
+    "numpy>=1.19.2",
     "pycrc>=0.9.2",
     "pycryptodomex>=3.9.8",
     "scapy @ git+https://github.com/secdev/scapy@a3d691f5b7f51bfc5248e4b6fbb40c77139f26c3#egg=scapy",
-    "scikit-learn>=0.22.2.post1"
+    "scikit-learn>=0.23.2"
 ]
 __python_requires__ = ">=3.7.3"
 __entry_points__ = {
