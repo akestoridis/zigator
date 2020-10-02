@@ -23,6 +23,7 @@ import os
 from .__about__ import *
 from .__getversion__ import getversion
 
+from . import cli
 from . import config
 
 from . import analysis
@@ -33,3 +34,4 @@ from . import training
 from . import visualization
 
 __version__ = getversion(os.path.dirname(os.path.abspath(__file__)))
+cli.init(__version__)
