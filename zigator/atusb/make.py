@@ -16,6 +16,7 @@
 
 import logging
 import string
+import subprocess
 import textwrap
 
 
@@ -25,8 +26,7 @@ def make():
             "which",
             "dfu-util",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at locating the dfu-util command")
             return
@@ -41,8 +41,7 @@ def make():
             "dfu-util",
             "-V",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at identifying the version of dfu-util")
             return
@@ -116,8 +115,7 @@ def make():
             "make",
             "clean",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at cleaning up the firmware source code")
             return

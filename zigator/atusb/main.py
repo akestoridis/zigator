@@ -16,6 +16,7 @@
 
 import logging
 import os
+import subprocess
 
 from .attack import attack
 from .make import make
@@ -32,8 +33,7 @@ def main(repo_dirpath):
                 "which",
                 "git",
             ]
-            cp = subprocess.run(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cp = subprocess.run(args, capture_output=True)
             if cp.returncode != 0:
                 logging.error("Failed at locating the git command")
                 return
@@ -50,8 +50,7 @@ def main(repo_dirpath):
                 REPO_URL,
                 repo_dirpath,
             ]
-            cp = subprocess.run(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cp = subprocess.run(args, capture_output=True)
             if cp.returncode != 0:
                 logging.error("Failed at cloning the {} repository "
                               "into the \"{}\" directory"

@@ -16,6 +16,7 @@
 
 import logging
 import re
+import subprocess
 
 
 def attack():
@@ -24,8 +25,7 @@ def attack():
             "which",
             "iwpan",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at locating the iwpan command")
             return
@@ -40,8 +40,7 @@ def attack():
             "which",
             "ip",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at locating the ip command")
             return
@@ -56,8 +55,7 @@ def attack():
             "iwpan",
             "dev",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at listing all WPAN interfaces")
             return
@@ -115,8 +113,7 @@ def attack():
             devname,
             "del",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at deleting the {} interface"
                           "".format(devname))
@@ -139,8 +136,7 @@ def attack():
             "type",
             "monitor",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at creating the {} interface"
                           "".format(iface))
@@ -191,8 +187,7 @@ def attack():
             "0",
             channel_num,
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at setting the channel of {} as number {} "
                           "on page 0".format(phyname, channel_num))
@@ -233,8 +228,7 @@ def attack():
             iface,
             "up",
         ]
-        cp = subprocess.run(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(args, capture_output=True)
         if cp.returncode != 0:
             logging.error("Failed at enabling the {} interface".format(iface))
             return
@@ -265,8 +259,7 @@ def attack():
                         iface,
                         "down",
                     ]
-                    cp = subprocess.run(
-                        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    cp = subprocess.run(args, capture_output=True)
                     if cp.returncode != 0:
                         logging.error("Failed at disabling the {} interface"
                                       "".format(iface))
@@ -287,8 +280,7 @@ def attack():
                         iface,
                         "up",
                     ]
-                    cp = subprocess.run(
-                        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    cp = subprocess.run(args, capture_output=True)
                     if cp.returncode != 0:
                         logging.error("Failed at enabling the {} interface"
                                       "".format(iface))
@@ -309,8 +301,7 @@ def attack():
                         iface,
                         "down",
                     ]
-                    cp = subprocess.run(
-                        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    cp = subprocess.run(args, capture_output=True)
                     if cp.returncode != 0:
                         logging.error("Failed at disabling the {} interface"
                                       "".format(iface))
