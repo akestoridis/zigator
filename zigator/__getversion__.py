@@ -26,10 +26,18 @@ import subprocess
 def getversion(pkg_dirpath):
     version_filepath = os.path.join(pkg_dirpath, "VERSION.txt")
     git_dirpath = os.path.join(os.path.dirname(pkg_dirpath), ".git")
+
+    version = getversion_git(version_filepath, git_dirpath)
+    if version is None:
+        version = getversion_file(version_filepath)
+
+    return version
+
+
+def getversion_git(version_filepath, git_dirpath):
     try:
         cmd = "git --git-dir {} describe --tags".format(git_dirpath)
-        cp = subprocess.run(
-            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(cmd.split(), capture_output=True)
         if cp.returncode == 0:
             match = re.search(
                 r"^v([0-9]+\.[0-9]+)(\-[0-9]+\-g[0-9a-f]{7})?$",
@@ -45,8 +53,7 @@ def getversion(pkg_dirpath):
                 return version
 
         cmd = "git --git-dir {} rev-parse --short HEAD".format(git_dirpath)
-        cp = subprocess.run(
-            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp = subprocess.run(cmd.split(), capture_output=True)
         if cp.returncode == 0:
             match = re.search(r"^[0-9a-f]{7}$", cp.stdout.decode().rstrip())
             if match:
@@ -57,6 +64,10 @@ def getversion(pkg_dirpath):
     except Exception:
         pass
 
+    return None
+
+
+def getversion_file(version_filepath):
     if os.path.isfile(version_filepath):
         with open(version_filepath, "r") as fp:
             match = re.search(
