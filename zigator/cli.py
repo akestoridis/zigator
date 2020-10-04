@@ -29,12 +29,12 @@ parser = ArgumentParser(
     add_help=True)
 
 
-def init(version):
+def init(derived_version):
     parser.add_argument(
         "-v",
         "--version",
         action="version",
-        version=version)
+        version=derived_version)
     parser.add_argument(
         "-d",
         "--debug",

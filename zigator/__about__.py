@@ -32,14 +32,14 @@ __keywords__ = [
     "security",
     "analysis",
     "Zigbee",
-    "IEEE 802.15.4"
+    "IEEE 802.15.4",
 ]
 __classifiers__ = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Topic :: Security"
+    "Topic :: Security",
 ]
 __install_requires__ = [
     "graphviz>=0.14.1",
@@ -47,25 +47,11 @@ __install_requires__ = [
     "pycrc>=0.9.2",
     "pycryptodomex>=3.9.8",
     "scapy @ git+https://github.com/secdev/scapy@a3d691f5b7f51bfc5248e4b6fbb40c77139f26c3#egg=scapy",
-    "scikit-learn>=0.23.2"
+    "scikit-learn>=0.23.2",
 ]
 __python_requires__ = ">=3.7.3"
 __entry_points__ = {
     "console_scripts": [
-        "zigator=zigator.main:main"
+        "zigator=zigator.entry_point:entry_point"
     ]
 }
-__all__ = [
-    "__title__",
-    "__author__",
-    "__author_email__",
-    "__description__",
-    "__license__",
-    "__copyright__",
-    "__url__",
-    "__keywords__",
-    "__classifiers__",
-    "__install_requires__",
-    "__python_requires__",
-    "__entry_points__"
-]

@@ -20,18 +20,28 @@ Security analysis tool for Zigbee networks
 
 import os
 
-from .__about__ import *
+from .__about__ import __author__
+from .__about__ import __author_email__
+from .__about__ import __classifiers__
+from .__about__ import __copyright__
+from .__about__ import __description__
+from .__about__ import __entry_points__
+from .__about__ import __install_requires__
+from .__about__ import __keywords__
+from .__about__ import __license__
+from .__about__ import __python_requires__
+from .__about__ import __title__
+from .__about__ import __url__
+
 from .__getversion__ import getversion
+
+from .main import main
 
 from . import cli
 from . import config
 
-from . import analysis
-from . import atusb
-from . import injection
-from . import parsing
-from . import training
-from . import visualization
-
 __version__ = getversion(os.path.dirname(os.path.abspath(__file__)))
+__all__ = ["main"]
+
 cli.init(__version__)
+config.init(__version__)

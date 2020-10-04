@@ -53,6 +53,7 @@ ADDRESSES_MSG = 12
 PAIRS_MSG = 13
 
 # Initialize the global variables
+version = "0+unknown"
 network_keys = {}
 link_keys = {}
 install_codes = {}
@@ -63,10 +64,32 @@ pairs = {}
 entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
 
-def init():
+def init(derived_version):
+    global version
+
+    # Store the derived version identifier
+    version = derived_version
+
+    # Configure the logging system
+    logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
+                        datefmt="%Y-%m-%d %H:%M:%S",
+                        level=logging.INFO)
+
+    # Configure Scapy to assume that Zigbee is above the MAC layer
+    conf.dot15d4_protocol = "zigbee"
+
+
+def enable_debug_logging():
+    logging.getLogger().setLevel(logging.DEBUG)
+
+
+def load_config_files():
     global network_keys
     global link_keys
     global install_codes
+
+    # This should be the first logging message
+    logging.info("Started Zigator version {}".format(version))
 
     # Make sure that the configuration directory exists
     os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -101,9 +124,6 @@ def init():
             added_keys += 1
     logging.debug("Added {} link keys that were derived from install codes"
                   "".format(added_keys))
-
-    # Configure Scapy to assume that Zigbee is above the MAC layer
-    conf.dot15d4_protocol = "zigbee"
 
 
 def reset_entries(keep=[]):
