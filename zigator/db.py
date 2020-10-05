@@ -1252,6 +1252,7 @@ def disconnect():
     global cursor
 
     # Close the connection with the database
+    cursor.close()
     connection.close()
     connection = None
     cursor = None

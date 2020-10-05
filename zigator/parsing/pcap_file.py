@@ -47,7 +47,8 @@ def pcap_file(filepath, msg_queue):
          "Reading packets from the \"{}\" file..."
          "".format(filepath)))
     config.entry["pkt_num"] = 0
-    for pkt in PcapReader(filepath):
+    pcap_reader = PcapReader(filepath)
+    for pkt in pcap_reader:
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
         config.entry["pkt_time"] = float(pkt.time)
@@ -70,6 +71,7 @@ def pcap_file(filepath, msg_queue):
         config.reset_entries(keep=["pcap_directory",
                                    "pcap_filename",
                                    "pkt_num"])
+    pcap_reader.close()
 
     # Log the number of parsed packets from this pcap file
     msg_queue.put(
