@@ -196,6 +196,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
 
     # Log a summary of the generated warnings
     warnings = config.db.fetch_values(["warning_msg"], None, True)
+    warnings.sort(key=config.custom_sorter)
     for warning in warnings:
         message = warning[0]
         if message is None:
@@ -206,6 +207,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
 
     # Log a summary of the generated errors
     errors = config.db.fetch_values(["error_msg"], None, True)
+    errors.sort(key=config.custom_sorter)
     for error in errors:
         message = error[0]
         if message is None:
