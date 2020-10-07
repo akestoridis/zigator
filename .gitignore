@@ -6,3 +6,4 @@ build/
 dist/
 venv/
 zigator/VERSION.txt
+zigator/tests/*.db
