@@ -1,5 +1,10 @@
+include .gitattributes
+include .gitignore
 include LICENSE.txt
 include MANIFEST.in
 include README.md
 include requirements.txt
 include zigator/VERSION.txt
+recursive-include .githooks *
+recursive-include .github/workflows *
+recursive-include zigator/tests/data *
