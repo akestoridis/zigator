@@ -201,7 +201,7 @@ def get_mac_disassoc_reason(pkt):
 
 
 def get_mac_gtsreq_dir(pkt):
-    gts_directions = {
+    gts_direction = {
         0: "Transmit-Only GTS",
         1: "Receive-Only GTS"
     }
@@ -438,7 +438,7 @@ def mac_command(pkt, msg_queue):
         mac_gtsreq(pkt)
         return
     else:
-        conflig.entry["error_msg"] = "Unknown MAC Command"
+        config.entry["error_msg"] = "Unknown MAC Command"
         return
 
 

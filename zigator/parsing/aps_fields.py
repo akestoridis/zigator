@@ -464,7 +464,7 @@ def aps_transportkey(pkt, msg_queue):
 
         # Partner Extended Address field (8 bytes)
         config.entry["aps_transportkey_prtextendedaddr"] = format(
-            pkt[ZigbeeAppCommandPaylad].partner_addr, "016x")
+            pkt[ZigbeeAppCommandPayload].partner_addr, "016x")
 
         # Initiator Flag field (1 byte)
         config.entry["aps_transportkey_initflag"] = get_aps_initflag(pkt)
@@ -518,7 +518,7 @@ def aps_requestkey(pkt):
             == "Application Link Key"):
         # Partner Extended Address field (8 bytes)
         config.entry["aps_requestkey_prtextendedaddr"] = format(
-            pkt[ZigbeeAppCommandPaylad].partner_addr, "016x")
+            pkt[ZigbeeAppCommandPayload].partner_addr, "016x")
 
         return
     elif (config.entry["aps_requestkey_reqkeytype"]
