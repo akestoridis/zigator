@@ -68,7 +68,7 @@ class TestCLI(unittest.TestCase):
             captured_output)
         self.assertIsNotNone(match)
 
-    def test_zigator_version_short(self):
+    def test_zigator_version_long(self):
         """Test the --version argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
