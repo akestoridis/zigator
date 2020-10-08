@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import re
 import sqlite3
 import unittest
@@ -37,6 +38,32 @@ class TestParsing(unittest.TestCase):
                 pcap_directory,
                 db_filepath,
             ])
+        self.assertLoggingOutput(cm)
+
+        connection = sqlite3.connect(db_filepath)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT name FROM sqlite_master "
+            "WHERE type=\"table\" "
+            "ORDER BY name")
+        self.assertEqual(
+            cursor.fetchall(), [
+                ("addresses",),
+                ("devices",),
+                ("networks",),
+                ("packets",),
+                ("pairs",)
+            ])
+        self.assertAddressesTable(cursor)
+        self.assertDevicesTable(cursor)
+        self.assertNetworksTable(cursor)
+        self.assertPacketsTable(cursor)
+        self.assertPairsTable(cursor)
+        cursor.close()
+        connection.close()
+
+    def assertLoggingOutput(self, cm):
         self.assertEqual(len(cm.output), 20)
 
         self.assertTrue(re.search(
@@ -112,22 +139,7 @@ class TestParsing(unittest.TestCase):
             r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
             cm.output[19]) is not None)
 
-        connection = sqlite3.connect(db_filepath)
-        connection.text_factory = str
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT name FROM sqlite_master "
-            "WHERE type=\"table\" "
-            "ORDER BY name")
-        self.assertEqual(
-            cursor.fetchall(), [
-                ("addresses",),
-                ("devices",),
-                ("networks",),
-                ("packets",),
-                ("pairs",)
-            ])
-
+    def assertAddressesTable(self, cursor):
         cursor.execute("SELECT * FROM addresses")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
@@ -139,6 +151,7 @@ class TestParsing(unittest.TestCase):
         cursor.execute("SELECT COUNT(*) FROM addresses")
         self.assertEqual(cursor.fetchall(), [(0,)])
 
+    def assertDevicesTable(self, cursor):
         cursor.execute("SELECT * FROM devices")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
@@ -150,6 +163,18 @@ class TestParsing(unittest.TestCase):
         cursor.execute("SELECT COUNT(*) FROM devices")
         self.assertEqual(cursor.fetchall(), [(0,)])
 
+    def assertNetworksTable(self, cursor):
+        cursor.execute("SELECT * FROM networks")
+        col_names = [col_name[0] for col_name in cursor.description]
+        self.assertEqual(
+            col_names, [
+                "epid",
+                "panids",
+            ])
+        cursor.execute("SELECT COUNT(*) FROM networks")
+        self.assertEqual(cursor.fetchall(), [(0,)])
+
+    def assertPacketsTable(self, cursor):
         cursor.execute("SELECT * FROM packets")
         table_columns = list(enumerate(
             [col_name[0] for col_name in cursor.description]))
@@ -521,6 +546,7 @@ class TestParsing(unittest.TestCase):
         ]
         self.assert_entries(obtained_entries, expected_entries)
 
+    def assertPairsTable(self, cursor):
         cursor.execute("SELECT * FROM pairs")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
@@ -533,9 +559,6 @@ class TestParsing(unittest.TestCase):
             ])
         cursor.execute("SELECT COUNT(*) FROM pairs")
         self.assertEqual(cursor.fetchall(), [(0,)])
-
-        cursor.close()
-        connection.close()
 
     def obtain_entries(self, pkt_row, table_columns):
         self.assertEqual(len(pkt_row), 1)
