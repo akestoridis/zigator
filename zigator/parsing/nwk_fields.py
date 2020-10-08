@@ -878,8 +878,8 @@ def nwk_auxiliary(pkt, msg_queue):
     # Attempt to decrypt the payload
     nwk_header = pkt[ZigbeeNWK].copy()
     nwk_header.remove_payload()
-    header = raw(nwk_header)
-    sec_control = raw(pkt[ZigbeeSecurityHeader])[0]
+    header = bytes(nwk_header)
+    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
     enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
     for source_addr in potential_sources:

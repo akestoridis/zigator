@@ -753,8 +753,8 @@ def aps_auxiliary(pkt, msg_queue):
     else:
         aps_header = pkt[ZigbeeAppDataPayload].copy()
         aps_header.remove_payload()
-        header = raw(aps_header)
-    sec_control = raw(pkt[ZigbeeSecurityHeader])[0]
+        header = bytes(aps_header)
+    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
     enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
     mic = pkt[ZigbeeSecurityHeader].data[-4:]
     for source_addr in potential_sources:

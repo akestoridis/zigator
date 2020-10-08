@@ -586,7 +586,7 @@ def mac_fields(pkt, msg_queue):
         )
         return
 
-    comp_fcs = struct.unpack("<H", pkt.compute_fcs(raw(pkt)[:-2]))[0]
+    comp_fcs = struct.unpack("<H", pkt.compute_fcs(bytes(pkt)[:-2]))[0]
     if pkt[Dot15d4FCS].fcs != comp_fcs:
         msg_queue.put(
             (config.DEBUG_MSG,
