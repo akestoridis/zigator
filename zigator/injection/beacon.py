@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import *
+from scapy.all import Dot15d4Beacon
+from scapy.all import Dot15d4FCS
+from scapy.all import ZigBeeBeacon
 
 
 def beacon(mac_seqnum, panid, srcshortaddr, pancoord, assocpermit, devdepth,

@@ -14,7 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import *
+from scapy.all import Dot15d4Data
+from scapy.all import Dot15d4FCS
+from scapy.all import ZigbeeNWK
+from scapy.all import ZigbeeNWKCommandPayload
 
 
 def rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr, nwk_seqnum,

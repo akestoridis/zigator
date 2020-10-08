@@ -15,6 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import socket
 
 from .beacon import beacon
 from .beaconreq import beaconreq
