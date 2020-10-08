@@ -184,7 +184,7 @@ class TestParsing(unittest.TestCase):
                 "pcap_filename",
                 "pkt_num",
                 "pkt_time",
-                "pkt_raw",
+                "pkt_bytes",
                 "pkt_show",
                 "phy_length",
                 "mac_fcs",
@@ -425,7 +425,7 @@ class TestParsing(unittest.TestCase):
             ("pcap_filename", "00-wrong-data-link-type.pcap"),
             ("pkt_num", 1),
             ("pkt_time", 1599995905.0),
-            ("pkt_raw",
+            ("pkt_bytes",
                 "00000000000000000000000008004500"
                 "003c41cd40004006faec7f0000017f00"
                 "0001d6461389bb32481a00000000a002"
@@ -448,7 +448,7 @@ class TestParsing(unittest.TestCase):
             ("pcap_filename", "01-phy-testing.pcap"),
             ("pkt_num", 1),
             ("pkt_time", 1599996161.0),
-            ("pkt_raw", "02008971ac"),
+            ("pkt_bytes", "02008971ac"),
             ("pkt_show", None),
             ("phy_length", 5),
             ("mac_fcs", "0xac71"),
@@ -478,7 +478,7 @@ class TestParsing(unittest.TestCase):
             ("pcap_filename", "01-phy-testing.pcap"),
             ("pkt_num", 2),
             ("pkt_time", 1599996162.0),
-            ("pkt_raw", "0308cbffffffff076e03"),
+            ("pkt_bytes", "0308cbffffffff076e03"),
             ("pkt_show", None),
             ("phy_length", 10),
             ("mac_fcs", "0x036e"),
@@ -515,7 +515,7 @@ class TestParsing(unittest.TestCase):
             ("pcap_filename", "01-phy-testing.pcap"),
             ("pkt_num", 3),
             ("pkt_time", 1599996163.0),
-            ("pkt_raw", "d5"),
+            ("pkt_bytes", "d5"),
             ("pkt_show", None),
             ("error_msg", "PE101: Invalid packet length")
         ]
@@ -532,7 +532,7 @@ class TestParsing(unittest.TestCase):
             ("pcap_filename", "01-phy-testing.pcap"),
             ("pkt_num", 4),
             ("pkt_time", 1599996164.0),
-            ("pkt_raw",
+            ("pkt_bytes",
                 "0102030405060708090a0b0c0d0e0f10"
                 "1112131415161718191a1b1c1d1e1f20"
                 "2122232425262728292a2b2c2d2e2f30"

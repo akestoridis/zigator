@@ -52,7 +52,7 @@ def pcap_file(filepath, msg_queue):
         # Collect some data about the packet
         config.entry["pkt_num"] += 1
         config.entry["pkt_time"] = float(pkt.time)
-        config.entry["pkt_raw"] = bytes(pkt).hex()
+        config.entry["pkt_bytes"] = bytes(pkt).hex()
         config.entry["pkt_show"] = pkt.show(dump=True)
 
         # Collect more data about the packet from the PHY layer and onward

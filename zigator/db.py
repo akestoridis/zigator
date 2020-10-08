@@ -29,7 +29,7 @@ PKT_COLUMNS = [
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
     ("pkt_time", "REAL"),
-    ("pkt_raw", "TEXT"),
+    ("pkt_bytes", "TEXT"),
     ("pkt_show", "TEXT"),
     ("phy_length", "INTEGER"),
     ("mac_fcs", "TEXT"),
@@ -268,7 +268,7 @@ CONSTRAINED_PKT_COLUMNS = set([
     "pcap_filename",
     "pkt_num",
     "pkt_time",
-    "pkt_raw",
+    "pkt_bytes",
     "pkt_show",
 ])
 
