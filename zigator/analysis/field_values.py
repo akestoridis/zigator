@@ -129,6 +129,69 @@ PACKET_TYPES = [
             ("nwk_cmd_id", "NWK End Device Timeout Response"),
         ),
     ),
+    (
+        "mac_assocreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Association Request"),
+        ),
+    ),
+    (
+        "mac_assocrsp.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Association Response"),
+        ),
+    ),
+    (
+        "mac_disassoc.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Disassociation Notification"),
+        ),
+    ),
+    (
+        "mac_datareq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Data Request"),
+        ),
+    ),
+    (
+        "mac_conflictnotif.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC PAN ID Conflict Notification"),
+        ),
+    ),
+    (
+        "mac_orphannotif.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Orphan Notification"),
+        ),
+    ),
+    (
+        "mac_beaconreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Beacon Request"),
+        ),
+    ),
+    (
+        "mac_realign.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC Coordinator Realignment"),
+        ),
+    ),
+    (
+        "mac_gtsreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "MAC GTS Request"),
+        ),
+    ),
 ]
 
 
