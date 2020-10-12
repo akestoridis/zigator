@@ -405,13 +405,13 @@ def rm_config_entry(entry_type, entry_name):
 
 def print_config():
     logging.info("Printing the current configuration...")
-    print("\nNetwork Keys:")
-    for key_name in network_keys.keys():
+    print("Network keys:")
+    for key_name in sorted(network_keys.keys()):
         print("{}\t{}".format(network_keys[key_name].hex(), key_name))
-    print("\nLink Keys:")
-    for key_name in link_keys.keys():
+    print("\nLink keys:")
+    for key_name in sorted(link_keys.keys()):
         print("{}\t{}".format(link_keys[key_name].hex(), key_name))
     print("\nInstall codes:")
-    for code_name in install_codes.keys():
+    for code_name in sorted(install_codes.keys()):
         print("{}\t{}".format(install_codes[code_name].hex(), code_name))
     print("\nConfiguration directory: \"{}\"".format(CONFIG_DIR))
