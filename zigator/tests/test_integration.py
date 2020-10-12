@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import contextlib
+import io
 import os
 import re
 import sqlite3
@@ -26,11 +28,103 @@ import zigator
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-class TestParsing(unittest.TestCase):
-    def test_zigator_parse_info(self):
-        """Test the parsing of pcap files with INFO logging."""
+class TestIntegration(unittest.TestCase):
+    def test_integration_info(self):
+        """Test integration with INFO logging."""
+        tmp_stdout = io.StringIO()
+        with contextlib.redirect_stdout(tmp_stdout):
+            with self.assertLogs(level="INFO") as cm:
+                zigator.main([
+                    "zigator",
+                    "print-config",
+                ])
+        captured_output = tmp_stdout.getvalue().rstrip()
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(re.search(
+            r"^INFO:root:Started Zigator version "
+            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
+            cm.output[0]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Printing the current configuration...$",
+            cm.output[1]) is not None)
+        config_list = captured_output.split("\n\n")
+        self.assertEqual(len(config_list), 4)
+        network_keys = config_list[0].split("\n")
+        self.assertGreater(len(network_keys), 0)
+        self.assertEqual(network_keys[0], "Network keys:")
+        for i in range(1, len(network_keys)):
+            self.assertGreater(len(network_keys[i]), 33)
+            self.assertNotEqual(
+                network_keys[i][:33],
+                "11111111111111111111111111111111\t")
+            self.assertNotEqual(
+                network_keys[i][33:],
+                "test_11111111111111111111111111111111")
+        link_keys = config_list[1].split("\n")
+        self.assertGreater(len(link_keys), 0)
+        self.assertEqual(link_keys[0], "Link keys:")
+        install_codes = config_list[2].split("\n")
+        self.assertGreater(len(install_codes), 0)
+        self.assertEqual(install_codes[0], "Install codes:")
+        self.assertTrue(re.search(
+            r"^Configuration directory: \".+zigator\"$",
+            config_list[3]) is not None)
+
+        with self.assertLogs(level="INFO") as cm:
+            zigator.main([
+                "zigator",
+                "add-config-entry",
+                "network-key",
+                "11111111111111111111111111111111",
+                "test_11111111111111111111111111111111",
+            ])
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(re.search(
+            r"^INFO:root:Started Zigator version "
+            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
+            cm.output[0]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Saved the network key "
+            r"11111111111111111111111111111111 in the "
+            r"\".+network-keys.tsv\" configuration file$",
+            cm.output[1]) is not None)
+
+        tmp_stdout = io.StringIO()
+        with contextlib.redirect_stdout(tmp_stdout):
+            with self.assertLogs(level="INFO") as cm:
+                zigator.main([
+                    "zigator",
+                    "print-config",
+                ])
+        captured_output = tmp_stdout.getvalue().rstrip()
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(re.search(
+            r"^INFO:root:Started Zigator version "
+            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
+            cm.output[0]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Printing the current configuration...$",
+            cm.output[1]) is not None)
+        config_list = captured_output.split("\n\n")
+        self.assertEqual(len(config_list), 4)
+        network_keys = config_list[0].split("\n")
+        self.assertGreater(len(network_keys), 0)
+        self.assertEqual(network_keys[0], "Network keys:")
+        self.assertTrue(
+            "11111111111111111111111111111111\t"
+            "test_11111111111111111111111111111111" in network_keys)
+        link_keys = config_list[1].split("\n")
+        self.assertGreater(len(link_keys), 0)
+        self.assertEqual(link_keys[0], "Link keys:")
+        install_codes = config_list[2].split("\n")
+        self.assertGreater(len(install_codes), 0)
+        self.assertEqual(install_codes[0], "Install codes:")
+        self.assertTrue(re.search(
+            r"^Configuration directory: \".+zigator\"$",
+            config_list[3]) is not None)
+
         pcap_directory = os.path.join(DIR_PATH, "data")
-        db_filepath = os.path.join(DIR_PATH, "info-parsing-test.db")
+        db_filepath = os.path.join(DIR_PATH, "info-logging.db")
         with self.assertLogs(level="INFO") as cm:
             zigator.main([
                 "zigator",
@@ -62,6 +156,63 @@ class TestParsing(unittest.TestCase):
         self.assertPairsTable(cursor)
         cursor.close()
         connection.close()
+
+        with self.assertLogs(level="INFO") as cm:
+            zigator.main([
+                "zigator",
+                "rm-config-entry",
+                "network-key",
+                "test_11111111111111111111111111111111",
+            ])
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(re.search(
+            r"^INFO:root:Started Zigator version "
+            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
+            cm.output[0]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Removed the "
+            r"\"test_11111111111111111111111111111111\" network key "
+            r"from the \".+network-keys.tsv\" configuration file$",
+            cm.output[1]) is not None)
+
+        tmp_stdout = io.StringIO()
+        with contextlib.redirect_stdout(tmp_stdout):
+            with self.assertLogs(level="INFO") as cm:
+                zigator.main([
+                    "zigator",
+                    "print-config",
+                ])
+        captured_output = tmp_stdout.getvalue().rstrip()
+        self.assertEqual(len(cm.output), 2)
+        self.assertTrue(re.search(
+            r"^INFO:root:Started Zigator version "
+            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
+            cm.output[0]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Printing the current configuration...$",
+            cm.output[1]) is not None)
+        config_list = captured_output.split("\n\n")
+        self.assertEqual(len(config_list), 4)
+        network_keys = config_list[0].split("\n")
+        self.assertGreater(len(network_keys), 0)
+        self.assertEqual(network_keys[0], "Network keys:")
+        for i in range(1, len(network_keys)):
+            self.assertGreater(len(network_keys[i]), 33)
+            self.assertNotEqual(
+                network_keys[i][:33],
+                "11111111111111111111111111111111\t")
+            self.assertNotEqual(
+                network_keys[i][33:],
+                "test_11111111111111111111111111111111")
+        link_keys = config_list[1].split("\n")
+        self.assertGreater(len(link_keys), 0)
+        self.assertEqual(link_keys[0], "Link keys:")
+        install_codes = config_list[2].split("\n")
+        self.assertGreater(len(install_codes), 0)
+        self.assertEqual(install_codes[0], "Install codes:")
+        self.assertTrue(re.search(
+            r"^Configuration directory: \".+zigator\"$",
+            config_list[3]) is not None)
 
     def assertLoggingOutput(self, cm):
         self.assertEqual(len(cm.output), 24)
