@@ -85,7 +85,10 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
 
     # Determine the number of processes that will be used
     if num_workers is None:
-        num_workers = len(os.sched_getaffinity(0))
+        if hasattr(os, "sched_getaffinity"):
+            num_workers = len(os.sched_getaffinity(0)) - 1
+        else:
+            num_workers = mp.cpu_count() - 1
     if num_workers < 1:
         num_workers = 1
     logging.info("Computing the frequency of values "
