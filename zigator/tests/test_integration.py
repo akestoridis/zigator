@@ -221,14 +221,14 @@ class TestIntegration(unittest.TestCase):
             config_list[3]) is not None)
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 28)
+        self.assertEqual(len(cm.output), 37)
 
         self.assertTrue(re.search(
             r"^INFO:root:Started Zigator version "
             r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
             cm.output[0]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Detected 4 pcap files in the \".+data\" directory$",
+            r"^INFO:root:Detected 7 pcap files in the \".+data\" directory$",
             cm.output[1]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:The pcap files will be parsed "
@@ -238,96 +238,129 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+00-wrong-data-link-type.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 1 packets from the "
             r"\".+00-wrong-data-link-type.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 1 out of the 4 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            r"^INFO:root:Parsed 1 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+01-phy-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 4 packets from the "
             r"\".+01-phy-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 2 out of the 4 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            r"^INFO:root:Parsed 2 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+02-mac-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 10 packets from the "
             r"\".+02-mac-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 3 out of the 4 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            r"^INFO:root:Parsed 3 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+03-nwk-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 15 packets from the "
             r"\".+03-nwk-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            log_msg) is not None for log_msg in cm.output[3:24]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 4 out of the 4 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:15]))
+            r"^INFO:root:Parsed 4 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Reading packets from the "
+            r"\".+04-aps-testing.pcap\" file...$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 1 packets from the "
+            r"\".+04-aps-testing.pcap\" file$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 5 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Reading packets from the "
+            r"\".+05-zdp-testing.pcap\" file...$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 1 packets from the "
+            r"\".+05-zdp-testing.pcap\" file$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 6 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Reading packets from the "
+            r"\".+06-zcl-testing.pcap\" file...$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 1 packets from the "
+            r"\".+06-zcl-testing.pcap\" file$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 7 out of the 7 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:24]))
 
         self.assertTrue(re.search(
             r"^INFO:root:All ([1-9]|[1-9][0-9]+) workers "
             r"completed their tasks$",
-            cm.output[15]) is not None)
+            cm.output[24]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Sniffed 0 previously unknown network keys$",
-            cm.output[16]) is not None)
+            cm.output[25]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Sniffed 0 previously unknown link keys$",
-            cm.output[17]) is not None)
+            cm.output[26]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the EPID of 1 networks$",
-            cm.output[18]) is not None)
+            cm.output[27]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the extended address of 10 devices$",
-            cm.output[19]) is not None)
+            cm.output[28]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the short-to-extended "
-            r"address mapping of 10 devices$",
-            cm.output[20]) is not None)
+            r"address mapping of 12 devices$",
+            cm.output[29]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered 8 flows of MAC Data packets$",
-            cm.output[21]) is not None)
+            r"^INFO:root:Discovered 10 flows of MAC Data packets$",
+            cm.output[30]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Updating the database...$",
-            cm.output[22]) is not None)
+            cm.output[31]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Finished updating the database$",
-            cm.output[23]) is not None)
+            cm.output[32]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PW301: "
             r"Unable to decrypt the NWK payload\" parsing warnings$",
-            cm.output[24]) is not None)
+            cm.output[33]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 2 \"PE101: "
             r"Invalid packet length\" parsing errors$",
-            cm.output[25]) is not None)
+            cm.output[34]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE102: "
             r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
-            cm.output[26]) is not None)
+            cm.output[35]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE202: "
             r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
-            cm.output[27]) is not None)
+            cm.output[36]) is not None)
 
     def assertAddressesTable(self, cursor):
-        cursor.execute("SELECT * FROM addresses ORDER BY extendedaddr")
+        cursor.execute("SELECT * FROM addresses ORDER BY extendedaddr, panid")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
             col_names, [
@@ -337,12 +370,14 @@ class TestIntegration(unittest.TestCase):
             ])
         self.assertEqual(
             cursor.fetchall(), [
-                ("0xf001", "0xddee", "1122334444332211"),
                 ("0xb000", "0x9999", "1122334444332211"),
+                ("0xf001", "0xddee", "1122334444332211"),
                 ("0xdead", "0x99aa", "1122334455667788"),
                 ("0x0000", "0x7777", "7777770000000001"),
+                ("0x0000", "0xdddd", "7777770000000001"),
                 ("0x1101", "0x7777", "7777770000000002"),
                 ("0x1102", "0x7777", "7777770000000003"),
+                ("0x1102", "0xdddd", "7777770000000003"),
                 ("0x2201", "0x7777", "7777770000000004"),
                 ("0x2202", "0x7777", "7777770000000005"),
                 ("0x50fa", "0xddee", "b19b10a7ed0ff1ce"),
@@ -2268,13 +2303,269 @@ class TestIntegration(unittest.TestCase):
                 ("der_nwk_srcpanid", "0x9999"),
                 ("der_nwk_srcshortaddr", "0xb000"),
                 ("der_nwk_srcextendedaddr", "1122334444332211"),
-                ("warning_msg", "PW301: Unable to decrypt the NWK payload")
+                ("warning_msg", "PW301: Unable to decrypt the NWK payload"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599996929.0),
+                ("pkt_bytes", "618800dddd000002110802000002111e"
+                              "f028002800000300000000777777002f"
+                              "0b86a79f3c0c0bae0f4915355e"),
+                ("pkt_show", None),
+                ("phy_length", 45),
+                ("mac_fcs", "0x5e35"),
+                ("mac_frametype", "MAC Data"),
+                ("mac_security", "MAC Security Disabled"),
+                ("mac_framepending",
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "Short destination MAC address"),
+                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_seqnum", 0),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x0000"),
+                ("mac_srcshortaddr", "0x1102"),
+                ("nwk_frametype", "NWK Data"),
+                ("nwk_protocolversion", "Zigbee PRO"),
+                ("nwk_discroute", "Suppress route discovery"),
+                ("nwk_multicast", "NWK Multicast Disabled"),
+                ("nwk_security", "NWK Security Enabled"),
+                ("nwk_srcroute", "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x0000"),
+                ("nwk_srcshortaddr", "0x1102"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 240),
+                ("nwk_aux_seclevel", "None"),
+                ("nwk_aux_keytype", "Network Key"),
+                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_framecounter", 10240),
+                ("nwk_aux_srcaddr", "7777770000000003"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000003"),
+                ("nwk_aux_decpayload", "020005000000004e"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "APS Acknowledgment"),
+                ("aps_delmode", "Normal unicast delivery"),
+                ("aps_ackformat", "APS ACK Format Disabled"),
+                ("aps_security", "APS Security Disabled"),
+                ("aps_ackreq", "The sender does not request an APS ACK"),
+                ("aps_exthdr", "The extended header is not included"),
+                ("aps_dstendpoint", 0),
+                ("aps_clusterid", "0x0005"),
+                ("aps_clustername", "Active_EP_req"),
+                ("aps_profileid", "0x0000"),
+                ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+                ("aps_srcendpoint", 0),
+                ("aps_counter", 78),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Router"),
+                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Router"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x0000"),
+                ("der_mac_dstextendedaddr", "7777770000000001"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x1102"),
+                ("der_mac_srcextendedaddr", "7777770000000003"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x0000"),
+                ("der_nwk_dstextendedaddr", "7777770000000001"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x1102"),
+                ("der_nwk_srcextendedaddr", "7777770000000003"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "05-zdp-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599997185.0),
+                ("pkt_bytes", "418840ddddffff02110812fdff02111e"
+                              "c0030000000077777728f02800000300"
+                              "000000777777003ff95cf26fbd92a1eb"
+                              "609e76862aa4a1967eebc4dd2ab50c9d"),
+                ("pkt_show", None),
+                ("phy_length", 64),
+                ("mac_fcs", "0x9d0c"),
+                ("mac_frametype", "MAC Data"),
+                ("mac_security", "MAC Security Disabled"),
+                ("mac_framepending",
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq",
+                    "The sender does not request a MAC Acknowledgment"),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "Short destination MAC address"),
+                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_seqnum", 64),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0xffff"),
+                ("mac_srcshortaddr", "0x1102"),
+                ("nwk_frametype", "NWK Data"),
+                ("nwk_protocolversion", "Zigbee PRO"),
+                ("nwk_discroute", "Suppress route discovery"),
+                ("nwk_multicast", "NWK Multicast Disabled"),
+                ("nwk_security", "NWK Security Enabled"),
+                ("nwk_srcroute", "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "NWK Extended Source Included"),
+                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0xfffd"),
+                ("nwk_srcshortaddr", "0x1102"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 192),
+                ("nwk_srcextendedaddr", "7777770000000003"),
+                ("nwk_aux_seclevel", "None"),
+                ("nwk_aux_keytype", "Network Key"),
+                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_framecounter", 10480),
+                ("nwk_aux_srcaddr", "7777770000000003"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000003"),
+                ("nwk_aux_decpayload", "08000000000000e98501000000007777"
+                                       "770000"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "APS Data"),
+                ("aps_delmode", "Broadcast"),
+                ("aps_ackformat", "APS ACK Format Disabled"),
+                ("aps_security", "APS Security Disabled"),
+                ("aps_ackreq", "The sender does not request an APS ACK"),
+                ("aps_exthdr", "The extended header is not included"),
+                ("aps_dstendpoint", 0),
+                ("aps_clusterid", "0x0000"),
+                ("aps_clustername", "NWK_addr_req"),
+                ("aps_profileid", "0x0000"),
+                ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+                ("aps_srcendpoint", 0),
+                ("aps_counter", 233),
+                ("zdp_seqnum", 133),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Broadcast"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Router"),
+                ("der_nwk_dsttype", "NWK Dst Type: All active receivers"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Router"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0xffff"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x1102"),
+                ("der_mac_srcextendedaddr", "7777770000000003"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0xfffd"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x1102"),
+                ("der_nwk_srcextendedaddr", "7777770000000003"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "06-zcl-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599997441.0),
+                ("pkt_bytes", "618840dddd021100000802021100001e"
+                              "c028e029000001000000007777770095"
+                              "ff22b54b9a50b6d5676b0c2f671af32c"
+                              "9042"),
+                ("pkt_show", None),
+                ("phy_length", 50),
+                ("mac_fcs", "0x4290"),
+                ("mac_frametype", "MAC Data"),
+                ("mac_security", "MAC Security Disabled"),
+                ("mac_framepending",
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp",
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "Short destination MAC address"),
+                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_seqnum", 64),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "NWK Data"),
+                ("nwk_protocolversion", "Zigbee PRO"),
+                ("nwk_discroute", "Suppress route discovery"),
+                ("nwk_multicast", "NWK Multicast Disabled"),
+                ("nwk_security", "NWK Security Enabled"),
+                ("nwk_srcroute", "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x1102"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 192),
+                ("nwk_aux_seclevel", "None"),
+                ("nwk_aux_keytype", "Network Key"),
+                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_framecounter", 10720),
+                ("nwk_aux_srcaddr", "7777770000000001"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000001"),
+                ("nwk_aux_decpayload", "40010000040101500000000100"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "APS Data"),
+                ("aps_delmode", "Normal unicast delivery"),
+                ("aps_ackformat", "APS ACK Format Disabled"),
+                ("aps_security", "APS Security Disabled"),
+                ("aps_ackreq", "The sender requests an APS ACK"),
+                ("aps_exthdr", "The extended header is not included"),
+                ("aps_dstendpoint", 1),
+                ("aps_clusterid", "0x0000"),
+                ("aps_clustername", "Basic"),
+                ("aps_profileid", "0x0104"),
+                ("aps_profilename", "Zigbee Home Automation (ZHA)"),
+                ("aps_srcendpoint", 1),
+                ("aps_counter", 80),
+                ("zcl_frametype", "Global Command"),
+                ("zcl_manufspecific", "The command is not manufacturer-specific"),
+                ("zcl_direction", "From the client to the server"),
+                ("zcl_disdefrsp", "A Default Response will be returned"),
+                ("zcl_seqnum", 0),
+                ("zcl_cmd_id", "Read Attributes"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Router"),
+                ("der_nwk_srctype", "NWK Src Type: None"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_mac_srcextendedaddr", "7777770000000001"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x1102"),
+                ("der_nwk_dstextendedaddr", "7777770000000003"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("der_nwk_srcextendedaddr", "7777770000000001"),
             ],
         ]
         self.assert_entries(obtained_entries, expected_entries)
 
     def assertPairsTable(self, cursor):
-        cursor.execute("SELECT * FROM pairs ORDER BY panid")
+        cursor.execute("SELECT * FROM pairs ORDER BY panid, dstaddr, srcaddr")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
             col_names, [
@@ -2286,13 +2577,15 @@ class TestIntegration(unittest.TestCase):
             ])
         self.assertEqual(
             cursor.fetchall(), [
-                ("0x1102", "0x1101", "0x7777", 1599996674.0, 1599996675.0),
                 ("0x1102", "0x0000", "0x7777", 1599996677.0, 1599996681.0),
+                ("0x1102", "0x1101", "0x7777", 1599996674.0, 1599996675.0),
                 ("0x2201", "0x1102", "0x7777", 1599996678.0, 1599996678.0),
-                ("0x1102", "0x2201", "0x7777", 1599996679.0, 1599996679.0),
                 ("0x2202", "0x1102", "0x7777", 1599996683.0, 1599996683.0),
+                ("0x1102", "0x2201", "0x7777", 1599996679.0, 1599996679.0),
                 ("0x1102", "0x2202", "0x7777", 1599996684.0, 1599996684.0),
                 ("0xb000", "0x0000", "0x9999", 1599996686.0, 1599996687.0),
+                ("0x1102", "0x0000", "0xdddd", 1599996929.0, 1599996929.0),
+                ("0x0000", "0x1102", "0xdddd", 1599997441.0, 1599997441.0),
                 ("0xf001", "0x0000", "0xddee", 1599996425.0, 1599996425.0),
             ])
 
