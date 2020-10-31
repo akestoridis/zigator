@@ -310,8 +310,8 @@ class TestIntegration(unittest.TestCase):
             r"^INFO:root:Finished updating the database$",
             cm.output[23]) is not None)
         self.assertTrue(re.search(
-            r"^WARNING:root:Generated 1 \"Unable "
-            r"to decrypt the NWK payload\" parsing warnings$",
+            r"^WARNING:root:Generated 1 \"PW301: "
+            r"Unable to decrypt the NWK payload\" parsing warnings$",
             cm.output[24]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 2 \"PE101: "
@@ -2268,7 +2268,7 @@ class TestIntegration(unittest.TestCase):
                 ("der_nwk_srcpanid", "0x9999"),
                 ("der_nwk_srcshortaddr", "0xb000"),
                 ("der_nwk_srcextendedaddr", "1122334444332211"),
-                ("warning_msg", "Unable to decrypt the NWK payload")
+                ("warning_msg", "PW301: Unable to decrypt the NWK payload")
             ],
         ]
         self.assert_entries(obtained_entries, expected_entries)

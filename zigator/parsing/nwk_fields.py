@@ -921,7 +921,7 @@ def nwk_auxiliary(pkt, msg_queue):
          "".format(config.entry["nwk_aux_keytype"],
                    config.entry["pkt_num"],
                    config.entry["pcap_filename"])))
-    config.entry["warning_msg"] = "Unable to decrypt the NWK payload"
+    config.entry["warning_msg"] = "PW301: Unable to decrypt the NWK payload"
     return
 
 

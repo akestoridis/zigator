@@ -815,7 +815,7 @@ def aps_auxiliary(pkt, msg_queue):
          "".format(config.entry["aps_aux_keytype"],
                    config.entry["pkt_num"],
                    config.entry["pcap_filename"])))
-    config.entry["warning_msg"] = "Unable to decrypt the APS payload"
+    config.entry["warning_msg"] = "PW401: Unable to decrypt the APS payload"
     return
 
 
