@@ -580,6 +580,7 @@ def mac_data(pkt, msg_queue):
 
 def mac_fields(pkt, msg_queue):
     """Parse IEEE 802.15.4 MAC fields."""
+    config.entry["mac_show"] = pkt.show(dump=True)
     if pkt[Dot15d4FCS].fcs is None:
         config.entry["error_msg"] = (
             "PE201: The frame check sequence (FCS) field is not included"

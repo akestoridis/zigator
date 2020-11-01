@@ -29,9 +29,14 @@ PKT_COLUMNS = [
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
     ("pkt_time", "REAL"),
-    ("pkt_bytes", "TEXT"),
-    ("pkt_show", "TEXT"),
+    ("sll_pkttype", "TEXT"),
+    ("sll_arphrdtype", "INTEGER"),
+    ("sll_addrlength", "INTEGER"),
+    ("sll_addr", "TEXT"),
+    ("sll_protocoltype", "INTEGER"),
     ("phy_length", "INTEGER"),
+    ("phy_payload", "TEXT"),
+    ("mac_show", "TEXT"),
     ("mac_fcs", "TEXT"),
     ("mac_frametype", "TEXT"),
     ("mac_security", "TEXT"),
@@ -268,8 +273,6 @@ CONSTRAINED_PKT_COLUMNS = set([
     "pcap_filename",
     "pkt_num",
     "pkt_time",
-    "pkt_bytes",
-    "pkt_show",
 ])
 
 # Initialize global variables for interacting with the database

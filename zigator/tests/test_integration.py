@@ -221,14 +221,14 @@ class TestIntegration(unittest.TestCase):
             config_list[3]) is not None)
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 37)
+        self.assertEqual(len(cm.output), 40)
 
         self.assertTrue(re.search(
             r"^INFO:root:Started Zigator version "
             r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
             cm.output[0]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Detected 7 pcap files in the \".+data\" directory$",
+            r"^INFO:root:Detected 8 pcap files in the \".+data\" directory$",
             cm.output[1]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:The pcap files will be parsed "
@@ -238,126 +238,137 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+00-wrong-data-link-type.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 1 packets from the "
             r"\".+00-wrong-data-link-type.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 1 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 1 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+01-phy-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 4 packets from the "
             r"\".+01-phy-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 2 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 2 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+02-mac-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 10 packets from the "
             r"\".+02-mac-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 3 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 3 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+03-nwk-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 15 packets from the "
             r"\".+03-nwk-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 4 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 4 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+04-aps-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 1 packets from the "
             r"\".+04-aps-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 5 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 5 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+05-zdp-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 1 packets from the "
             r"\".+05-zdp-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 6 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 6 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Reading packets from the "
             r"\".+06-zcl-testing.pcap\" file...$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
             r"^INFO:root:Parsed 1 packets from the "
             r"\".+06-zcl-testing.pcap\" file$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 7 out of the 7 pcap files$",
-            log_msg) is not None for log_msg in cm.output[3:24]))
+            r"^INFO:root:Parsed 7 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Reading packets from the "
+            r"\".+07-sll-testing.pcap\" file...$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 1 packets from the "
+            r"\".+07-sll-testing.pcap\" file$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
+        self.assertTrue(any(re.search(
+            r"^INFO:root:Parsed 8 out of the 8 pcap files$",
+            log_msg) is not None for log_msg in cm.output[3:27]))
 
         self.assertTrue(re.search(
             r"^INFO:root:All ([1-9]|[1-9][0-9]+) workers "
             r"completed their tasks$",
-            cm.output[24]) is not None)
-        self.assertTrue(re.search(
-            r"^INFO:root:Sniffed 0 previously unknown network keys$",
-            cm.output[25]) is not None)
-        self.assertTrue(re.search(
-            r"^INFO:root:Sniffed 0 previously unknown link keys$",
-            cm.output[26]) is not None)
-        self.assertTrue(re.search(
-            r"^INFO:root:Discovered the EPID of 1 networks$",
             cm.output[27]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered the extended address of 10 devices$",
+            r"^INFO:root:Sniffed 0 previously unknown network keys$",
             cm.output[28]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Sniffed 0 previously unknown link keys$",
+            cm.output[29]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Discovered the EPID of 1 networks$",
+            cm.output[30]) is not None)
+        self.assertTrue(re.search(
+            r"^INFO:root:Discovered the extended address of 10 devices$",
+            cm.output[31]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the short-to-extended "
             r"address mapping of 12 devices$",
-            cm.output[29]) is not None)
+            cm.output[32]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered 10 flows of MAC Data packets$",
-            cm.output[30]) is not None)
+            cm.output[33]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Updating the database...$",
-            cm.output[31]) is not None)
+            cm.output[34]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Finished updating the database$",
-            cm.output[32]) is not None)
+            cm.output[35]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PW301: "
             r"Unable to decrypt the NWK payload\" parsing warnings$",
-            cm.output[33]) is not None)
+            cm.output[36]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 2 \"PE101: "
             r"Invalid packet length\" parsing errors$",
-            cm.output[34]) is not None)
+            cm.output[37]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE102: "
             r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
-            cm.output[35]) is not None)
+            cm.output[38]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE202: "
             r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
-            cm.output[36]) is not None)
+            cm.output[39]) is not None)
 
     def assertAddressesTable(self, cursor):
         cursor.execute("SELECT * FROM addresses ORDER BY extendedaddr, panid")
@@ -451,9 +462,14 @@ class TestIntegration(unittest.TestCase):
                 "pcap_filename",
                 "pkt_num",
                 "pkt_time",
-                "pkt_bytes",
-                "pkt_show",
+                "sll_pkttype",
+                "sll_arphrdtype",
+                "sll_addrlength",
+                "sll_addr",
+                "sll_protocoltype",
                 "phy_length",
+                "phy_payload",
+                "mac_show",
                 "mac_fcs",
                 "mac_frametype",
                 "mac_security",
@@ -686,14 +702,6 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "00-wrong-data-link-type.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599995905.0),
-                ("pkt_bytes",
-                    "00000000000000000000000008004500"
-                    "003c41cd40004006faec7f0000017f00"
-                    "0001d6461389bb32481a00000000a002"
-                    "ffd7fe3000000204ffd70402080af3b8"
-                    "15e40000000001030307"),
-                ("pkt_show", None),
-                ("phy_length", 74),
                 ("error_msg", "PE102: There are no IEEE 802.15.4 MAC fields"),
             ],
             [
@@ -701,9 +709,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "01-phy-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599996161.0),
-                ("pkt_bytes", "02008971ac"),
-                ("pkt_show", None),
                 ("phy_length", 5),
+                ("phy_payload", "02008971ac"),
+                ("mac_show", None),
                 ("mac_fcs", "0xac71"),
                 ("mac_frametype", "MAC Acknowledgment"),
                 ("mac_security", "MAC Security Disabled"),
@@ -723,9 +731,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "01-phy-testing.pcap"),
                 ("pkt_num", 2),
                 ("pkt_time", 1599996162.0),
-                ("pkt_bytes", "0308cbffffffff076e03"),
-                ("pkt_show", None),
                 ("phy_length", 10),
+                ("phy_payload", "0308cbffffffff076e03"),
+                ("mac_show", None),
                 ("mac_fcs", "0x036e"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -752,8 +760,7 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "01-phy-testing.pcap"),
                 ("pkt_num", 3),
                 ("pkt_time", 1599996163.0),
-                ("pkt_bytes", "d5"),
-                ("pkt_show", None),
+                ("phy_length", 1),
                 ("error_msg", "PE101: Invalid packet length")
             ],
             [
@@ -761,16 +768,7 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "01-phy-testing.pcap"),
                 ("pkt_num", 4),
                 ("pkt_time", 1599996164.0),
-                ("pkt_bytes",
-                    "0102030405060708090a0b0c0d0e0f10"
-                    "1112131415161718191a1b1c1d1e1f20"
-                    "2122232425262728292a2b2c2d2e2f30"
-                    "3132333435363738393a3b3c3d3e3f40"
-                    "4142434445464748494a4b4c4d4e4f50"
-                    "5152535455565758595a5b5c5d5e5f60"
-                    "6162636465666768696a6b6c6d6e6f70"
-                    "7172737475767778797a7b7c7d7e7f80"),
-                ("pkt_show", None),
+                ("phy_length", 128),
                 ("error_msg", "PE101: Invalid packet length")
             ],
             [
@@ -778,9 +776,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599996417.0),
-                ("pkt_bytes", "1200ea7978"),
-                ("pkt_show", None),
                 ("phy_length", 5),
+                ("phy_payload", "1200ea7978"),
+                ("mac_show", None),
                 ("mac_fcs", "0x7879"),
                 ("mac_frametype", "MAC Acknowledgment"),
                 ("mac_security", "MAC Security Disabled"),
@@ -800,10 +798,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 2),
                 ("pkt_time", 1599996418.0),
-                ("pkt_bytes", "23c864aa99d0d0ffff88776655443322"
-                              "11018e2c1c"),
-                ("pkt_show", None),
                 ("phy_length", 21),
+                ("phy_payload", "23c864aa99d0d0ffff88776655443322"
+                                "11018e2c1c"),
+                ("mac_show", None),
                 ("mac_fcs", "0x1c2c"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -843,10 +841,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 3),
                 ("pkt_time", 1599996419.0),
-                ("pkt_bytes", "63cc72aa9988776655443322110dd0ee"
-                              "ffc0cef10f02adde0009e7"),
-                ("pkt_show", None),
                 ("phy_length", 27),
+                ("phy_payload", "63cc72aa9988776655443322110dd0ee"
+                                "ffc0cef10f02adde0009e7"),
+                ("mac_show", None),
                 ("mac_fcs", "0xe709"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -875,9 +873,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 4),
                 ("pkt_time", 1599996420.0),
-                ("pkt_bytes", "638832ccbb00007afe041598"),
-                ("pkt_show", None),
                 ("phy_length", 12),
+                ("phy_payload", "638832ccbb00007afe041598"),
+                ("mac_show", None),
                 ("mac_fcs", "0x9815"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -910,10 +908,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 5),
                 ("pkt_time", 1599996421.0),
-                ("pkt_bytes", "03c820ffffffffffffeeffc0ced1ba0d"
-                              "d00608a2"),
-                ("pkt_show", None),
                 ("phy_length", 20),
+                ("phy_payload", "03c820ffffffffffffeeffc0ced1ba0d"
+                                "d00608a2"),
+                ("mac_show", None),
                 ("mac_fcs", "0xa208"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -942,9 +940,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 6),
                 ("pkt_time", 1599996422.0),
-                ("pkt_bytes", "030800ffffffff073829"),
-                ("pkt_show", None),
                 ("phy_length", 10),
+                ("phy_payload", "030800ffffffff073829"),
+                ("mac_show", None),
                 ("mac_fcs", "0x2938"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -971,11 +969,11 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 7),
                 ("pkt_time", 1599996423.0),
-                ("pkt_bytes", "03cc40ffffeeffc0ced1ba0dd0eeddce"
-                              "f10feda7109bb108eeddfa5014a7b02a"
-                              "74"),
-                ("pkt_show", None),
                 ("phy_length", 33),
+                ("phy_payload", "03cc40ffffeeffc0ced1ba0dd0eeddce"
+                                "f10feda7109bb108eeddfa5014a7b02a"
+                                "74"),
+                ("mac_show", None),
                 ("mac_fcs", "0x742a"),
                 ("mac_frametype", "MAC Command"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1005,10 +1003,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 8),
                 ("pkt_time", 1599996424.0),
-                ("pkt_bytes", "008089aa99addeff0f0000002294feca"
-                              "efbeedfecefaffffff00af74"),
-                ("pkt_show", None),
                 ("phy_length", 28),
+                ("phy_payload", "008089aa99addeff0f0000002294feca"
+                                "efbeedfecefaffffff00af74"),
+                ("mac_show", None),
                 ("mac_fcs", "0x74af"),
                 ("mac_frametype", "MAC Beacon"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1060,10 +1058,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 9),
                 ("pkt_time", 1599996425.0),
-                ("pkt_bytes", "618844eedd000001f00910000001f001"
-                              "5511223344443322110680e4f3"),
-                ("pkt_show", None),
                 ("phy_length", 29),
+                ("phy_payload", "618844eedd000001f00910000001f001"
+                                "5511223344443322110680e4f3"),
+                ("mac_show", None),
                 ("mac_fcs", "0xf3e4"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1130,9 +1128,9 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "02-mac-testing.pcap"),
                 ("pkt_num", 10),
                 ("pkt_time", 1599996426.0),
-                ("pkt_bytes", "1200ea7979"),
-                ("pkt_show", None),
                 ("phy_length", 5),
+                ("phy_payload", "1200ea7979"),
+                ("mac_show", None),
                 ("error_msg", "PE202: Incorrect frame check sequence (FCS)"),
             ],
             [
@@ -1140,12 +1138,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599996673.0),
-                ("pkt_bytes", "4188657777ffff00000912fcff00001e"
-                              "a1010000000077777728112700000100"
-                              "000000777777004e131904fdab211e41"
-                              "4cb1f1"),
-                ("pkt_show", None),
                 ("phy_length", 51),
+                ("phy_payload", "4188657777ffff00000912fcff00001e"
+                                "a1010000000077777728112700000100"
+                                "000000777777004e131904fdab211e41"
+                                "4cb1f1"),
+                ("mac_show", None),
                 ("mac_fcs", "0xf1b1"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1222,13 +1220,13 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 2),
                 ("pkt_time", 1599996674.0),
-                ("pkt_bytes", "618866777701110211091a011102111d"
-                              "a2020000000077777703000000007777"
-                              "77281227000003000000007777770017"
-                              "9bab129ace96cd202519666648cca5ad"
-                              "60a8356ef620ccb7a631cf9715"),
-                ("pkt_show", None),
                 ("phy_length", 77),
+                ("phy_payload", "618866777701110211091a011102111d"
+                                "a2020000000077777703000000007777"
+                                "77281227000003000000007777770017"
+                                "9bab129ace96cd202519666648cca5ad"
+                                "60a8356ef620ccb7a631cf9715"),
+                ("mac_show", None),
                 ("mac_fcs", "0x1597"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1310,12 +1308,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 3),
                 ("pkt_time", 1599996675.0),
-                ("pkt_bytes", "618867777701110211091a000002111e"
-                              "a3010000000077777703000000007777"
-                              "772813270000030000000077777700b2"
-                              "947514e144434c0056"),
-                ("pkt_show", None),
                 ("phy_length", 57),
+                ("phy_payload", "618867777701110211091a000002111e"
+                                "a3010000000077777703000000007777"
+                                "772813270000030000000077777700b2"
+                                "947514e144434c0056"),
+                ("mac_show", None),
                 ("mac_fcs", "0x5600"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1386,11 +1384,11 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 4),
                 ("pkt_time", 1599996676.0),
-                ("pkt_bytes", "4188687777ffff02110912fdff021101"
-                              "a4030000000077777728142700000300"
-                              "0000007777770059df821d51765a1a"),
-                ("pkt_show", None),
                 ("phy_length", 47),
+                ("phy_payload", "4188687777ffff02110912fdff021101"
+                                "a4030000000077777728142700000300"
+                                "0000007777770059df821d51765a1a"),
+                ("mac_show", None),
                 ("mac_fcs", "0x1a5a"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1464,12 +1462,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 5),
                 ("pkt_time", 1599996677.0),
-                ("pkt_bytes", "618869777700000211091a000001221e"
-                              "a5010000000077777704000000007777"
-                              "77281527000003000000007777770055"
-                              "78fa0d274ff50d5bce"),
-                ("pkt_show", None),
                 ("phy_length", 57),
+                ("phy_payload", "618869777700000211091a000001221e"
+                                "a5010000000077777704000000007777"
+                                "77281527000003000000007777770055"
+                                "78fa0d274ff50d5bce"),
+                ("mac_show", None),
                 ("mac_fcs", "0xce5b"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1540,11 +1538,11 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 6),
                 ("pkt_time", 1599996678.0),
-                ("pkt_bytes", "61886a77770211012209120211012201"
-                              "a6040000000077777728162700000400"
-                              "00000077777700f358fd02788cd978"),
-                ("pkt_show", None),
                 ("phy_length", 47),
+                ("phy_payload", "61886a77770211012209120211012201"
+                                "a6040000000077777728162700000400"
+                                "00000077777700f358fd02788cd978"),
+                ("mac_show", None),
                 ("mac_fcs", "0x78d9"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1623,12 +1621,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 7),
                 ("pkt_time", 1599996679.0),
-                ("pkt_bytes", "61886b777701220211091a0122021101"
-                              "a7040000000077777703000000007777"
-                              "7728172700000300000000777777001a"
-                              "d125b694f3d1374b5d"),
-                ("pkt_show", None),
                 ("phy_length", 57),
+                ("phy_payload", "61886b777701220211091a0122021101"
+                                "a7040000000077777703000000007777"
+                                "7728172700000300000000777777001a"
+                                "d125b694f3d1374b5d"),
+                ("mac_show", None),
                 ("mac_fcs", "0x5d4b"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1699,12 +1697,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 8),
                 ("pkt_time", 1599996680.0),
-                ("pkt_bytes", "41886c7777ffff01110912fcff011101"
-                              "a8020000000077777728182700000200"
-                              "00000077777700bfd091df542acea045"
-                              "00844ba8ba"),
-                ("pkt_show", None),
                 ("phy_length", 53),
+                ("phy_payload", "41886c7777ffff01110912fcff011101"
+                                "a8020000000077777728182700000200"
+                                "00000077777700bfd091df542acea045"
+                                "00844ba8ba"),
+                ("mac_show", None),
                 ("mac_fcs", "0xbaa8"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1780,12 +1778,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 9),
                 ("pkt_time", 1599996681.0),
-                ("pkt_bytes", "61886d7777000002110912000002111e"
-                              "a9030000000077777728192700000300"
-                              "000000777777007253e1c7f063d359df"
-                              "2882b0f45213a5ba20"),
-                ("pkt_show", None),
                 ("phy_length", 57),
+                ("phy_payload", "61886d7777000002110912000002111e"
+                                "a9030000000077777728192700000300"
+                                "000000777777007253e1c7f063d359df"
+                                "2882b0f45213a5ba20"),
+                ("mac_show", None),
                 ("mac_fcs", "0x20ba"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1857,12 +1855,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 10),
                 ("pkt_time", 1599996682.0),
-                ("pkt_bytes", "41886e7777ffff00000912ffff00001e"
-                              "aa0100000000777777281a2700000100"
-                              "000000777777005a913c15e8babd543c"
-                              "8b812a34cad8d32ec0fe"),
-                ("pkt_show", None),
                 ("phy_length", 58),
+                ("phy_payload", "41886e7777ffff00000912ffff00001e"
+                                "aa0100000000777777281a2700000100"
+                                "000000777777005a913c15e8babd543c"
+                                "8b812a34cad8d32ec0fe"),
+                ("mac_show", None),
                 ("mac_fcs", "0xfec0"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -1934,12 +1932,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 11),
                 ("pkt_time", 1599996683.0),
-                ("pkt_bytes", "61886f777702110222091a0211022201"
-                              "ab030000000077777705000000007777"
-                              "77281b270000050000000077777700d7"
-                              "24e5e1132d07b3a5"),
-                ("pkt_show", None),
                 ("phy_length", 56),
+                ("phy_payload", "61886f777702110222091a0211022201"
+                                "ab030000000077777705000000007777"
+                                "77281b270000050000000077777700d7"
+                                "24e5e1132d07b3a5"),
+                ("mac_show", None),
                 ("mac_fcs", "0xa5b3"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2010,12 +2008,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 12),
                 ("pkt_time", 1599996684.0),
-                ("pkt_bytes", "618870777702220211091a0222021101"
-                              "ac050000000077777703000000007777"
-                              "77281c27000003000000007777770039"
-                              "dd4715cd65c49785"),
-                ("pkt_show", None),
                 ("phy_length", 56),
+                ("phy_payload", "618870777702220211091a0222021101"
+                                "ac050000000077777703000000007777"
+                                "77281c27000003000000007777770039"
+                                "dd4715cd65c49785"),
+                ("mac_show", None),
                 ("mac_fcs", "0x8597"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2089,13 +2087,13 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 13),
                 ("pkt_time", 1599996685.0),
-                ("pkt_bytes", "4188717777ffff01110812fdff01111e"
-                              "ad0200000000777777281d2700000200"
-                              "0000007777770057c6f9c760d6a6a245"
-                              "23068b5509399352c48474caa3791465"
-                              "f5"),
-                ("pkt_show", None),
                 ("phy_length", 65),
+                ("phy_payload", "4188717777ffff01110812fdff01111e"
+                                "ad0200000000777777281d2700000200"
+                                "0000007777770057c6f9c760d6a6a245"
+                                "23068b5509399352c48474caa3791465"
+                                "f5"),
+                ("mac_show", None),
                 ("mac_fcs", "0xf565"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2175,10 +2173,10 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 14),
                 ("pkt_time", 1599996686.0),
-                ("pkt_bytes", "6188729999000000b00910000000b001"
-                              "ae11223344443322110680fe8d"),
-                ("pkt_show", None),
                 ("phy_length", 29),
+                ("phy_payload", "6188729999000000b00910000000b001"
+                                "ae11223344443322110680fe8d"),
+                ("mac_show", None),
                 ("mac_fcs", "0x8dfe"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2245,11 +2243,11 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "03-nwk-testing.pcap"),
                 ("pkt_num", 15),
                 ("pkt_time", 1599996687.0),
-                ("pkt_bytes", "6188739999000000b00912000000b001"
-                              "af1122334444332211281f2700001122"
-                              "334444332211004bf59324ae58a8a8"),
-                ("pkt_show", None),
                 ("phy_length", 47),
+                ("phy_payload", "6188739999000000b00912000000b001"
+                                "af1122334444332211281f2700001122"
+                                "334444332211004bf59324ae58a8a8"),
+                ("mac_show", None),
                 ("mac_fcs", "0xa8a8"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2310,11 +2308,11 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "04-aps-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599996929.0),
-                ("pkt_bytes", "618800dddd000002110802000002111e"
-                              "f028002800000300000000777777002f"
-                              "0b86a79f3c0c0bae0f4915355e"),
-                ("pkt_show", None),
                 ("phy_length", 45),
+                ("phy_payload", "618800dddd000002110802000002111e"
+                                "f028002800000300000000777777002f"
+                                "0b86a79f3c0c0bae0f4915355e"),
+                ("mac_show", None),
                 ("mac_fcs", "0x5e35"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2392,12 +2390,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "05-zdp-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599997185.0),
-                ("pkt_bytes", "418840ddddffff02110812fdff02111e"
-                              "c0030000000077777728f02800000300"
-                              "000000777777003ff95cf26fbd92a1eb"
-                              "609e76862aa4a1967eebc4dd2ab50c9d"),
-                ("pkt_show", None),
                 ("phy_length", 64),
+                ("phy_payload", "418840ddddffff02110812fdff02111e"
+                                "c0030000000077777728f02800000300"
+                                "000000777777003ff95cf26fbd92a1eb"
+                                "609e76862aa4a1967eebc4dd2ab50c9d"),
+                ("mac_show", None),
                 ("mac_fcs", "0x9d0c"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2477,12 +2475,12 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "06-zcl-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599997441.0),
-                ("pkt_bytes", "618840dddd021100000802021100001e"
-                              "c028e029000001000000007777770095"
-                              "ff22b54b9a50b6d5676b0c2f671af32c"
-                              "9042"),
-                ("pkt_show", None),
                 ("phy_length", 50),
+                ("phy_payload", "618840dddd021100000802021100001e"
+                                "c028e029000001000000007777770095"
+                                "ff22b54b9a50b6d5676b0c2f671af32c"
+                                "9042"),
+                ("mac_show", None),
                 ("mac_fcs", "0x4290"),
                 ("mac_frametype", "MAC Data"),
                 ("mac_security", "MAC Security Disabled"),
@@ -2560,6 +2558,34 @@ class TestIntegration(unittest.TestCase):
                 ("der_nwk_srcpanid", "0xdddd"),
                 ("der_nwk_srcshortaddr", "0x0000"),
                 ("der_nwk_srcextendedaddr", "7777770000000001"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "07-sll-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599997697.0),
+                ("sll_pkttype",
+                    "The packet was sent to another host by another host"),
+                ("sll_arphrdtype", 0x0325),
+                ("sll_addrlength", 0),
+                ("sll_addr", "0000000000000000"),
+                ("sll_protocoltype", 0x00f6),
+                ("phy_length", 5),
+                ("phy_payload", "02007780b2"),
+                ("mac_show", None),
+                ("mac_fcs", "0xb280"),
+                ("mac_frametype", "MAC Acknowledgment"),
+                ("mac_security", "MAC Security Disabled"),
+                ("mac_framepending",
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq",
+                    "The sender does not request a MAC Acknowledgment"),
+                ("mac_panidcomp", "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "No destination MAC address"),
+                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_seqnum", 119),
+                ("der_tx_type", "Single-Hop Transmission"),
             ],
         ]
         self.assert_entries(obtained_entries, expected_entries)
