@@ -17,24 +17,12 @@
 import os
 
 from scapy.all import CookedLinux
-from scapy.all import Dot15d4FCS
 from scapy.all import PcapReader
 
 from .. import config
 from .derive_info import derive_info
 from .phy_fields import phy_fields
-
-
-def get_sll_pkttype(pkt):
-    sll_pkttypes = {
-        0: "The packet was sent to us by another host",
-        1: "The packet was broadcasted by another host",
-        2: "The packet was multicasted by another host",
-        3: "The packet was sent to another host by another host",
-        4: "The packet was sent by us"
-    }
-    pkttype_id = pkt[CookedLinux].pkttype
-    return sll_pkttypes.get(pkttype_id, "Unknown SLL packet type")
+from .sll_fields import sll_fields
 
 
 def pcap_file(filepath, msg_queue):
@@ -63,29 +51,12 @@ def pcap_file(filepath, msg_queue):
     config.entry["pkt_num"] = 0
     pcap_reader = PcapReader(filepath)
     for pkt in pcap_reader:
-        # Collect some data about the packet
+        # Collect data about the packet
         config.entry["pkt_num"] += 1
         config.entry["pkt_time"] = float(pkt.time)
-
-        # Check whether the packet has an SLL header or not
         if pkt.haslayer(CookedLinux):
-            # Collect data from the SLL header
-            config.entry["sll_pkttype"] = get_sll_pkttype(pkt)
-            config.entry["sll_arphrdtype"] = pkt[CookedLinux].lladdrtype
-            config.entry["sll_addrlength"] = pkt[CookedLinux].lladdrlen
-            config.entry["sll_addr"] = pkt[CookedLinux].src.hex()
-            config.entry["sll_protocoltype"] = pkt[CookedLinux].proto
-
-            # Collect more data about the packet
-            if config.entry["sll_protocoltype"] != 0x00f6:
-                config.entry["error_msg"] = "PE001: Unsupported protocol type"
-            elif config.entry["sll_arphrdtype"] != 0x0325:
-                config.entry["error_msg"] = "PE002: Unsupported ARPHRD type"
-            else:
-                phy_fields(Dot15d4FCS(bytes(pkt[CookedLinux].payload)),
-                           msg_queue)
+            sll_fields(pkt, msg_queue)
         else:
-            # Collect more data about the packet
             phy_fields(pkt, msg_queue)
 
         # Derive additional information from the parsed packet

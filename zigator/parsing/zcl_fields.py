@@ -17,77 +17,12 @@
 from scapy.all import ZigbeeClusterLibrary
 
 from .. import config
-
-
-def get_zcl_frametype(pkt):
-    zcl_frame_types = {
-        0: "Global Command",
-        1: "Cluster-Specific Command"
-    }
-    frametype_id = pkt[ZigbeeClusterLibrary].zcl_frametype
-    return zcl_frame_types.get(frametype_id, "Unknown ZCL frame type")
-
-
-def get_zcl_manufspecific(pkt):
-    ms_states = {
-        0: "The command is not manufacturer-specific",
-        1: "The command is manufacturer-specific"
-    }
-    ms_state = pkt[ZigbeeClusterLibrary].manufacturer_specific
-    return ms_states.get(ms_state, "Unknown Manufacturer-Specific state")
-
-
-def get_zcl_direction(pkt):
-    direction_states = {
-        0: "From the client to the server",
-        1: "From the server to the client"
-    }
-    dir_state = pkt[ZigbeeClusterLibrary].direction
-    return direction_states.get(dir_state, "Unknown Direction state")
-
-
-def get_zcl_disdefrsp(pkt):
-    disdefrsp_states = {
-        0: "A Default Response will be returned",
-        1: "A Default Response will be returned only if there is an error"
-    }
-    ddr_state = pkt[ZigbeeClusterLibrary].disable_default_response
-    return disdefrsp_states.get(ddr_state, "Unknown Default Response state")
-
-
-def get_zcl_globalcommand(pkt):
-    zcl_globalcommands = {
-        0x00: "Read Attributes",
-        0x01: "Read Attributes Response",
-        0x02: "Write Attributes",
-        0x03: "Write Attributes Undivided",
-        0x04: "Write Attributes Response",
-        0x05: "Write Attributes No Response",
-        0x06: "Configure Reporting",
-        0x07: "Configure Reporting Response",
-        0x08: "Read Reporting Configuration",
-        0x09: "Read Reporting Configuration Response",
-        0x0a: "Report Attributes",
-        0x0b: "Default Response",
-        0x0c: "Discover Attributes",
-        0x0d: "Discover Attributes Response",
-        0x0e: "Read Attributes Structured",
-        0x0f: "Write Attributes Structured",
-        0x10: "Write Attributes Structured Response",
-        0x11: "Discover Commands Received",
-        0x12: "Discover Commands Received Response",
-        0x13: "Discover Commands Generated",
-        0x14: "Discover Commands Generated Response",
-        0x15: "Discover Commands Extended",
-        0x16: "Discover Commands Extended Response"
-    }
-    zcl_cmd_id = pkt[ZigbeeClusterLibrary].command_identifier
-    return zcl_globalcommands.get(zcl_cmd_id, "Unknown Global command")
-
-
-def get_zcl_clusterspecificcommand(pkt):
-    # TODO
-    return "Unknown Cluster-Specific command"
+from .zcl_getters import get_zcl_clusterspecificcommand
+from .zcl_getters import get_zcl_direction
+from .zcl_getters import get_zcl_disdefrsp
+from .zcl_getters import get_zcl_frametype
+from .zcl_getters import get_zcl_globalcommand
+from .zcl_getters import get_zcl_manufspecific
 
 
 def zcl_fields(pkt):
