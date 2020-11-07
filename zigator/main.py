@@ -20,6 +20,7 @@ from . import config
 from . import analysis
 from . import atusb
 from . import injection
+from . import monitoring
 from . import parsing
 from . import training
 from . import visualization
@@ -99,5 +100,7 @@ def main(argv):
                        args.rxidle)
     elif args.subcommand == "atusb":
         atusb.main(args.REPO_DIRECTORY)
+    elif args.subcommand == "monitor":
+        monitoring.main(args.PCAP_FILEPATH)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))

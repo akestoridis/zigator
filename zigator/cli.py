@@ -318,6 +318,15 @@ def init(derived_version):
         action="store",
         help="directory of the repository with the modified ATUSB firmware")
 
+    parser_monitor = subparsers.add_parser(
+        "monitor",
+        help="monitor packets from a pcap file continuously")
+    parser_monitor.add_argument(
+        "PCAP_FILEPATH",
+        type=str,
+        action="store",
+        help="path of the pcap file")
+
 
 def parse_args(args):
     return parser.parse_args(args)
