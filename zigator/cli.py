@@ -177,7 +177,13 @@ def init(derived_version):
 
     parser_inject = subparsers.add_parser(
         "inject",
-        help="inject a forged packet over UDP")
+        help="inject a forged packet")
+    parser_inject.add_argument(
+        "FW_PROTOCOL",
+        type=str,
+        choices=["udp", "sll"],
+        action="store",
+        help="the protocol that will be used to forward the forged packet")
     parser_inject.add_argument(
         "PKT_TYPE",
         type=str,
@@ -198,6 +204,13 @@ def init(derived_version):
         action="store",
         help="the port number of the UDP server",
         default=52001)
+    parser_inject.add_argument(
+        "--ifname",
+        dest="ifname",
+        type=str,
+        action="store",
+        help="the name of the IEEE 802.15.4 interface",
+        default="wpan0")
     parser_inject.add_argument(
         "--raw",
         dest="raw",

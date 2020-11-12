@@ -81,8 +81,10 @@ def main(argv):
                       args.restricted)
     elif args.subcommand == "inject":
         injection.main(args.PKT_TYPE,
+                       args.FW_PROTOCOL,
                        args.ipaddr,
                        args.portnum,
+                       args.ifname,
                        args.raw,
                        args.mac_seqnum,
                        args.panid,

@@ -51,7 +51,7 @@ Zigator enables its users to do the following:
 * Produce statistics from a database of Zigbee packets
 * Visualize data from a database of Zigbee packets
 * Train decision tree classifiers from a database of Zigbee packets
-* Inject forged packets over UDP
+* Inject forged packets over UDP and SLL
 * Launch selective jamming and spoofing attacks with an ATUSB
 
 

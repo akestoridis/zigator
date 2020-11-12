@@ -17,6 +17,8 @@
 import logging
 import socket
 
+from scapy.all import Dot15d4FCS
+
 from .beacon import beacon
 from .beaconreq import beaconreq
 from .orphannotif import orphannotif
@@ -31,9 +33,10 @@ DEFAULT_SRCEXTENDEDADDR = int("1122334455667788", 16)
 DEFAULT_EPID = int("facefeedbeefcafe", 16)
 
 
-def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
-         srcshortaddr, srcextendedaddr, pancoord, assocpermit, devdepth, epid,
-         updateid, nwk_seqnum, devtype, powsrc, rxidle):
+def main(pkt_type, fw_protocol, ipaddr, portnum, ifname, raw, mac_seqnum,
+         panid, dstshortaddr, srcshortaddr, srcextendedaddr, pancoord,
+         assocpermit, devdepth, epid, updateid, nwk_seqnum, devtype, powsrc,
+         rxidle):
     """Inject a forged packet."""
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
@@ -57,16 +60,6 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
 
     # Forge a packet based on the provided parameter values
     if pkt_type.lower() == "mpdu":
-        # Process some of the provided parameter values
-        if raw is None:
-            raw = DEFAULT_RAW
-            logging.warning("Unspecified raw bytes; defaulted "
-                            "to \"{}\"".format(raw))
-        # Forge the packet
-        forged_pkt = bytes.fromhex(raw)
-        # Sanity check
-        if len(forged_pkt) < 1 or len(forged_pkt) > 127:
-            raise ValueError("Invalid MPDU length")
         # Print a disclaimer
         print("############################################################")
         print("#                        DISCLAIMER                        #")
@@ -85,7 +78,32 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         else:
             logging.info("Canceling the injection of a forged packet...")
             return
+        # Process some of the provided parameter values
+        if raw is None:
+            raw = DEFAULT_RAW
+            logging.warning("Unspecified raw bytes; defaulted "
+                            "to \"{}\"".format(raw))
+        # Forge the packet
+        forged_pkt = Dot15d4FCS(bytes.fromhex(raw))
     elif pkt_type.lower() == "beacon":
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of a forged beacon may interfere with the  #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
         # Process some of the provided parameter values
         if panid is None:
             panid = DEFAULT_PANID
@@ -114,27 +132,7 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         # Forge the packet
         forged_pkt = beacon(mac_seqnum, panid, srcshortaddr, pancoord,
                             assocpermit, devdepth, epid, updateid)
-        # Print a disclaimer
-        print("############################################################")
-        print("#                        DISCLAIMER                        #")
-        print("#                                                          #")
-        print("# The injection of a forged beacon may interfere with the  #")
-        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
-        print("# The users of this tool are responsible for making sure   #")
-        print("# that they are compliant with their local laws and that   #")
-        print("# they have proper permission from the affected network    #")
-        print("# owners.                                                  #")
-        print("############################################################")
-        answer = input("Are you sure that you want to proceed? [y/N] ")
-        # Check the provided answer
-        if answer == "y":
-            print("You accepted responsibility for your actions")
-        else:
-            logging.info("Canceling the injection of a forged packet...")
-            return
     elif pkt_type.lower() == "beaconreq":
-        # Forge the packet
-        forged_pkt = beaconreq(mac_seqnum)
         # Print a disclaimer
         print("############################################################")
         print("#                        DISCLAIMER                        #")
@@ -153,18 +151,9 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         else:
             logging.info("Canceling the injection of a forged packet...")
             return
-    elif pkt_type.lower() == "orphannotif":
-        # Process some of the provided parameter values
-        if srcextendedaddr is None:
-            srcextendedaddr = DEFAULT_SRCEXTENDEDADDR
-            logging.warning("Unspecified extended source address; defaulted "
-                            "to \"{:016x}\"".format(srcextendedaddr))
-        else:
-            srcextendedaddr = int(srcextendedaddr, 16)
-            if srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
-                raise ValueError("Invalid extended source address")
         # Forge the packet
-        forged_pkt = orphannotif(mac_seqnum, srcextendedaddr)
+        forged_pkt = beaconreq(mac_seqnum)
+    elif pkt_type.lower() == "orphannotif":
         # Print a disclaimer
         print("############################################################")
         print("#                        DISCLAIMER                        #")
@@ -183,7 +172,38 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         else:
             logging.info("Canceling the injection of a forged packet...")
             return
+        # Process some of the provided parameter values
+        if srcextendedaddr is None:
+            srcextendedaddr = DEFAULT_SRCEXTENDEDADDR
+            logging.warning("Unspecified extended source address; defaulted "
+                            "to \"{:016x}\"".format(srcextendedaddr))
+        else:
+            srcextendedaddr = int(srcextendedaddr, 16)
+            if srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
+                raise ValueError("Invalid extended source address")
+        # Forge the packet
+        forged_pkt = orphannotif(mac_seqnum, srcextendedaddr)
     elif pkt_type.lower() == "rejoinreq":
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of an unsecured Rejoin Request may result  #")
+        print("# in the disclosure of the network key that a legitimate   #")
+        print("# Zigbee network is using and may also interfere with the  #")
+        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
+        print("# The users of this tool are responsible for making sure   #")
+        print("# that they are compliant with their local laws and that   #")
+        print("# they have proper permission from the affected network    #")
+        print("# owners.                                                  #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
         # Process some of the provided parameter values
         if panid is None:
             panid = DEFAULT_PANID
@@ -221,31 +241,51 @@ def main(pkt_type, ipaddr, portnum, raw, mac_seqnum, panid, dstshortaddr,
         forged_pkt = rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr,
                                nwk_seqnum, srcextendedaddr, devtype, powsrc,
                                rxidle)
-        # Print a disclaimer
-        print("############################################################")
-        print("#                        DISCLAIMER                        #")
-        print("#                                                          #")
-        print("# The injection of an unsecured Rejoin Request may result  #")
-        print("# in the disclosure of the network key that a legitimate   #")
-        print("# Zigbee network is using and may also interfere with the  #")
-        print("# operation of legitimate IEEE 802.15.4-based networks.    #")
-        print("# The users of this tool are responsible for making sure   #")
-        print("# that they are compliant with their local laws and that   #")
-        print("# they have proper permission from the affected network    #")
-        print("# owners.                                                  #")
-        print("############################################################")
-        answer = input("Are you sure that you want to proceed? [y/N] ")
-        # Check the provided answer
-        if answer == "y":
-            print("You accepted responsibility for your actions")
-        else:
-            logging.info("Canceling the injection of a forged packet...")
-            return
     else:
         raise ValueError("Unknown packet type \"{}\"".format(pkt_type))
+    logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))
 
-    # Send the forged packet to an SDR over a UDP connection
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as tx_sock:
-        tx_sock.sendto(bytes(forged_pkt), (ipaddr, portnum))
-    logging.info("Sent the following packet over UDP: "
-                 "{}".format(bytes(forged_pkt).hex()))
+    # Sanity check
+    if len(forged_pkt) < 5 or len(forged_pkt) > 127:
+        raise ValueError("Invalid packet length: {}".format(len(forged_pkt)))
+
+    # Forward the forged packet for transmission using the selected protocol
+    if fw_protocol == "udp":
+        logging.info("IP address: {}".format(ipaddr))
+        logging.info("Port number: {}".format(portnum))
+        print("############################################################")
+        print("#                          NOTICE                          #")
+        print("#                                                          #")
+        print("# Before forwarding the forged packet, make sure that the  #")
+        print("# transceiver is enabled and properly configured (e.g., it #")
+        print("# should already be tuned to the appropriate channel).     #")
+        print("############################################################")
+        answer = input("Do you want to forward the forged packet? [y/N] ")
+        if answer != "y":
+            logging.info("Canceling the forwarding of the forged packet...")
+            return
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as skt:
+            num_bytes_sent = skt.sendto(bytes(forged_pkt), (ipaddr, portnum))
+            logging.info("Forwarded {} bytes over UDP".format(num_bytes_sent))
+    elif fw_protocol == "sll":
+        logging.info("Interface name: {}".format(ifname))
+        print("############################################################")
+        print("#                          NOTICE                          #")
+        print("#                                                          #")
+        print("# Before forwarding the forged packet, make sure that the  #")
+        print("# transceiver is enabled and properly configured (e.g., it #")
+        print("# should already be tuned to the appropriate channel).     #")
+        print("############################################################")
+        answer = input("Do you want to forward the forged packet? [y/N] ")
+        if answer != "y":
+            logging.info("Canceling the forwarding of the forged packet...")
+            return
+        with socket.socket(socket.AF_PACKET,
+                           socket.SOCK_RAW,
+                           socket.htons(0x00f6)) as skt:
+            skt.bind((ifname, 0))
+            num_bytes_sent = skt.send(bytes(forged_pkt)[:-2])
+            logging.info("Forwarded {} bytes over SLL".format(num_bytes_sent))
+    else:
+        raise ValueError("Unknown forwarding protocol \"{}\""
+                         "".format(fw_protocol))
