@@ -17,7 +17,6 @@
 import logging
 import os
 
-from .. import config
 from .distinct_matches import distinct_matches
 from .field_values import field_values
 from .form_frequencies import form_frequencies

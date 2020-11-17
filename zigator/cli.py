@@ -45,7 +45,7 @@ def init(derived_version):
         dest="subcommand",
         help="set of valid subcommands")
 
-    parser_print_config = subparsers.add_parser(
+    subparsers.add_parser(
         "print-config",
         help="print the current configuration")
 

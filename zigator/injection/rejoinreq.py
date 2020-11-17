@@ -47,7 +47,7 @@ def rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr, nwk_seqnum,
             source=srcshortaddr,
             radius=1,
             seqnum=nwk_seqnum,
-            ext_src = srcextendedaddr)
+            ext_src=srcextendedaddr)
         / ZigbeeNWKCommandPayload(
             cmd_identifier=6,
             alternate_pan_coordinator=0,

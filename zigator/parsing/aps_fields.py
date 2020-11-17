@@ -834,7 +834,6 @@ def aps_data_header(pkt, msg_queue):
     else:
         config.entry["aps_clustername"] = "Unknown APS cluster name"
 
-
     # Source Endpoint field (1 byte)
     config.entry["aps_srcendpoint"] = pkt[ZigbeeAppDataPayload].src_endpoint
 
