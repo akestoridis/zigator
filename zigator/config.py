@@ -138,6 +138,18 @@ def reset_entries(keep=[]):
             entry[column_name] = None
 
 
+def set_entry(pkt_column_name, value_index, known_values):
+    global entry
+
+    # Set the corresponding data entry only if the provided value
+    # is included in the provided list of known values
+    if value_index in known_values.keys():
+        entry[pkt_column_name] = known_values[value_index]
+        return True
+    else:
+        return False
+
+
 def custom_sorter(var_value):
     str_repr = []
     for i in range(len(var_value)):

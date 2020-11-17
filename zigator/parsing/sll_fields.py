@@ -19,22 +19,43 @@ from scapy.all import Dot15d4FCS
 
 from .. import config
 from .phy_fields import phy_fields
-from .sll_getters import get_sll_pkttype
+
+
+SLL_PKT_TYPES = {
+    0: "The packet was sent to us by another host",
+    1: "The packet was broadcasted by another host",
+    2: "The packet was multicasted by another host",
+    3: "The packet was sent to another host by another host",
+    4: "The packet was sent by us"
+}
 
 
 def sll_fields(pkt, msg_queue):
     """Parse SLL fields."""
-    # SLL Header fields (16 bytes)
-    config.entry["sll_pkttype"] = get_sll_pkttype(pkt)
+    # Packet Type field (2 bytes)
+    if not config.set_entry(
+            "sll_pkttype",
+            pkt[CookedLinux].pkttype,
+            SLL_PKT_TYPES):
+        config.entry["error_msg"] = "Unknown SLL packet type"
+        return
+
+    # ARPHRD Type field (2 bytes)
     config.entry["sll_arphrdtype"] = pkt[CookedLinux].lladdrtype
+    if config.entry["sll_arphrdtype"] != 0x0325:
+        config.entry["error_msg"] = "PE002: Unsupported ARPHRD type"
+        return
+
+    # Address Length field (2 bytes)
     config.entry["sll_addrlength"] = pkt[CookedLinux].lladdrlen
+
+    # Address field (8 bytes)
     config.entry["sll_addr"] = pkt[CookedLinux].src.hex()
+
+    # Protocol Type field (2 bytes)
     config.entry["sll_protocoltype"] = pkt[CookedLinux].proto
     if config.entry["sll_protocoltype"] != 0x00f6:
         config.entry["error_msg"] = "PE001: Unsupported protocol type"
-        return
-    elif config.entry["sll_arphrdtype"] != 0x0325:
-        config.entry["error_msg"] = "PE002: Unsupported ARPHRD type"
         return
 
     # SLL Payload field (variable)

@@ -34,7 +34,6 @@ def phy_fields(pkt, msg_queue):
         # PHY Payload field (variable)
         config.entry["phy_payload"] = bytes(pkt[Dot15d4FCS]).hex()
         mac_fields(pkt, msg_queue)
-        return
     else:
         config.entry["error_msg"] = (
             "PE102: There are no IEEE 802.15.4 MAC fields"
