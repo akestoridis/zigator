@@ -101,8 +101,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     ]
     conditions = [
         ("error_msg", None),
-        ("nwk_frametype", "NWK Command"),
-        ("nwk_security", "NWK Security Enabled"),
+        ("nwk_frametype", "0b01: NWK Command"),
+        ("nwk_security", "0b1: NWK Security Enabled"),
         ("!nwk_cmd_id", None),
     ]
     raw_samples = config.db.fetch_values(columns, conditions, False)
@@ -119,18 +119,18 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
 
     # Map each NWK command to an integer value
     nwk_commands = {
-        "NWK Route Request": 1,
-        "NWK Route Reply": 2,
-        "NWK Network Status": 3,
-        "NWK Leave": 4,
-        "NWK Route Record": 5,
-        "NWK Rejoin Request": 6,
-        "NWK Rejoin Response": 7,
-        "NWK Link Status": 8,
-        "NWK Network Report": 9,
-        "NWK Network Update": 10,
-        "NWK End Device Timeout Request": 11,
-        "NWK End Device Timeout Response": 12,
+        "0x01: NWK Route Request": 1,
+        "0x02: NWK Route Reply": 2,
+        "0x03: NWK Network Status": 3,
+        "0x04: NWK Leave": 4,
+        "0x05: NWK Route Record": 5,
+        "0x06: NWK Rejoin Request": 6,
+        "0x07: NWK Rejoin Response": 7,
+        "0x08: NWK Link Status": 8,
+        "0x09: NWK Network Report": 9,
+        "0x0a: NWK Network Update": 10,
+        "0x0b: NWK End Device Timeout Request": 11,
+        "0x0c: NWK End Device Timeout Response": 12,
     }
     if single_cmd is None:
         class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
@@ -336,40 +336,40 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
                 overlapping.append((matching_cmds,
                                     unique_sample.tolist()))
         cmd_filepaths = {
-            "NWK Route Request": (
+            "0x01: NWK Route Request": (
                 os.path.join(out_dirpath, "unique-routerequest-samples.tsv")
             ),
-            "NWK Route Reply": (
+            "0x02: NWK Route Reply": (
                 os.path.join(out_dirpath, "unique-routereply-samples.tsv")
             ),
-            "NWK Network Status": (
+            "0x03: NWK Network Status": (
                 os.path.join(out_dirpath, "unique-networkstatus-samples.tsv")
             ),
-            "NWK Leave": (
+            "0x04: NWK Leave": (
                 os.path.join(out_dirpath, "unique-leave-samples.tsv")
             ),
-            "NWK Route Record": (
+            "0x05: NWK Route Record": (
                 os.path.join(out_dirpath, "unique-routerecord-samples.tsv")
             ),
-            "NWK Rejoin Request": (
+            "0x06: NWK Rejoin Request": (
                 os.path.join(out_dirpath, "unique-rejoinreq-samples.tsv")
             ),
-            "NWK Rejoin Response": (
+            "0x07: NWK Rejoin Response": (
                 os.path.join(out_dirpath, "unique-rejoinrsp-samples.tsv")
             ),
-            "NWK Link Status": (
+            "0x08: NWK Link Status": (
                 os.path.join(out_dirpath, "unique-linkstatus-samples.tsv")
             ),
-            "NWK Network Report": (
+            "0x09: NWK Network Report": (
                 os.path.join(out_dirpath, "unique-networkreport-samples.tsv")
             ),
-            "NWK Network Update": (
+            "0x0a: NWK Network Update": (
                 os.path.join(out_dirpath, "unique-networkupdate-samples.tsv")
             ),
-            "NWK End Device Timeout Request": (
+            "0x0b: NWK End Device Timeout Request": (
                 os.path.join(out_dirpath, "unique-edtimeoutreq-samples.tsv")
             ),
-            "NWK End Device Timeout Response": (
+            "0x0c: NWK End Device Timeout Response": (
                 os.path.join(out_dirpath, "unique-edtimeoutrsp-samples.tsv")
             ),
         }

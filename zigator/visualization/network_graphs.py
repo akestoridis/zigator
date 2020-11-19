@@ -41,8 +41,9 @@ def network_graphs(out_dirpath):
         conditions = [
             ("pcap_directory", pcap_filepath[0]),
             ("pcap_filename", pcap_filepath[1]),
-            ("mac_frametype", "MAC Data"),
-            ("mac_panidcomp",
+            ("mac_frametype", "0b001: "
+                "MAC Data"),
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!mac_dstshortaddr", "0xffff"),
             ("error_msg", None),

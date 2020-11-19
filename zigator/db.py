@@ -669,9 +669,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("mac_dstaddrmode", "0b10: "
+                "Short destination MAC address"),
             ("der_mac_dstpanid", panid),
             ("der_mac_dstshortaddr", shortaddr),
             ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
@@ -689,9 +690,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "Short source MAC address"),
+            ("mac_srcaddrmode", "0b10: "
+                "Short source MAC address"),
             ("der_mac_srcpanid", panid),
             ("der_mac_srcshortaddr", shortaddr),
             ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
@@ -709,7 +711,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_dstshortaddr", None),
             ("der_nwk_dstpanid", panid),
@@ -729,7 +731,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_srcshortaddr", None),
             ("der_nwk_srcpanid", panid),
@@ -793,9 +795,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("mac_dstaddrmode", "0b10: "
+                "Short destination MAC address"),
             ("der_mac_dstpanid", panid),
             ("der_mac_dstshortaddr", shortaddr),
             ("der_mac_dstextendedaddr", None),
@@ -858,9 +861,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "Short source MAC address"),
+            ("mac_srcaddrmode", "0b10: "
+                "Short source MAC address"),
             ("der_mac_srcpanid", panid),
             ("der_mac_srcshortaddr", shortaddr),
             ("der_mac_srcextendedaddr", None),
@@ -923,7 +927,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_dstshortaddr", None),
             ("der_nwk_dstpanid", panid),
@@ -988,7 +992,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_srcshortaddr", None),
             ("der_nwk_srcpanid", panid),
@@ -1022,9 +1026,10 @@ def update_packets():
             )
             conditions = (
                 ("error_msg", None),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
                 ("der_mac_dstextendedaddr", extendedaddr),
                 ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
             )
@@ -1039,9 +1044,10 @@ def update_packets():
             )
             conditions = (
                 ("error_msg", None),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same as the destination PAN ID"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("der_mac_srcextendedaddr", extendedaddr),
                 ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
             )
@@ -1056,7 +1062,7 @@ def update_packets():
             )
             conditions = (
                 ("error_msg", None),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same as the destination PAN ID"),
                 ("!nwk_dstshortaddr", None),
                 ("der_nwk_dstextendedaddr", extendedaddr),
@@ -1073,7 +1079,7 @@ def update_packets():
             )
             conditions = (
                 ("error_msg", None),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same as the destination PAN ID"),
                 ("!nwk_srcshortaddr", None),
                 ("der_nwk_srcextendedaddr", extendedaddr),
@@ -1115,9 +1121,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "Short destination MAC address"),
+            ("mac_dstaddrmode", "0b10: "
+                "Short destination MAC address"),
             ("der_mac_dstextendedaddr", extendedaddr),
             ("der_mac_dsttype", "MAC Dst Type: None"),
         )
@@ -1157,9 +1164,10 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "Short source MAC address"),
+            ("mac_srcaddrmode", "0b10: "
+                "Short source MAC address"),
             ("der_mac_srcextendedaddr", extendedaddr),
             ("der_mac_srctype", "MAC Src Type: None"),
         )
@@ -1199,7 +1207,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_dstshortaddr", None),
             ("der_nwk_dstextendedaddr", extendedaddr),
@@ -1241,7 +1249,7 @@ def update_packets():
         )
         conditions = (
             ("error_msg", None),
-            ("mac_panidcomp",
+            ("mac_panidcomp", "0b1: "
                 "The source PAN ID is the same as the destination PAN ID"),
             ("!nwk_srcshortaddr", None),
             ("der_nwk_srcextendedaddr", extendedaddr),

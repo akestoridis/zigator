@@ -62,7 +62,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -73,7 +73,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "phy_length",
     ),
@@ -117,7 +117,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -128,7 +128,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_radius",
     ),
@@ -172,7 +172,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -183,7 +183,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "mac_framepending",
     ),
@@ -227,7 +227,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -238,7 +238,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "mac_ackreq",
     ),
@@ -282,7 +282,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -293,7 +293,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "mac_dstaddrmode",
     ),
@@ -337,7 +337,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -348,7 +348,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "mac_srcaddrmode",
     ),
@@ -394,7 +394,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -405,7 +405,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_srcroute",
     ),
@@ -451,7 +451,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -462,7 +462,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_extendeddst",
     ),
@@ -508,7 +508,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -519,7 +519,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_extendedsrc",
     ),
@@ -530,7 +530,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -541,7 +541,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_security",
     ),
@@ -730,7 +730,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -741,7 +741,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -752,7 +752,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
             ("!nwk_srcextendedaddr", None),
         ),
         "nwk_cmd_id",
@@ -764,7 +764,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
             ("!nwk_dstextendedaddr", None),
         ),
         "nwk_cmd_id",
@@ -846,7 +846,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -857,7 +857,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_payloadlength",
     ),
@@ -868,7 +868,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -879,7 +879,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "der_nwk_dsttype",
     ),
@@ -890,7 +890,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "nwk_cmd_id",
     ),
@@ -901,7 +901,7 @@ COLUMN_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
+            ("nwk_frametype", "0b01: NWK Command"),
         ),
         "der_nwk_srctype",
     ),

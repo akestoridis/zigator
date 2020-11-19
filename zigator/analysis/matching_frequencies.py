@@ -29,7 +29,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
@@ -39,7 +39,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
@@ -49,7 +49,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
@@ -59,7 +59,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
@@ -69,7 +69,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
@@ -79,7 +79,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
@@ -89,7 +89,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
@@ -99,7 +99,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
@@ -109,7 +109,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
@@ -119,7 +119,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
@@ -129,7 +129,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
@@ -139,7 +139,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
@@ -149,7 +149,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
@@ -159,7 +159,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
@@ -169,7 +169,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
@@ -179,7 +179,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
@@ -189,7 +189,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
@@ -199,7 +199,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
@@ -209,7 +209,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
@@ -219,7 +219,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
@@ -229,7 +229,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
@@ -239,7 +239,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
@@ -249,7 +249,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
@@ -259,7 +259,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
@@ -269,7 +269,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
@@ -279,7 +279,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
@@ -289,7 +289,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
@@ -299,7 +299,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
@@ -309,7 +309,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
@@ -319,7 +319,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
@@ -329,7 +329,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
@@ -339,7 +339,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
@@ -349,7 +349,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
@@ -359,7 +359,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
@@ -369,7 +369,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
@@ -379,7 +379,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
@@ -389,7 +389,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
@@ -399,7 +399,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
@@ -409,7 +409,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
@@ -419,7 +419,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
@@ -429,7 +429,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
@@ -439,7 +439,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
@@ -449,7 +449,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
@@ -459,7 +459,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
@@ -469,7 +469,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
@@ -479,7 +479,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
@@ -489,7 +489,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
@@ -499,7 +499,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
@@ -509,7 +509,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
@@ -519,7 +519,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
@@ -529,7 +529,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
@@ -539,7 +539,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
@@ -549,7 +549,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
@@ -559,7 +559,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
@@ -569,7 +569,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
@@ -579,7 +579,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
@@ -589,7 +589,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
@@ -599,7 +599,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
@@ -609,7 +609,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
@@ -619,7 +619,7 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
@@ -629,8 +629,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Data Request"),
-            ("mac_srcaddrmode", "Short source MAC address")
+            ("mac_cmd_id", "0x04: MAC Data Request"),
+            ("mac_srcaddrmode", "0b10: Short source MAC address")
         ),
     ),
     (
@@ -640,8 +640,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Data Request"),
-            ("mac_srcaddrmode", "Short source MAC address")
+            ("mac_cmd_id", "0x04: MAC Data Request"),
+            ("mac_srcaddrmode", "0b10: Short source MAC address")
         ),
     ),
     (
@@ -651,8 +651,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 12),
         ),
@@ -664,8 +664,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 2),
             ("der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
@@ -678,8 +678,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 2),
             ("!der_nwk_dsttype", "NWK Dst Type: Zigbee End Device"),
@@ -692,8 +692,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 3),
             ("der_tx_type", "Single-Hop Transmission"),
@@ -706,8 +706,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 3),
             ("der_tx_type", "Multi-Hop Transmission"),
@@ -721,8 +721,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 3),
             ("der_tx_type", "Multi-Hop Transmission"),
@@ -736,8 +736,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("nwk_cmd_payloadlength", 3),
             ("der_tx_type", "Multi-Hop Transmission"),
@@ -752,8 +752,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -769,8 +769,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -786,8 +786,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -803,8 +803,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -820,8 +820,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -839,8 +839,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -859,8 +859,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -879,8 +879,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -900,8 +900,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -919,8 +919,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -938,8 +938,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -958,8 +958,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -976,8 +976,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -994,8 +994,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1013,8 +1013,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1032,8 +1032,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1051,8 +1051,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1070,8 +1070,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1090,8 +1090,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1109,8 +1109,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1128,8 +1128,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1147,8 +1147,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1166,8 +1166,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1186,8 +1186,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1209,8 +1209,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),
@@ -1233,8 +1233,8 @@ CONDITION_MATCHES = [
         ),
         (
             ("error_msg", None),
-            ("nwk_frametype", "NWK Command"),
-            ("nwk_security", "NWK Security Enabled"),
+            ("nwk_frametype", "0b01: NWK Command"),
+            ("nwk_security", "0b1: NWK Security Enabled"),
             ("!nwk_cmd_id", None),
             ("!nwk_cmd_payloadlength", 12),
             ("!nwk_cmd_payloadlength", 2),

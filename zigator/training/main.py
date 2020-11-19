@@ -31,61 +31,61 @@ def main(train_type, db_filepath, out_dirpath, seed, restricted):
                     os.path.join(out_dirpath, "enc-routerequest"),
                     seed,
                     restricted,
-                    single_cmd="NWK Route Request")
+                    single_cmd="0x01: NWK Route Request")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-routereply"),
                     seed,
                     restricted,
-                    single_cmd="NWK Route Reply")
+                    single_cmd="0x02: NWK Route Reply")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-networkstatus"),
                     seed,
                     restricted,
-                    single_cmd="NWK Network Status")
+                    single_cmd="0x03: NWK Network Status")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-leave"),
                     seed,
                     restricted,
-                    single_cmd="NWK Leave")
+                    single_cmd="0x04: NWK Leave")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-routerecord"),
                     seed,
                     restricted,
-                    single_cmd="NWK Route Record")
+                    single_cmd="0x05: NWK Route Record")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-rejoinreq"),
                     seed,
                     restricted,
-                    single_cmd="NWK Rejoin Request")
+                    single_cmd="0x06: NWK Rejoin Request")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-rejoinrsp"),
                     seed,
                     restricted,
-                    single_cmd="NWK Rejoin Response")
+                    single_cmd="0x07: NWK Rejoin Response")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-linkstatus"),
                     seed,
                     restricted,
-                    single_cmd="NWK Link Status")
+                    single_cmd="0x08: NWK Link Status")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-networkreport"),
                     seed,
                     restricted,
-                    single_cmd="NWK Network Report")
+                    single_cmd="0x09: NWK Network Report")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-networkupdate"),
                     seed,
                     restricted,
-                    single_cmd="NWK Network Update")
+                    single_cmd="0x0a: NWK Network Update")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-edtimeoutreq"),
                     seed,
                     restricted,
-                    single_cmd="NWK End Device Timeout Request")
+                    single_cmd="0x0b: NWK End Device Timeout Request")
         enc_nwk_cmd(db_filepath,
                     os.path.join(out_dirpath, "enc-edtimeoutrsp"),
                     seed,
                     restricted,
-                    single_cmd="NWK End Device Timeout Response")
+                    single_cmd="0x0c: NWK End Device Timeout Response")
     else:
         raise ValueError("Unknown training type \"{}\"".format(train_type))

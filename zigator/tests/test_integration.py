@@ -713,16 +713,22 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "02008971ac"),
                 ("mac_show", None),
                 ("mac_fcs", "0xac71"),
-                ("mac_frametype", "MAC Acknowledgment"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b010: "
+                    "MAC Acknowledgment"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "No destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b00: "
+                    "No destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b00: "
+                    "No source MAC address"),
                 ("mac_seqnum", 137),
                 ("der_tx_type", "Single-Hop Transmission"),
             ],
@@ -735,20 +741,27 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "0308cbffffffff076e03"),
                 ("mac_show", None),
                 ("mac_fcs", "0x036e"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b00: "
+                    "No source MAC address"),
                 ("mac_seqnum", 203),
                 ("mac_dstpanid", "0xffff"),
                 ("mac_dstshortaddr", "0xffff"),
-                ("mac_cmd_id", "MAC Beacon Request"),
+                ("mac_cmd_id", "0x07: "
+                    "MAC Beacon Request"),
                 ("mac_cmd_payloadlength", 0),
                 ("der_tx_type", "Single-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: Broadcast"),
@@ -780,16 +793,22 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "1200ea7978"),
                 ("mac_show", None),
                 ("mac_fcs", "0x7879"),
-                ("mac_frametype", "MAC Acknowledgment"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b010: "
+                    "MAC Acknowledgment"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b1: "
                     "Additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "No destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b00: "
+                    "No destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b00: "
+                    "No source MAC address"),
                 ("mac_seqnum", 234),
                 ("der_tx_type", "Single-Hop Transmission"),
             ],
@@ -803,34 +822,43 @@ class TestIntegration(unittest.TestCase):
                                 "11018e2c1c"),
                 ("mac_show", None),
                 ("mac_fcs", "0x1c2c"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b1: "
                     "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Extended source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b11: "
+                    "Extended source MAC address"),
                 ("mac_seqnum", 100),
                 ("mac_dstpanid", "0x99aa"),
                 ("mac_dstshortaddr", "0xd0d0"),
                 ("mac_srcpanid", "0xffff"),
                 ("mac_srcextendedaddr", "1122334455667788"),
-                ("mac_cmd_id", "MAC Association Request"),
+                ("mac_cmd_id", "0x01: "
+                    "MAC Association Request"),
                 ("mac_cmd_payloadlength", 1),
-                ("mac_assocreq_apc",
+                ("mac_assocreq_apc", "0b0: "
                     "The sender is not capable of "
                     "becoming a PAN coordinator"),
-                ("mac_assocreq_devtype", "Full-Function Device"),
-                ("mac_assocreq_powsrc",
+                ("mac_assocreq_devtype", "0b1: "
+                    "Full-Function Device"),
+                ("mac_assocreq_powsrc", "0b1: "
                     "The sender is a mains-powered device"),
-                ("mac_assocreq_rxidle",
+                ("mac_assocreq_rxidle", "0b1: "
                     "Does not disable the receiver to conserve power"),
-                ("mac_assocreq_seccap",
+                ("mac_assocreq_seccap", "0b0: "
                     "Cannot transmit and receive secure MAC frames"),
-                ("mac_assocreq_allocaddr", "Requests a short address"),
+                ("mac_assocreq_allocaddr", "0b1: "
+                    "Requests a short address"),
                 ("der_tx_type", "Single-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: None"),
                 ("der_mac_dstpanid", "0x99aa"),
@@ -846,26 +874,33 @@ class TestIntegration(unittest.TestCase):
                                 "ffc0cef10f02adde0009e7"),
                 ("mac_show", None),
                 ("mac_fcs", "0xe709"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b1: "
                     "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Extended destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Extended source MAC address"),
+                ("mac_dstaddrmode", "0b11: "
+                    "Extended destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b11: "
+                    "Extended source MAC address"),
                 ("mac_seqnum", 114),
                 ("mac_dstpanid", "0x99aa"),
                 ("mac_dstextendedaddr", "1122334455667788"),
                 ("mac_srcextendedaddr", "0ff1cec0ffeed00d"),
-                ("mac_cmd_id", "MAC Association Response"),
+                ("mac_cmd_id", "0x02: "
+                    "MAC Association Response"),
                 ("mac_cmd_payloadlength", 3),
                 ("mac_assocrsp_shortaddr", "0xdead"),
-                ("mac_assocrsp_status", "Association successful"),
+                ("mac_assocrsp_status", "0x00: "
+                    "Association successful"),
                 ("der_tx_type", "Single-Hop Transmission"),
             ],
             [
@@ -877,23 +912,29 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "638832ccbb00007afe041598"),
                 ("mac_show", None),
                 ("mac_fcs", "0x9815"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b1: "
                     "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 50),
                 ("mac_dstpanid", "0xbbcc"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0xfe7a"),
-                ("mac_cmd_id", "MAC Data Request"),
+                ("mac_cmd_id", "0x04: "
+                    "MAC Data Request"),
                 ("mac_cmd_payloadlength", 0),
                 ("der_tx_type", "Single-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: None"),
@@ -913,22 +954,29 @@ class TestIntegration(unittest.TestCase):
                                 "d00608a2"),
                 ("mac_show", None),
                 ("mac_fcs", "0xa208"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Extended source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b11: "
+                    "Extended source MAC address"),
                 ("mac_seqnum", 32),
                 ("mac_dstpanid", "0xffff"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcpanid", "0xffff"),
                 ("mac_srcextendedaddr", "d00dbad1cec0ffee"),
-                ("mac_cmd_id", "MAC Orphan Notification"),
+                ("mac_cmd_id", "0x06: "
+                    "MAC Orphan Notification"),
                 ("mac_cmd_payloadlength", 0),
                 ("der_tx_type", "Single-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: Broadcast"),
@@ -944,20 +992,27 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "030800ffffffff073829"),
                 ("mac_show", None),
                 ("mac_fcs", "0x2938"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b00: "
+                    "No source MAC address"),
                 ("mac_seqnum", 0),
                 ("mac_dstpanid", "0xffff"),
                 ("mac_dstshortaddr", "0xffff"),
-                ("mac_cmd_id", "MAC Beacon Request"),
+                ("mac_cmd_id", "0x07: "
+                    "MAC Beacon Request"),
                 ("mac_cmd_payloadlength", 0),
                 ("der_tx_type", "Single-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: Broadcast"),
@@ -975,22 +1030,29 @@ class TestIntegration(unittest.TestCase):
                                 "74"),
                 ("mac_show", None),
                 ("mac_fcs", "0x742a"),
-                ("mac_frametype", "MAC Command"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "Extended destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Extended source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b11: "
+                    "Extended destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b11: "
+                    "Extended source MAC address"),
                 ("mac_seqnum", 64),
                 ("mac_dstpanid", "0xffff"),
                 ("mac_dstextendedaddr", "d00dbad1cec0ffee"),
                 ("mac_srcpanid", "0xddee"),
                 ("mac_srcextendedaddr", "b19b10a7ed0ff1ce"),
-                ("mac_cmd_id", "MAC Coordinator Realignment"),
+                ("mac_cmd_id", "0x08: "
+                    "MAC Coordinator Realignment"),
                 ("mac_cmd_payloadlength", 7),
                 ("mac_realign_panid", "0xddee"),
                 ("mac_realign_coordaddr", "0x50fa"),
@@ -1008,16 +1070,22 @@ class TestIntegration(unittest.TestCase):
                                 "efbeedfecefaffffff00af74"),
                 ("mac_show", None),
                 ("mac_fcs", "0x74af"),
-                ("mac_frametype", "MAC Beacon"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b000: "
+                    "MAC Beacon"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "No destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b00: "
+                    "No destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 137),
                 ("mac_srcpanid", "0x99aa"),
                 ("mac_srcshortaddr", "0xdead"),
@@ -1025,9 +1093,9 @@ class TestIntegration(unittest.TestCase):
                 ("mac_beacon_sforder", 15),
                 ("mac_beacon_finalcap", 15),
                 ("mac_beacon_ble", 0),
-                ("mac_beacon_pancoord",
+                ("mac_beacon_pancoord", "0b0: "
                     "The sender is not the PAN coordinator"),
-                ("mac_beacon_assocpermit",
+                ("mac_beacon_assocpermit", "0b0: "
                     "The sender is currently not "
                     "accepting association requests"),
                 ("mac_beacon_gtsnum", 0),
@@ -1038,11 +1106,12 @@ class TestIntegration(unittest.TestCase):
                 ("mac_beacon_extendedaddresses", ""),
                 ("nwk_beacon_protocolid", 0),
                 ("nwk_beacon_stackprofile", 2),
-                ("nwk_beacon_protocolversion", "Zigbee PRO"),
-                ("nwk_beacon_routercap",
+                ("nwk_beacon_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_beacon_routercap", "0b1: "
                     "The sender can accept join requests from routers"),
                 ("nwk_beacon_devdepth", 2),
-                ("nwk_beacon_edcap",
+                ("nwk_beacon_edcap", "0b1: "
                     "The sender can accept join requests from end devices"),
                 ("nwk_beacon_epid", "facefeedbeefcafe"),
                 ("nwk_beacon_txoffset", 16777215),
@@ -1063,48 +1132,66 @@ class TestIntegration(unittest.TestCase):
                                 "5511223344443322110680e4f3"),
                 ("mac_show", None),
                 ("mac_fcs", "0xf3e4"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 68),
                 ("mac_dstpanid", "0xddee"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0xf001"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Disabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b0: "
+                    "NWK Security Disabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0xf001"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 85),
                 ("nwk_srcextendedaddr", "1122334444332211"),
-                ("nwk_cmd_id", "NWK Rejoin Request"),
+                ("nwk_cmd_id", "0x06: "
+                    "NWK Rejoin Request"),
                 ("nwk_cmd_payloadlength", 1),
-                ("nwk_rejoinreq_apc",
+                ("nwk_rejoinreq_apc", "0b0: "
                     "The sender is not capable of "
                     "becoming a PAN coordinator"),
-                ("nwk_rejoinreq_devtype", "Zigbee End Device"),
-                ("nwk_rejoinreq_powsrc",
+                ("nwk_rejoinreq_devtype", "0b0: "
+                    "Zigbee End Device"),
+                ("nwk_rejoinreq_powsrc", "0b0: "
                     "The sender is not a mains-powered device"),
-                ("nwk_rejoinreq_rxidle",
+                ("nwk_rejoinreq_rxidle", "0b0: "
                     "Disables the receiver to conserve power when idle"),
-                ("nwk_rejoinreq_seccap",
+                ("nwk_rejoinreq_seccap", "0b0: "
                     "Cannot transmit and receive secure MAC frames"),
-                ("nwk_rejoinreq_allocaddr", "Requests a short address"),
+                ("nwk_rejoinreq_allocaddr", "0b1: "
+                    "Requests a short address"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
@@ -1145,39 +1232,56 @@ class TestIntegration(unittest.TestCase):
                                 "4cb1f1"),
                 ("mac_show", None),
                 ("mac_fcs", "0xf1b1"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 101),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x0000"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xfffc"),
                 ("nwk_srcshortaddr", "0x0000"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 161),
                 ("nwk_srcextendedaddr", "7777770000000001"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10001),
                 ("nwk_aux_srcaddr", "7777770000000001"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1185,13 +1289,14 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000001"),
                 ("nwk_aux_decpayload", "010802fcff00"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Route Request"),
+                ("nwk_cmd_id", "0x01: "
+                    "NWK Route Request"),
                 ("nwk_cmd_payloadlength", 5),
-                ("nwk_routerequest_mto",
+                ("nwk_routerequest_mto", "0b01: "
                     "Many-to-One Route Request with Route Record support"),
-                ("nwk_routerequest_ed",
+                ("nwk_routerequest_ed", "0b0: "
                     "The extended destination address is not present"),
-                ("nwk_routerequest_mc",
+                ("nwk_routerequest_mc", "0b0: "
                     "The destination address is not a Group ID"),
                 ("nwk_routerequest_id", 2),
                 ("nwk_routerequest_dstshortaddr", "0xfffc"),
@@ -1228,39 +1333,57 @@ class TestIntegration(unittest.TestCase):
                                 "60a8356ef620ccb7a631cf9715"),
                 ("mac_show", None),
                 ("mac_fcs", "0x1597"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 102),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x1101"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x1101"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 29),
                 ("nwk_seqnum", 162),
                 ("nwk_dstextendedaddr", "7777770000000002"),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10002),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1269,13 +1392,14 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decpayload", "02300501110000080200000000777777"
                                        "0100000000777777"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Route Reply"),
+                ("nwk_cmd_id", "0x02: "
+                    "NWK Route Reply"),
                 ("nwk_cmd_payloadlength", 23),
-                ("nwk_routereply_eo",
+                ("nwk_routereply_eo", "0b1: "
                     "The extended originator address is present"),
-                ("nwk_routereply_er",
+                ("nwk_routereply_er", "0b1: "
                     "The extended responder address is present"),
-                ("nwk_routereply_mc",
+                ("nwk_routereply_mc", "0b0: "
                     "The responder address is not a Group ID"),
                 ("nwk_routereply_id", 5),
                 ("nwk_routereply_origshortaddr", "0x1101"),
@@ -1315,39 +1439,57 @@ class TestIntegration(unittest.TestCase):
                                 "947514e144434c0056"),
                 ("mac_show", None),
                 ("mac_fcs", "0x5600"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 103),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x1101"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 163),
                 ("nwk_dstextendedaddr", "7777770000000001"),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10003),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1355,9 +1497,11 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "030c0211"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Network Status"),
+                ("nwk_cmd_id", "0x03: "
+                    "NWK Network Status"),
                 ("nwk_cmd_payloadlength", 3),
-                ("nwk_networkstatus_code", "Many-to-one route failure"),
+                ("nwk_networkstatus_code", "0x0c: "
+                    "Many-to-one route failure"),
                 ("nwk_networkstatus_dstshortaddr", "0x1102"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
@@ -1390,39 +1534,56 @@ class TestIntegration(unittest.TestCase):
                                 "0000007777770059df821d51765a1a"),
                 ("mac_show", None),
                 ("mac_fcs", "0x1a5a"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 104),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xfffd"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 164),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10004),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1430,13 +1591,14 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "0400"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Leave"),
+                ("nwk_cmd_id", "0x04: "
+                    "NWK Leave"),
                 ("nwk_cmd_payloadlength", 1),
-                ("nwk_leave_rejoin",
+                ("nwk_leave_rejoin", "0b0: "
                     "The device will not rejoin the network"),
-                ("nwk_leave_request",
+                ("nwk_leave_request", "0b0: "
                     "The sending device wants to leave the network"),
-                ("nwk_leave_rmch",
+                ("nwk_leave_rmch", "0b0: "
                     "The device's children will "
                     "not be removed from the network"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
@@ -1469,39 +1631,57 @@ class TestIntegration(unittest.TestCase):
                                 "78fa0d274ff50d5bce"),
                 ("mac_show", None),
                 ("mac_fcs", "0xce5b"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 105),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0x2201"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 165),
                 ("nwk_dstextendedaddr", "7777770000000001"),
                 ("nwk_srcextendedaddr", "7777770000000004"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10005),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1509,7 +1689,8 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "05010211"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Route Record"),
+                ("nwk_cmd_id", "0x05: "
+                    "NWK Route Record"),
                 ("nwk_cmd_payloadlength", 3),
                 ("nwk_routerecord_relaycount", 1),
                 ("nwk_routerecord_relaylist", "0x1102"),
@@ -1544,38 +1725,56 @@ class TestIntegration(unittest.TestCase):
                                 "00000077777700f358fd02788cd978"),
                 ("mac_show", None),
                 ("mac_fcs", "0x78d9"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 106),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x1102"),
                 ("mac_srcshortaddr", "0x2201"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x1102"),
                 ("nwk_srcshortaddr", "0x2201"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 166),
                 ("nwk_srcextendedaddr", "7777770000000004"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10006),
                 ("nwk_aux_srcaddr", "7777770000000004"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1583,19 +1782,22 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000004"),
                 ("nwk_aux_decpayload", "0680"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Rejoin Request"),
+                ("nwk_cmd_id", "0x06: "
+                    "NWK Rejoin Request"),
                 ("nwk_cmd_payloadlength", 1),
-                ("nwk_rejoinreq_apc",
+                ("nwk_rejoinreq_apc", "0b0: "
                     "The sender is not capable of "
                     "becoming a PAN coordinator"),
-                ("nwk_rejoinreq_devtype", "Zigbee End Device"),
-                ("nwk_rejoinreq_powsrc",
+                ("nwk_rejoinreq_devtype", "0b0: "
+                    "Zigbee End Device"),
+                ("nwk_rejoinreq_powsrc", "0b0: "
                     "The sender is not a mains-powered device"),
-                ("nwk_rejoinreq_rxidle",
+                ("nwk_rejoinreq_rxidle", "0b0: "
                     "Disables the receiver to conserve power when idle"),
-                ("nwk_rejoinreq_seccap",
+                ("nwk_rejoinreq_seccap", "0b0: "
                     "Cannot transmit and receive secure MAC frames"),
-                ("nwk_rejoinreq_allocaddr", "Requests a short address"),
+                ("nwk_rejoinreq_allocaddr", "0b1: "
+                    "Requests a short address"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
@@ -1628,39 +1830,57 @@ class TestIntegration(unittest.TestCase):
                                 "d125b694f3d1374b5d"),
                 ("mac_show", None),
                 ("mac_fcs", "0x5d4b"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 107),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x2201"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x2201"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 167),
                 ("nwk_dstextendedaddr", "7777770000000004"),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10007),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1668,10 +1888,12 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "07012200"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Rejoin Response"),
+                ("nwk_cmd_id", "0x07: "
+                    "NWK Rejoin Response"),
                 ("nwk_cmd_payloadlength", 3),
                 ("nwk_rejoinrsp_shortaddr", "0x2201"),
-                ("nwk_rejoinrsp_status", "Rejoin successful"),
+                ("nwk_rejoinrsp_status", "0x00: "
+                    "Rejoin successful"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
@@ -1704,39 +1926,56 @@ class TestIntegration(unittest.TestCase):
                                 "00844ba8ba"),
                 ("mac_show", None),
                 ("mac_fcs", "0xbaa8"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 108),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x1101"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xfffc"),
                 ("nwk_srcshortaddr", "0x1101"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 168),
                 ("nwk_srcextendedaddr", "7777770000000002"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10008),
                 ("nwk_aux_srcaddr", "7777770000000002"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1744,12 +1983,13 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000002"),
                 ("nwk_aux_decpayload", "0862000003021111"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Link Status"),
+                ("nwk_cmd_id", "0x08: "
+                    "NWK Link Status"),
                 ("nwk_cmd_payloadlength", 7),
                 ("nwk_linkstatus_count", 2),
-                ("nwk_linkstatus_first",
+                ("nwk_linkstatus_first", "0b1: "
                     "This is the first frame of the sender's link status"),
-                ("nwk_linkstatus_last",
+                ("nwk_linkstatus_last", "0b1: "
                     "This is the last frame of the sender's link status"),
                 ("nwk_linkstatus_addresses", "0x0000,0x1102"),
                 ("nwk_linkstatus_incomingcosts", "3,1"),
@@ -1785,38 +2025,56 @@ class TestIntegration(unittest.TestCase):
                                 "2882b0f45213a5ba20"),
                 ("mac_show", None),
                 ("mac_fcs", "0x20ba"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 109),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 169),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10009),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1824,10 +2082,12 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "09010d90e1fedec001c07777"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Network Report"),
+                ("nwk_cmd_id", "0x09: "
+                    "NWK Network Report"),
                 ("nwk_cmd_payloadlength", 11),
                 ("nwk_networkreport_count", 1),
-                ("nwk_networkreport_type", "PAN Identifier Conflict"),
+                ("nwk_networkreport_type", "0b000: "
+                    "PAN Identifier Conflict"),
                 ("nwk_networkreport_epid", "c001c0defee1900d"),
                 ("nwk_networkreport_info", "0x7777"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
@@ -1862,39 +2122,56 @@ class TestIntegration(unittest.TestCase):
                                 "8b812a34cad8d32ec0fe"),
                 ("mac_show", None),
                 ("mac_fcs", "0xfec0"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 110),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x0000"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xffff"),
                 ("nwk_srcshortaddr", "0x0000"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 170),
                 ("nwk_srcextendedaddr", "7777770000000001"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10010),
                 ("nwk_aux_srcaddr", "7777770000000001"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1902,10 +2179,12 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000001"),
                 ("nwk_aux_decpayload", "0a010d90e1fedec001c0028888"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK Network Update"),
+                ("nwk_cmd_id", "0x0a: "
+                    "NWK Network Update"),
                 ("nwk_cmd_payloadlength", 12),
                 ("nwk_networkupdate_count", 1),
-                ("nwk_networkupdate_type", "PAN Identifier Update"),
+                ("nwk_networkupdate_type", "0b000: "
+                    "PAN Identifier Update"),
                 ("nwk_networkupdate_epid", "c001c0defee1900d"),
                 ("nwk_networkupdate_updateid", 2),
                 ("nwk_networkupdate_newpanid", "0x8888"),
@@ -1939,39 +2218,57 @@ class TestIntegration(unittest.TestCase):
                                 "24e5e1132d07b3a5"),
                 ("mac_show", None),
                 ("mac_fcs", "0xa5b3"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 111),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x1102"),
                 ("mac_srcshortaddr", "0x2202"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x1102"),
                 ("nwk_srcshortaddr", "0x2202"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 171),
                 ("nwk_dstextendedaddr", "7777770000000003"),
                 ("nwk_srcextendedaddr", "7777770000000005"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10011),
                 ("nwk_aux_srcaddr", "7777770000000005"),
                 ("nwk_aux_keyseqnum", 0),
@@ -1979,9 +2276,11 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000005"),
                 ("nwk_aux_decpayload", "0b0300"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK End Device Timeout Request"),
+                ("nwk_cmd_id", "0x0b: "
+                    "NWK End Device Timeout Request"),
                 ("nwk_cmd_payloadlength", 2),
-                ("nwk_edtimeoutreq_reqtime", "8 minutes"),
+                ("nwk_edtimeoutreq_reqtime", "0x03: "
+                    "8 minutes"),
                 ("nwk_edtimeoutreq_edconf", 0),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
@@ -2015,39 +2314,57 @@ class TestIntegration(unittest.TestCase):
                                 "dd4715cd65c49785"),
                 ("mac_show", None),
                 ("mac_fcs", "0x8597"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 112),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0x2202"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Included"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b1: "
+                    "NWK Extended Destination Included"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x2202"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 172),
                 ("nwk_dstextendedaddr", "7777770000000005"),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10012),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2055,12 +2372,14 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "0c0003"),
                 ("nwk_aux_decshow", None),
-                ("nwk_cmd_id", "NWK End Device Timeout Response"),
+                ("nwk_cmd_id", "0x0c: "
+                    "NWK End Device Timeout Response"),
                 ("nwk_cmd_payloadlength", 2),
-                ("nwk_edtimeoutrsp_status", "Success"),
-                ("nwk_edtimeoutrsp_poll",
+                ("nwk_edtimeoutrsp_status", "0x00: "
+                    "Success"),
+                ("nwk_edtimeoutrsp_poll", "0b1: "
                     "MAC Data Poll Keepalive is supported"),
-                ("nwk_edtimeoutrsp_timeout",
+                ("nwk_edtimeoutrsp_timeout", "0b1: "
                     "End Device Timeout Request Keepalive is supported"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
@@ -2095,39 +2414,56 @@ class TestIntegration(unittest.TestCase):
                                 "f5"),
                 ("mac_show", None),
                 ("mac_fcs", "0xf565"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 113),
                 ("mac_dstpanid", "0x7777"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x1101"),
-                ("nwk_frametype", "NWK Data"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xfffd"),
                 ("nwk_srcshortaddr", "0x1101"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 173),
                 ("nwk_srcextendedaddr", "7777770000000002"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10013),
                 ("nwk_aux_srcaddr", "7777770000000002"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2178,48 +2514,66 @@ class TestIntegration(unittest.TestCase):
                                 "ae11223344443322110680fe8d"),
                 ("mac_show", None),
                 ("mac_fcs", "0x8dfe"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 114),
                 ("mac_dstpanid", "0x9999"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0xb000"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Disabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b0: "
+                    "NWK Security Disabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0xb000"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 174),
                 ("nwk_srcextendedaddr", "1122334444332211"),
-                ("nwk_cmd_id", "NWK Rejoin Request"),
+                ("nwk_cmd_id", "0x06: "
+                    "NWK Rejoin Request"),
                 ("nwk_cmd_payloadlength", 1),
-                ("nwk_rejoinreq_apc",
+                ("nwk_rejoinreq_apc", "0b0: "
                     "The sender is not capable of "
                     "becoming a PAN coordinator"),
-                ("nwk_rejoinreq_devtype", "Zigbee End Device"),
-                ("nwk_rejoinreq_powsrc",
+                ("nwk_rejoinreq_devtype", "0b0: "
+                    "Zigbee End Device"),
+                ("nwk_rejoinreq_powsrc", "0b0: "
                     "The sender is not a mains-powered device"),
-                ("nwk_rejoinreq_rxidle",
+                ("nwk_rejoinreq_rxidle", "0b0: "
                     "Disables the receiver to conserve power when idle"),
-                ("nwk_rejoinreq_seccap",
+                ("nwk_rejoinreq_seccap", "0b0: "
                     "Cannot transmit and receive secure MAC frames"),
-                ("nwk_rejoinreq_allocaddr", "Requests a short address"),
+                ("nwk_rejoinreq_allocaddr", "0b1: "
+                    "Requests a short address"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
@@ -2249,38 +2603,56 @@ class TestIntegration(unittest.TestCase):
                                 "334444332211004bf59324ae58a8a8"),
                 ("mac_show", None),
                 ("mac_fcs", "0xa8a8"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 115),
                 ("mac_dstpanid", "0x9999"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0xb000"),
-                ("nwk_frametype", "NWK Command"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b01: "
+                    "NWK Command"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0xb000"),
                 ("nwk_radius", 1),
                 ("nwk_seqnum", 175),
                 ("nwk_srcextendedaddr", "1122334444332211"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10015),
                 ("nwk_aux_srcaddr", "1122334444332211"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2314,37 +2686,55 @@ class TestIntegration(unittest.TestCase):
                                 "0b86a79f3c0c0bae0f4915355e"),
                 ("mac_show", None),
                 ("mac_fcs", "0x5e35"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 0),
                 ("mac_dstpanid", "0xdddd"),
                 ("mac_dstshortaddr", "0x0000"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Data"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Omitted"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x0000"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 240),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10240),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2397,39 +2787,56 @@ class TestIntegration(unittest.TestCase):
                                 "609e76862aa4a1967eebc4dd2ab50c9d"),
                 ("mac_show", None),
                 ("mac_fcs", "0x9d0c"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 64),
                 ("mac_dstpanid", "0xdddd"),
                 ("mac_dstshortaddr", "0xffff"),
                 ("mac_srcshortaddr", "0x1102"),
-                ("nwk_frametype", "NWK Data"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Included"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b1: "
+                    "NWK Extended Source Included"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0xfffd"),
                 ("nwk_srcshortaddr", "0x1102"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 192),
                 ("nwk_srcextendedaddr", "7777770000000003"),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10480),
                 ("nwk_aux_srcaddr", "7777770000000003"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2482,37 +2889,55 @@ class TestIntegration(unittest.TestCase):
                                 "9042"),
                 ("mac_show", None),
                 ("mac_fcs", "0x4290"),
-                ("mac_frametype", "MAC Data"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq", "The sender requests a MAC Acknowledgment"),
-                ("mac_panidcomp",
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
                     "The source PAN ID is the same "
                     "as the destination PAN ID"),
-                ("mac_dstaddrmode", "Short destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "Short source MAC address"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
                 ("mac_seqnum", 64),
                 ("mac_dstpanid", "0xdddd"),
                 ("mac_dstshortaddr", "0x1102"),
                 ("mac_srcshortaddr", "0x0000"),
-                ("nwk_frametype", "NWK Data"),
-                ("nwk_protocolversion", "Zigbee PRO"),
-                ("nwk_discroute", "Suppress route discovery"),
-                ("nwk_multicast", "NWK Multicast Disabled"),
-                ("nwk_security", "NWK Security Enabled"),
-                ("nwk_srcroute", "NWK Source Route Omitted"),
-                ("nwk_extendeddst", "NWK Extended Destination Omitted"),
-                ("nwk_extendedsrc", "NWK Extended Source Omitted"),
-                ("nwk_edinitiator", "NWK Not End Device Initiator"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
                 ("nwk_dstshortaddr", "0x1102"),
                 ("nwk_srcshortaddr", "0x0000"),
                 ("nwk_radius", 30),
                 ("nwk_seqnum", 192),
-                ("nwk_aux_seclevel", "None"),
-                ("nwk_aux_keytype", "Network Key"),
-                ("nwk_aux_extnonce", "The source address is present"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
                 ("nwk_aux_framecounter", 10720),
                 ("nwk_aux_srcaddr", "7777770000000001"),
                 ("nwk_aux_keyseqnum", 0),
@@ -2564,7 +2989,7 @@ class TestIntegration(unittest.TestCase):
                 ("pcap_filename", "07-sll-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599997697.0),
-                ("sll_pkttype",
+                ("sll_pkttype", "0x0003: "
                     "The packet was sent to another host by another host"),
                 ("sll_arphrdtype", 0x0325),
                 ("sll_addrlength", 0),
@@ -2574,16 +2999,22 @@ class TestIntegration(unittest.TestCase):
                 ("phy_payload", "02007780b2"),
                 ("mac_show", None),
                 ("mac_fcs", "0xb280"),
-                ("mac_frametype", "MAC Acknowledgment"),
-                ("mac_security", "MAC Security Disabled"),
-                ("mac_framepending",
+                ("mac_frametype", "0b010: "
+                    "MAC Acknowledgment"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
                     "No additional packets are pending for the receiver"),
-                ("mac_ackreq",
+                ("mac_ackreq", "0b0: "
                     "The sender does not request a MAC Acknowledgment"),
-                ("mac_panidcomp", "Do not compress the source PAN ID"),
-                ("mac_dstaddrmode", "No destination MAC address"),
-                ("mac_frameversion", "IEEE 802.15.4-2003 Frame Version"),
-                ("mac_srcaddrmode", "No source MAC address"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b00: "
+                    "No destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b00: "
+                    "No source MAC address"),
                 ("mac_seqnum", 119),
                 ("der_tx_type", "Single-Hop Transmission"),
             ],

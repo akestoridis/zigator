@@ -49,147 +49,147 @@ PACKET_TYPES = [
         "nwk_routerequest.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Request"),
+            ("nwk_cmd_id", "0x01: NWK Route Request"),
         ),
     ),
     (
         "nwk_routereply.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Reply"),
+            ("nwk_cmd_id", "0x02: NWK Route Reply"),
         ),
     ),
     (
         "nwk_networkstatus.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Status"),
+            ("nwk_cmd_id", "0x03: NWK Network Status"),
         ),
     ),
     (
         "nwk_leave.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Leave"),
+            ("nwk_cmd_id", "0x04: NWK Leave"),
         ),
     ),
     (
         "nwk_routerecord.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Route Record"),
+            ("nwk_cmd_id", "0x05: NWK Route Record"),
         ),
     ),
     (
         "nwk_rejoinreq.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Request"),
+            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
         ),
     ),
     (
         "nwk_rejoinrsp.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Rejoin Response"),
+            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
         ),
     ),
     (
         "nwk_linkstatus.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Link Status"),
+            ("nwk_cmd_id", "0x08: NWK Link Status"),
         ),
     ),
     (
         "nwk_networkreport.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Report"),
+            ("nwk_cmd_id", "0x09: NWK Network Report"),
         ),
     ),
     (
         "nwk_networkupdate.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK Network Update"),
+            ("nwk_cmd_id", "0x0a: NWK Network Update"),
         ),
     ),
     (
         "nwk_edtimeoutreq.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Request"),
+            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
         ),
     ),
     (
         "nwk_edtimeoutrsp.tsv",
         (
             ("error_msg", None),
-            ("nwk_cmd_id", "NWK End Device Timeout Response"),
+            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
         ),
     ),
     (
         "mac_assocreq.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Association Request"),
+            ("mac_cmd_id", "0x01: MAC Association Request"),
         ),
     ),
     (
         "mac_assocrsp.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Association Response"),
+            ("mac_cmd_id", "0x02: MAC Association Response"),
         ),
     ),
     (
         "mac_disassoc.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Disassociation Notification"),
+            ("mac_cmd_id", "0x03: MAC Disassociation Notification"),
         ),
     ),
     (
         "mac_datareq.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Data Request"),
+            ("mac_cmd_id", "0x04: MAC Data Request"),
         ),
     ),
     (
         "mac_conflictnotif.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC PAN ID Conflict Notification"),
+            ("mac_cmd_id", "0x05: MAC PAN ID Conflict Notification"),
         ),
     ),
     (
         "mac_orphannotif.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Orphan Notification"),
+            ("mac_cmd_id", "0x06: MAC Orphan Notification"),
         ),
     ),
     (
         "mac_beaconreq.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Beacon Request"),
+            ("mac_cmd_id", "0x07: MAC Beacon Request"),
         ),
     ),
     (
         "mac_realign.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC Coordinator Realignment"),
+            ("mac_cmd_id", "0x08: MAC Coordinator Realignment"),
         ),
     ),
     (
         "mac_gtsreq.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "MAC GTS Request"),
+            ("mac_cmd_id", "0x09: MAC GTS Request"),
         ),
     ),
 ]

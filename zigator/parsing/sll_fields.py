@@ -22,11 +22,11 @@ from .phy_fields import phy_fields
 
 
 SLL_PKT_TYPES = {
-    0: "The packet was sent to us by another host",
-    1: "The packet was broadcasted by another host",
-    2: "The packet was multicasted by another host",
-    3: "The packet was sent to another host by another host",
-    4: "The packet was sent by us"
+    0: "0x0000: The packet was sent to us by another host",
+    1: "0x0001: The packet was broadcasted by another host",
+    2: "0x0002: The packet was multicasted by another host",
+    3: "0x0003: The packet was sent to another host by another host",
+    4: "0x0004: The packet was sent by us"
 }
 
 
@@ -37,7 +37,7 @@ def sll_fields(pkt, msg_queue):
             "sll_pkttype",
             pkt[CookedLinux].pkttype,
             SLL_PKT_TYPES):
-        config.entry["error_msg"] = "Unknown SLL packet type"
+        config.entry["error_msg"] = "PE003: Unknown SLL packet type"
         return
 
     # ARPHRD Type field (2 bytes)
