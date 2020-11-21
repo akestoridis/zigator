@@ -46,6 +46,83 @@ INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
 
 PACKET_TYPES = [
     (
+        "mac_acknowledgment.tsv",
+        (
+            ("error_msg", None),
+            ("mac_frametype", "0b010: MAC Acknowledgment"),
+        ),
+    ),
+    (
+        "mac_beacon.tsv",
+        (
+            ("error_msg", None),
+            ("mac_frametype", "0b000: MAC Beacon"),
+        ),
+    ),
+    (
+        "mac_assocreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x01: MAC Association Request"),
+        ),
+    ),
+    (
+        "mac_assocrsp.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x02: MAC Association Response"),
+        ),
+    ),
+    (
+        "mac_disassoc.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x03: MAC Disassociation Notification"),
+        ),
+    ),
+    (
+        "mac_datareq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x04: MAC Data Request"),
+        ),
+    ),
+    (
+        "mac_conflictnotif.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x05: MAC PAN ID Conflict Notification"),
+        ),
+    ),
+    (
+        "mac_orphannotif.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x06: MAC Orphan Notification"),
+        ),
+    ),
+    (
+        "mac_beaconreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x07: MAC Beacon Request"),
+        ),
+    ),
+    (
+        "mac_realign.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x08: MAC Coordinator Realignment"),
+        ),
+    ),
+    (
+        "mac_gtsreq.tsv",
+        (
+            ("error_msg", None),
+            ("mac_cmd_id", "0x09: MAC GTS Request"),
+        ),
+    ),
+    (
         "nwk_routerequest.tsv",
         (
             ("error_msg", None),
@@ -130,66 +207,66 @@ PACKET_TYPES = [
         ),
     ),
     (
-        "mac_assocreq.tsv",
+        "aps_acknowledgment.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x01: MAC Association Request"),
+            ("aps_frametype", "0b10: APS Acknowledgment"),
         ),
     ),
     (
-        "mac_assocrsp.tsv",
+        "aps_transportkey.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x02: MAC Association Response"),
+            ("aps_cmd_id", "0x05: APS Transport Key"),
         ),
     ),
     (
-        "mac_disassoc.tsv",
+        "aps_updatedevice.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x03: MAC Disassociation Notification"),
+            ("aps_cmd_id", "0x06: APS Update Device"),
         ),
     ),
     (
-        "mac_datareq.tsv",
+        "aps_removedevice.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x04: MAC Data Request"),
+            ("aps_cmd_id", "0x07: APS Remove Device"),
         ),
     ),
     (
-        "mac_conflictnotif.tsv",
+        "aps_requestkey.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x05: MAC PAN ID Conflict Notification"),
+            ("aps_cmd_id", "0x08: APS Request Key"),
         ),
     ),
     (
-        "mac_orphannotif.tsv",
+        "aps_switchkey.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x06: MAC Orphan Notification"),
+            ("aps_cmd_id", "0x09: APS Switch Key"),
         ),
     ),
     (
-        "mac_beaconreq.tsv",
+        "aps_tunnel.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x07: MAC Beacon Request"),
+            ("aps_cmd_id", "0x0e: APS Tunnel"),
         ),
     ),
     (
-        "mac_realign.tsv",
+        "aps_verifykey.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x08: MAC Coordinator Realignment"),
+            ("aps_cmd_id", "0x0f: APS Verify Key"),
         ),
     ),
     (
-        "mac_gtsreq.tsv",
+        "aps_confirmkey.tsv",
         (
             ("error_msg", None),
-            ("mac_cmd_id", "0x09: MAC GTS Request"),
+            ("aps_cmd_id", "0x10: APS Confirm Key"),
         ),
     ),
 ]
