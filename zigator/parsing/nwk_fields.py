@@ -428,9 +428,11 @@ def nwk_routerecord(pkt):
     )
 
     # Relay List field (variable)
-    config.entry["nwk_routerecord_relaylist"] = ",".join(
-        "0x{:04x}".format(addr)
-        for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
+    if config.entry["nwk_routerecord_relaycount"] > 0:
+        config.entry["nwk_routerecord_relaylist"] = (
+            ",".join("0x{:04x}".format(addr)
+                for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
+        )
 
 
 def nwk_rejoinreq(pkt):
@@ -528,12 +530,18 @@ def nwk_linkstatus(pkt, msg_queue):
         config.entry["error_msg"] = "Unable to process the Link Status List"
         return
     if config.entry["nwk_linkstatus_count"] > 0:
-        config.entry["nwk_linkstatus_addresses"] = ",".join("0x{:04x}".format(
-            link.neighbor_network_address) for link in linkstatus_list)
-        config.entry["nwk_linkstatus_incomingcosts"] = ",".join(
-            str(link.incoming_cost) for link in linkstatus_list)
-        config.entry["nwk_linkstatus_outgoingcosts"] = ",".join(
-            str(link.outgoing_cost) for link in linkstatus_list)
+        config.entry["nwk_linkstatus_addresses"] = (
+            ",".join("0x{:04x}".format(link.neighbor_network_address)
+                for link in linkstatus_list)
+        )
+        config.entry["nwk_linkstatus_incomingcosts"] = (
+            ",".join(str(link.incoming_cost)
+                for link in linkstatus_list)
+        )
+        config.entry["nwk_linkstatus_outgoingcosts"] = (
+            ",".join(str(link.outgoing_cost)
+                for link in linkstatus_list)
+        )
 
 
 def nwk_networkreport(pkt, msg_queue):
@@ -570,8 +578,10 @@ def nwk_networkreport(pkt, msg_queue):
             config.entry["error_msg"] = "Unable to process the PAN IDs"
             return
         if config.entry["nwk_networkreport_count"] > 0:
-            config.entry["nwk_networkreport_info"] = ",".join(
-                "0x{:04x}".format(panid) for panid in panid_list)
+            config.entry["nwk_networkreport_info"] = (
+                ",".join("0x{:04x}".format(panid)
+                    for panid in panid_list)
+            )
     else:
         config.entry["error_msg"] = "Invalid report type"
         return
@@ -1080,8 +1090,11 @@ def nwk_fields(pkt, msg_queue):
     if config.entry["nwk_srcroute"].startswith("0b1:"):
         config.entry["nwk_srcroute_relaycount"] = pkt[ZigbeeNWK].relay_count
         config.entry["nwk_srcroute_relayindex"] = pkt[ZigbeeNWK].relay_index
-        config.entry["nwk_srcroute_relaylist"] = ",".join(
-            "0x{:04x}".format(addr) for addr in pkt[ZigbeeNWK].relays)
+        if config.entry["nwk_srcroute_relaycount"] > 0:
+            config.entry["nwk_srcroute_relaylist"] = (
+                ",".join("0x{:04x}".format(addr)
+                    for addr in pkt[ZigbeeNWK].relays)
+            )
     elif not config.entry["nwk_srcroute"].startswith("0b0:"):
         config.entry["error_msg"] = "Invalid NWK SR state"
         return

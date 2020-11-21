@@ -1100,8 +1100,6 @@ class TestIntegration(unittest.TestCase):
                 ("mac_beacon_gtspermit", 0),
                 ("mac_beacon_nsap", 0),
                 ("mac_beacon_neap", 0),
-                ("mac_beacon_shortaddresses", ""),
-                ("mac_beacon_extendedaddresses", ""),
                 ("nwk_beacon_protocolid", 0),
                 ("nwk_beacon_stackprofile", 2),
                 ("nwk_beacon_protocolversion", "0b0010: "

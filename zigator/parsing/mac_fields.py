@@ -484,10 +484,16 @@ def mac_beacon(pkt, msg_queue):
     config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
 
     # Address List field (variable)
-    config.entry["mac_beacon_shortaddresses"] = ",".join("0x{:04x}".format(
-        addr) for addr in pkt[Dot15d4Beacon].pa_short_addresses)
-    config.entry["mac_beacon_extendedaddresses"] = ",".join(format(
-        addr, "016x") for addr in pkt[Dot15d4Beacon].pa_long_addresses)
+    if config.entry["mac_beacon_nsap"] > 0:
+        config.entry["mac_beacon_shortaddresses"] = (
+            ",".join("0x{:04x}".format(addr)
+                for addr in pkt[Dot15d4Beacon].pa_short_addresses)
+        )
+    if config.entry["mac_beacon_neap"] > 0:
+        config.entry["mac_beacon_extendedaddresses"] = (
+            ",".join(format(addr, "016x")
+                for addr in pkt[Dot15d4Beacon].pa_long_addresses)
+        )
 
     # Beacon Payload field (variable)
     if pkt.haslayer(ZigBeeBeacon):
