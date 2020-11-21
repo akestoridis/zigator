@@ -47,24 +47,24 @@ CONDITION_SELECTIONS = [
         (
             "APS Acknowledgment",
             ("error_msg", None),
-            ("aps_frametype", "APS Acknowledgment"),
+            ("aps_frametype", "0b10: APS Acknowledgment"),
         ),
         (
             "APS Command",
             ("error_msg", None),
-            ("aps_frametype", "APS Command"),
+            ("aps_frametype", "0b01: APS Command"),
         ),
         (
             "ZDP Command",
             ("error_msg", None),
-            ("aps_frametype", "APS Data"),
-            ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+            ("aps_frametype", "0b00: APS Data"),
+            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
         ),
         (
             "ZCL Command",
             ("error_msg", None),
-            ("aps_frametype", "APS Data"),
-            ("!aps_profilename", "Zigbee Device Profile (ZDP)"),
+            ("aps_frametype", "0b00: APS Data"),
+            ("!aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
         ),
     ),
     (

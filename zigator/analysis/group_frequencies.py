@@ -38,7 +38,7 @@ COLUMN_GROUPS = [
         "mac_frametype",
         "nwk_frametype",
         "aps_frametype",
-        "aps_profilename",
+        "aps_profile_id",
         "zcl_frametype",
     ),
     (
@@ -49,20 +49,15 @@ COLUMN_GROUPS = [
         "nwk_cmd_id",
         "aps_frametype",
         "aps_cmd_id",
-        "aps_profilename",
-        "aps_clustername",
+        "aps_profile_id",
+        "aps_cluster_id",
         "zcl_frametype",
         "zcl_cmd_id",
     ),
     (
         "profileid_clusterid-frequency.tsv",
-        "aps_profileid",
-        "aps_clusterid",
-    ),
-    (
-        "profilename_clustername-frequency.tsv",
-        "aps_profilename",
-        "aps_clustername",
+        "aps_profile_id",
+        "aps_cluster_id",
     ),
     (
         "nwkcmdid_addrtype-frequency.tsv",

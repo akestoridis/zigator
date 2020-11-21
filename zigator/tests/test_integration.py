@@ -616,10 +616,8 @@ class TestIntegration(unittest.TestCase):
                 "aps_exthdr",
                 "aps_dstendpoint",
                 "aps_groupaddr",
-                "aps_clusterid",
-                "aps_clustername",
-                "aps_profileid",
-                "aps_profilename",
+                "aps_cluster_id",
+                "aps_profile_id",
                 "aps_srcendpoint",
                 "aps_counter",
                 "aps_fragmentation",
@@ -2472,17 +2470,23 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decpayload", "08001300000000818101110200000000"
                                        "7777778e"),
                 ("nwk_aux_decshow", None),
-                ("aps_frametype", "APS Data"),
-                ("aps_delmode", "Broadcast"),
-                ("aps_ackformat", "APS ACK Format Disabled"),
-                ("aps_security", "APS Security Disabled"),
-                ("aps_ackreq", "The sender does not request an APS ACK"),
-                ("aps_exthdr", "The extended header is not included"),
+                ("aps_frametype", "0b00: "
+                    "APS Data"),
+                ("aps_delmode", "0b10: "
+                    "Broadcast"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
                 ("aps_dstendpoint", 0),
-                ("aps_clusterid", "0x0013"),
-                ("aps_clustername", "Device_annce"),
-                ("aps_profileid", "0x0000"),
-                ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+                ("aps_cluster_id", "0x0013: "
+                    "Device_annce"),
+                ("aps_profile_id", "0x0000: "
+                    "Zigbee Device Profile (ZDP)"),
                 ("aps_srcendpoint", 0),
                 ("aps_counter", 129),
                 ("zdp_seqnum", 129),
@@ -2742,17 +2746,23 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000003"),
                 ("nwk_aux_decpayload", "020005000000004e"),
                 ("nwk_aux_decshow", None),
-                ("aps_frametype", "APS Acknowledgment"),
-                ("aps_delmode", "Normal unicast delivery"),
-                ("aps_ackformat", "APS ACK Format Disabled"),
-                ("aps_security", "APS Security Disabled"),
-                ("aps_ackreq", "The sender does not request an APS ACK"),
-                ("aps_exthdr", "The extended header is not included"),
+                ("aps_frametype", "0b10: "
+                    "APS Acknowledgment"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
                 ("aps_dstendpoint", 0),
-                ("aps_clusterid", "0x0005"),
-                ("aps_clustername", "Active_EP_req"),
-                ("aps_profileid", "0x0000"),
-                ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+                ("aps_cluster_id", "0x0005: "
+                    "Active_EP_req"),
+                ("aps_profile_id", "0x0000: "
+                    "Zigbee Device Profile (ZDP)"),
                 ("aps_srcendpoint", 0),
                 ("aps_counter", 78),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
@@ -2845,17 +2855,23 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decpayload", "08000000000000e98501000000007777"
                                        "770000"),
                 ("nwk_aux_decshow", None),
-                ("aps_frametype", "APS Data"),
-                ("aps_delmode", "Broadcast"),
-                ("aps_ackformat", "APS ACK Format Disabled"),
-                ("aps_security", "APS Security Disabled"),
-                ("aps_ackreq", "The sender does not request an APS ACK"),
-                ("aps_exthdr", "The extended header is not included"),
+                ("aps_frametype", "0b00: "
+                    "APS Data"),
+                ("aps_delmode", "0b10: "
+                    "Broadcast"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
                 ("aps_dstendpoint", 0),
-                ("aps_clusterid", "0x0000"),
-                ("aps_clustername", "NWK_addr_req"),
-                ("aps_profileid", "0x0000"),
-                ("aps_profilename", "Zigbee Device Profile (ZDP)"),
+                ("aps_cluster_id", "0x0000: "
+                    "NWK_addr_req"),
+                ("aps_profile_id", "0x0000: "
+                    "Zigbee Device Profile (ZDP)"),
                 ("aps_srcendpoint", 0),
                 ("aps_counter", 233),
                 ("zdp_seqnum", 133),
@@ -2945,25 +2961,36 @@ class TestIntegration(unittest.TestCase):
                 ("nwk_aux_decsrc", "7777770000000001"),
                 ("nwk_aux_decpayload", "40010000040101500000000100"),
                 ("nwk_aux_decshow", None),
-                ("aps_frametype", "APS Data"),
-                ("aps_delmode", "Normal unicast delivery"),
-                ("aps_ackformat", "APS ACK Format Disabled"),
-                ("aps_security", "APS Security Disabled"),
-                ("aps_ackreq", "The sender requests an APS ACK"),
-                ("aps_exthdr", "The extended header is not included"),
+                ("aps_frametype", "0b00: "
+                    "APS Data"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b1: "
+                    "The sender requests an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
                 ("aps_dstendpoint", 1),
-                ("aps_clusterid", "0x0000"),
-                ("aps_clustername", "Basic"),
-                ("aps_profileid", "0x0104"),
-                ("aps_profilename", "Zigbee Home Automation (ZHA)"),
+                ("aps_cluster_id", "0x0000: "
+                    "Basic"),
+                ("aps_profile_id", "0x0104: "
+                    "Zigbee Home Automation (ZHA)"),
                 ("aps_srcendpoint", 1),
                 ("aps_counter", 80),
-                ("zcl_frametype", "Global Command"),
-                ("zcl_manufspecific", "The command is not manufacturer-specific"),
-                ("zcl_direction", "From the client to the server"),
-                ("zcl_disdefrsp", "A Default Response will be returned"),
+                ("zcl_frametype", "0b00: "
+                    "Global Command"),
+                ("zcl_manufspecific", "0b0: "
+                    "The command is not manufacturer-specific"),
+                ("zcl_direction", "0b0: "
+                    "From the client to the server"),
+                ("zcl_disdefrsp", "0b0: "
+                    "A Default Response will be returned"),
                 ("zcl_seqnum", 0),
-                ("zcl_cmd_id", "Read Attributes"),
+                ("zcl_cmd_id", "0x00: "
+                    "Read Attributes"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),

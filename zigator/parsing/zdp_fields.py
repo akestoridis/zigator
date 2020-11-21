@@ -26,5 +26,3 @@ def zdp_fields(pkt):
 
     # Transaction Data field (variable)
     # TODO
-
-    return
