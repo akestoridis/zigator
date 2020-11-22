@@ -198,6 +198,11 @@ def mac_assocreq(pkt):
         config.entry["error_msg"] = "PE217: Unknown address allocation"
         return
 
+    # MAC Association Request commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdAssocReq].payload)) != 0:
+        config.entry["error_msg"] = "PE225: Unexpected payload"
+        return
+
 
 def mac_assocrsp(pkt):
     # Short Address field (2 bytes)
@@ -212,6 +217,11 @@ def mac_assocrsp(pkt):
         config.entry["error_msg"] = "PE218: Unknown association status"
         return
 
+    # MAC Association Response commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdAssocResp].payload)) != 0:
+        config.entry["error_msg"] = "PE226: Unexpected payload"
+        return
+
 
 def mac_disassoc(pkt):
     # Disassociation Reason field (1 byte)
@@ -220,6 +230,11 @@ def mac_disassoc(pkt):
             pkt[Dot15d4CmdDisassociation].disassociation_reason,
             DISASSOC_REASONS):
         config.entry["error_msg"] = "PE219: Unknown disassociation reason"
+        return
+
+    # MAC Disassociation Notification commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdDisassociation].payload)) != 0:
+        config.entry["error_msg"] = "PE227: Unexpected payload"
         return
 
 
@@ -245,6 +260,16 @@ def mac_realign(pkt):
             pkt[Dot15d4CmdCoordRealignPage].channel_page
         )
 
+        # MAC Coordinator Realignment commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4CmdCoordRealignPage].payload)) != 0:
+            config.entry["error_msg"] = "PE232: Unexpected payload"
+            return
+    else:
+        # MAC Coordinator Realignment commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4CmdCoordRealign].payload)) != 0:
+            config.entry["error_msg"] = "PE233: Unexpected payload"
+            return
+
 
 def mac_gtsreq(pkt):
     # GTS Characteristics field (1 byte)
@@ -263,6 +288,11 @@ def mac_gtsreq(pkt):
             pkt[Dot15d4CmdGTSReq].charact_type,
             GTS_CHARACTERISTICS_TYPES):
         config.entry["error_msg"] = "PE221: Unknown GTS characteristics type"
+        return
+
+    # MAC GTS Request commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdGTSReq].payload)) != 0:
+        config.entry["error_msg"] = "PE234: Unexpected payload"
         return
 
 
@@ -378,17 +408,26 @@ def mac_command(pkt, msg_queue):
     elif config.entry["mac_cmd_id"].startswith("0x03:"):
         mac_disassoc(pkt)
     elif config.entry["mac_cmd_id"].startswith("0x04:"):
-        # MAC Data Requests do not contain any other fields
-        return
+        # MAC Data Request commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4Cmd].payload)) != 0:
+            config.entry["error_msg"] = "PE228: Unexpected payload"
+            return
     elif config.entry["mac_cmd_id"].startswith("0x05:"):
-        # MAC PAN ID Conflict Notifications do not contain any other fields
-        return
+        # MAC PAN ID Conflict Notification commands
+        # do not contain any other fields
+        if len(bytes(pkt[Dot15d4Cmd].payload)) != 0:
+            config.entry["error_msg"] = "PE229: Unexpected payload"
+            return
     elif config.entry["mac_cmd_id"].startswith("0x06:"):
-        # MAC Orphan Notifications do not contain any other fields
-        return
+        # MAC Orphan Notification commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4Cmd].payload)) != 0:
+            config.entry["error_msg"] = "PE230: Unexpected payload"
+            return
     elif config.entry["mac_cmd_id"].startswith("0x07:"):
-        # MAC Beacon Requests do not contain any other fields
-        return
+        # MAC Beacon Request commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4Cmd].payload)) != 0:
+            config.entry["error_msg"] = "PE231: Unexpected payload"
+            return
     elif config.entry["mac_cmd_id"].startswith("0x08:"):
         mac_realign(pkt)
     elif config.entry["mac_cmd_id"].startswith("0x09:"):
@@ -671,7 +710,9 @@ def mac_fields(pkt, msg_queue):
         # MAC Payload field (variable)
         if config.entry["mac_frametype"].startswith("0b010:"):
             # MAC Acknowledgments do not contain any other fields
-            return
+            if len(bytes(pkt[Dot15d4FCS].payload)) != 0:
+                config.entry["error_msg"] = "PE224: Unexpected payload"
+                return
         elif config.entry["mac_frametype"].startswith("0b011:"):
             if pkt.haslayer(Dot15d4Cmd):
                 mac_command(pkt, msg_queue)

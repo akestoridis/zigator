@@ -429,6 +429,11 @@ def aps_transportkey(pkt, msg_queue):
         config.entry["error_msg"] = "Invalid standard key type"
         return
 
+    # APS Transport Key commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE428: Unexpected payload"
+        return
+
 
 def aps_updatedevice(pkt):
     # Device Extended Address field (8 bytes)
@@ -447,11 +452,21 @@ def aps_updatedevice(pkt):
         config.entry["error_msg"] = "PE415: Unknown UD status"
         return
 
+    # APS Update Device commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE429: Unexpected payload"
+        return
+
 
 def aps_removedevice(pkt):
     # Target Extended Address field (8 bytes)
     config.entry["aps_removedevice_extendedaddr"] = format(
         pkt[ZigbeeAppCommandPayload].address, "016x")
+
+    # APS Remove Device commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE430: Unexpected payload"
+        return
 
 
 def aps_requestkey(pkt):
@@ -471,12 +486,22 @@ def aps_requestkey(pkt):
         config.entry["error_msg"] = "Invalid request key type"
         return
 
+    # APS Request Key commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE431: Unexpected payload"
+        return
+
 
 def aps_switchkey(pkt):
     # Key Sequence Number field (1 byte)
     config.entry["aps_switchkey_keyseqnum"] = (
         pkt[ZigbeeAppCommandPayload].seqnum
     )
+
+    # APS Switch Key commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE432: Unexpected payload"
+        return
 
 
 def aps_tunnel(pkt, msg_queue):
@@ -577,6 +602,11 @@ def aps_verifykey(pkt):
         pkt[ZigbeeAppCommandPayload].key_hash.hex()
     )
 
+    # APS Verify Key commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE433: Unexpected payload"
+        return
+
 
 def aps_confirmkey(pkt):
     # Status field (1 byte)
@@ -598,6 +628,11 @@ def aps_confirmkey(pkt):
     # Destination Extended Address field (8 bytes)
     config.entry["aps_confirmkey_extendedaddr"] = format(
         pkt[ZigbeeAppCommandPayload].address, "016x")
+
+    # APS Confirm Key commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE434: Unexpected payload"
+        return
 
 
 def aps_command_payload(pkt, msg_queue):
@@ -789,6 +824,11 @@ def aps_auxiliary(pkt, msg_queue):
                     return
                 elif config.entry["aps_frametype"].startswith("0b10:"):
                     # APS Acknowledgments do not contain any other fields
+                    if len(dec_payload) != 0:
+                        config.entry["error_msg"] = (
+                            "PE427: Unexpected payload"
+                        )
+                        return
                     return
                 else:
                     config.entry["error_msg"] = (
@@ -1036,7 +1076,9 @@ def aps_ack_header(pkt, msg_queue):
             return
     elif config.entry["aps_security"].startswith("0b0:"):
         # APS Acknowledgments do not contain any other fields
-        return
+        if len(bytes(pkt[ZigbeeAppDataPayload].payload)) != 0:
+            config.entry["error_msg"] = "PE426: Unexpected payload"
+            return
     else:
         config.entry["error_msg"] = "Invalid APS security state"
         return

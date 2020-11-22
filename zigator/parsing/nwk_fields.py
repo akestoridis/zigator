@@ -322,6 +322,11 @@ def nwk_routerequest(pkt):
         config.entry["error_msg"] = "Invalid ED state"
         return
 
+    # NWK Route Request commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE343: Unexpected payload"
+        return
+
 
 def nwk_routereply(pkt):
     # Command Options field (1 byte)
@@ -381,6 +386,11 @@ def nwk_routereply(pkt):
         config.entry["error_msg"] = "Invalid ER state"
         return
 
+    # NWK Route Reply commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE344: Unexpected payload"
+        return
+
 
 def nwk_networkstatus(pkt):
     # Status Code field (1 byte)
@@ -394,6 +404,11 @@ def nwk_networkstatus(pkt):
     # Destination Short Address field (2 bytes)
     config.entry["nwk_networkstatus_dstshortaddr"] = "0x{:04x}".format(
         pkt[ZigbeeNWKCommandPayload].destination_address)
+
+    # NWK Network Status commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE345: Unexpected payload"
+        return
 
 
 def nwk_leave(pkt):
@@ -420,6 +435,11 @@ def nwk_leave(pkt):
         config.entry["error_msg"] = "PE324: Unknown RC state"
         return
 
+    # NWK Leave commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE346: Unexpected payload"
+        return
+
 
 def nwk_routerecord(pkt):
     # Relay Count field (1 byte)
@@ -433,6 +453,11 @@ def nwk_routerecord(pkt):
             ",".join("0x{:04x}".format(addr)
                 for addr in pkt[ZigbeeNWKCommandPayload].rr_relay_list)
         )
+
+    # NWK Route Record commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE347: Unexpected payload"
+        return
 
 
 def nwk_rejoinreq(pkt):
@@ -480,6 +505,11 @@ def nwk_rejoinreq(pkt):
         config.entry["error_msg"] = "PE330: Unknown address allocation"
         return
 
+    # NWK Rejoin Request commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE348: Unexpected payload"
+        return
+
 
 def nwk_rejoinrsp(pkt):
     # Network Address field (2 bytes)
@@ -492,6 +522,11 @@ def nwk_rejoinrsp(pkt):
             pkt[ZigbeeNWKCommandPayload].rejoin_status,
             REJOIN_STATUSES):
         config.entry["error_msg"] = "PE331: Unknown rejoin status"
+        return
+
+    # NWK Rejoin Response commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE349: Unexpected payload"
         return
 
 
@@ -543,6 +578,11 @@ def nwk_linkstatus(pkt, msg_queue):
                 for link in linkstatus_list)
         )
 
+    # NWK Link Status commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE350: Unexpected payload"
+        return
+
 
 def nwk_networkreport(pkt, msg_queue):
     # Command Options field (1 byte)
@@ -586,6 +626,11 @@ def nwk_networkreport(pkt, msg_queue):
         config.entry["error_msg"] = "Invalid report type"
         return
 
+    # NWK Network Report commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE351: Unexpected payload"
+        return
+
 
 def nwk_networkupdate(pkt):
     # Command Options field (1 byte)
@@ -619,6 +664,11 @@ def nwk_networkupdate(pkt):
         config.entry["error_msg"] = "Invalid update type"
         return
 
+    # NWK Network Update commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE352: Unexpected payload"
+        return
+
 
 def nwk_edtimeoutreq(pkt):
     # Requested Timeout field (1 byte)
@@ -633,6 +683,11 @@ def nwk_edtimeoutreq(pkt):
     config.entry["nwk_edtimeoutreq_edconf"] = (
         pkt[ZigbeeNWKCommandPayload].ed_conf
     )
+
+    # NWK End Device Timeout Request commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE353: Unexpected payload"
+        return
 
 
 def nwk_edtimeoutrsp(pkt):
@@ -658,6 +713,11 @@ def nwk_edtimeoutrsp(pkt):
             pkt[ZigbeeNWKCommandPayload].ed_timeout_req_keepalive,
             TIMEOUT_STATES):
         config.entry["error_msg"] = "PE339: Unknown timeout state"
+        return
+
+    # NWK End Device Timeout Response commands do not contain any other fields
+    if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
+        config.entry["error_msg"] = "PE354: Unexpected payload"
         return
 
 
@@ -841,6 +901,11 @@ def nwk_beacon(pkt):
     config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset
     # Update ID subfield (8 bits)
     config.entry["nwk_beacon_updateid"] = pkt[ZigBeeBeacon].update_id
+
+    # Beacons do not contain any other fields
+    if len(bytes(pkt[ZigBeeBeacon].payload)) != 0:
+        config.entry["error_msg"] = "PE355: Unexpected payload"
+        return
 
 
 def nwk_auxiliary(pkt, msg_queue):
