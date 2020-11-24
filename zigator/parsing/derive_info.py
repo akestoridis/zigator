@@ -347,6 +347,20 @@ def derive_logical_device_types():
                     nwkdevtype = "Zigbee Router"
             if extendedaddr is not None:
                 config.update_devices(extendedaddr, macdevtype, nwkdevtype)
+        elif (config.entry["mac_panidcomp"].startswith("0b1:")
+            and (config.entry["nwk_srcshortaddr"] == "0x0000"
+                 or config.entry["nwk_dstshortaddr"] == "0x0000")):
+            # Zigbee Coordinators always use 0x0000 as their short address
+            panid = config.entry["mac_dstpanid"]
+            shortaddr = "0x0000"
+            extendedaddr = None
+            macdevtype = "Full-Function Device"
+            nwkdevtype = "Zigbee Coordinator"
+            if (shortaddr, panid) in config.addresses.keys():
+                if config.addresses[(shortaddr, panid)] != "Conflicting Data":
+                    extendedaddr = config.addresses[(shortaddr, panid)]
+            if extendedaddr is not None:
+                config.update_devices(extendedaddr, macdevtype, nwkdevtype)
 
 
 def derive_address_types():
