@@ -345,6 +345,11 @@ def create_table(tablename):
 def insert_pkt(entry):
     global cursor
 
+    # Sanity check
+    if len(entry.keys()) != len(PKT_COLUMN_NAMES):
+        raise ValueError("Unexpected number of data entries: {}"
+                         "".format(len(entry.keys())))
+
     # Insert the parsed data into the database
     cursor.execute("INSERT INTO packets VALUES ({})"
                    "".format(", ".join("?"*len(PKT_COLUMNS))),
