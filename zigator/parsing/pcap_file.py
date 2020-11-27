@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import copy
 import os
 
 from scapy.all import CookedLinux
@@ -28,12 +29,12 @@ from .sll_fields import sll_fields
 def pcap_file(filepath, msg_queue):
     """Parse all packets in the provided pcap file."""
     # Keep a copy of each dictionary that may change after parsing packets
-    init_network_keys = config.network_keys.copy()
-    init_link_keys = config.link_keys.copy()
-    init_networks = config.networks.copy()
-    init_devices = config.devices.copy()
-    init_addresses = config.addresses.copy()
-    init_pairs = config.pairs.copy()
+    init_network_keys = copy.deepcopy(config.network_keys)
+    init_link_keys = copy.deepcopy(config.link_keys)
+    init_networks = copy.deepcopy(config.networks)
+    init_devices = copy.deepcopy(config.devices)
+    init_addresses = copy.deepcopy(config.addresses)
+    init_pairs = copy.deepcopy(config.pairs)
 
     # Reset all data entries in the dictionary
     config.reset_entries()
@@ -66,7 +67,7 @@ def pcap_file(filepath, msg_queue):
         # Send a copy of the collected data to the main process
         msg_queue.put(
             (config.PKT_MSG,
-             config.entry.copy()))
+             copy.deepcopy(config.entry)))
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(keep=["pcap_directory",
@@ -82,14 +83,26 @@ def pcap_file(filepath, msg_queue):
 
     # Send a copy of each dictionary that changed after parsing packets
     if config.network_keys != init_network_keys:
-        msg_queue.put((config.NETWORK_KEYS_MSG, config.network_keys.copy()))
+        msg_queue.put(
+            (config.NETWORK_KEYS_MSG,
+             copy.deepcopy(config.network_keys)))
     if config.link_keys != init_link_keys:
-        msg_queue.put((config.LINK_KEYS_MSG, config.link_keys.copy()))
+        msg_queue.put(
+            (config.LINK_KEYS_MSG,
+             copy.deepcopy(config.link_keys)))
     if config.networks != init_networks:
-        msg_queue.put((config.NETWORKS_MSG, config.networks.copy()))
+        msg_queue.put(
+            (config.NETWORKS_MSG,
+             copy.deepcopy(config.networks)))
     if config.devices != init_devices:
-        msg_queue.put((config.DEVICES_MSG, config.devices.copy()))
+        msg_queue.put(
+            (config.DEVICES_MSG,
+             copy.deepcopy(config.devices)))
     if config.addresses != init_addresses:
-        msg_queue.put((config.ADDRESSES_MSG, config.addresses.copy()))
+        msg_queue.put(
+            (config.ADDRESSES_MSG,
+             copy.deepcopy(config.addresses)))
     if config.pairs != init_pairs:
-        msg_queue.put((config.PAIRS_MSG, config.pairs.copy()))
+        msg_queue.put(
+            (config.PAIRS_MSG,
+             copy.deepcopy(config.pairs)))
