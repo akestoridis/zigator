@@ -767,6 +767,14 @@ class TestIntegration(unittest.TestCase):
                 "aps_fragmentation",
                 "aps_blocknumber",
                 "aps_ackbitfield",
+                "aps_tunnel_dstextendedaddr",
+                "aps_tunnel_frametype",
+                "aps_tunnel_delmode",
+                "aps_tunnel_ackformat",
+                "aps_tunnel_security",
+                "aps_tunnel_ackreq",
+                "aps_tunnel_exthdr",
+                "aps_tunnel_counter",
                 "aps_aux_seclevel",
                 "aps_aux_keytype",
                 "aps_aux_extnonce",
@@ -778,6 +786,7 @@ class TestIntegration(unittest.TestCase):
                 "aps_aux_decpayload",
                 "aps_aux_decshow",
                 "aps_cmd_id",
+                "aps_tunnel_cmd_id",
                 "aps_transportkey_stdkeytype",
                 "aps_transportkey_key",
                 "aps_transportkey_keyseqnum",
@@ -792,15 +801,6 @@ class TestIntegration(unittest.TestCase):
                 "aps_requestkey_reqkeytype",
                 "aps_requestkey_prtextendedaddr",
                 "aps_switchkey_keyseqnum",
-                "aps_tunnel_dstextendedaddr",
-                "aps_tunnel_frametype",
-                "aps_tunnel_delmode",
-                "aps_tunnel_ackformat",
-                "aps_tunnel_security",
-                "aps_tunnel_ackreq",
-                "aps_tunnel_exthdr",
-                "aps_tunnel_counter",
-                "aps_tunnel_cmd_id",
                 "aps_verifykey_stdkeytype",
                 "aps_verifykey_extendedaddr",
                 "aps_verifykey_keyhash",
@@ -3380,6 +3380,20 @@ class TestIntegration(unittest.TestCase):
                 ("aps_exthdr", "0b0: "
                     "The extended header is not included"),
                 ("aps_counter", 103),
+                ("aps_tunnel_dstextendedaddr", "7777770000000005"),
+                ("aps_tunnel_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_tunnel_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_tunnel_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_tunnel_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_tunnel_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_tunnel_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_tunnel_counter", 104),
                 ("aps_aux_seclevel", "0b000: "
                     "None"),
                 ("aps_aux_keytype", "0b10: "
@@ -3396,28 +3410,14 @@ class TestIntegration(unittest.TestCase):
                 ("aps_aux_decshow", None),
                 ("aps_cmd_id", "0x0e: "
                     "APS Tunnel"),
+                ("aps_tunnel_cmd_id", "0x05: "
+                    "APS Transport Key"),
                 ("aps_transportkey_stdkeytype", "0x01: "
                     "Standard Network Key"),
                 ("aps_transportkey_key", "11111111111111111111111111111111"),
                 ("aps_transportkey_keyseqnum", 0),
                 ("aps_transportkey_dstextendedaddr", "7777770000000005"),
                 ("aps_transportkey_srcextendedaddr", "7777770000000001"),
-                ("aps_tunnel_dstextendedaddr", "7777770000000005"),
-                ("aps_tunnel_frametype", "0b01: "
-                    "APS Command"),
-                ("aps_tunnel_delmode", "0b00: "
-                    "Normal unicast delivery"),
-                ("aps_tunnel_ackformat", "0b0: "
-                    "APS ACK Format Disabled"),
-                ("aps_tunnel_security", "0b1: "
-                    "APS Security Enabled"),
-                ("aps_tunnel_ackreq", "0b0: "
-                    "The sender does not request an APS ACK"),
-                ("aps_tunnel_exthdr", "0b0: "
-                    "The extended header is not included"),
-                ("aps_tunnel_counter", 104),
-                ("aps_tunnel_cmd_id", "0x05: "
-                    "APS Transport Key"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),
