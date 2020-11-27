@@ -800,6 +800,7 @@ class TestIntegration(unittest.TestCase):
                 "aps_tunnel_ackreq",
                 "aps_tunnel_exthdr",
                 "aps_tunnel_counter",
+                "aps_tunnel_cmd_id",
                 "aps_verifykey_stdkeytype",
                 "aps_verifykey_extendedaddr",
                 "aps_verifykey_keyhash",
@@ -3393,8 +3394,8 @@ class TestIntegration(unittest.TestCase):
                                        "11110005000000007777770100000000"
                                        "777777"),
                 ("aps_aux_decshow", None),
-                ("aps_cmd_id", "0x05: "
-                    "APS Transport Key"),
+                ("aps_cmd_id", "0x0e: "
+                    "APS Tunnel"),
                 ("aps_transportkey_stdkeytype", "0x01: "
                     "Standard Network Key"),
                 ("aps_transportkey_key", "11111111111111111111111111111111"),
@@ -3415,6 +3416,8 @@ class TestIntegration(unittest.TestCase):
                 ("aps_tunnel_exthdr", "0b0: "
                     "The extended header is not included"),
                 ("aps_tunnel_counter", 104),
+                ("aps_tunnel_cmd_id", "0x05: "
+                    "APS Transport Key"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),

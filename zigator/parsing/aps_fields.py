@@ -578,7 +578,7 @@ def aps_tunnel(pkt, msg_queue):
         )
         return
     elif config.entry["aps_security"].startswith("0b0:"):
-        aps_auxiliary(pkt, msg_queue)
+        aps_auxiliary(pkt, msg_queue, tunneled=True)
     else:
         config.entry["error_msg"] = "Invalid APS security state"
         return
@@ -635,38 +635,44 @@ def aps_confirmkey(pkt):
         return
 
 
-def aps_command_payload(pkt, msg_queue):
+def aps_command_payload(pkt, msg_queue, tunneled=False):
+    # Check whether this is a tunneled command or not
+    if tunneled:
+        cmd_id_column = "aps_tunnel_cmd_id"
+    else:
+        cmd_id_column = "aps_cmd_id"
+
     # Command Identifier field (1 byte)
     if not config.set_entry(
-            "aps_cmd_id",
+            cmd_id_column,
             pkt[ZigbeeAppCommandPayload].cmd_identifier,
             APS_COMMANDS):
         config.entry["error_msg"] = "PE412: Unknown APS command"
         return
 
     # Command Payload field (variable)
-    if config.entry["aps_cmd_id"].startswith("0x05:"):
+    if config.entry[cmd_id_column].startswith("0x05:"):
         aps_transportkey(pkt, msg_queue)
-    elif config.entry["aps_cmd_id"].startswith("0x06:"):
+    elif config.entry[cmd_id_column].startswith("0x06:"):
         aps_updatedevice(pkt)
-    elif config.entry["aps_cmd_id"].startswith("0x07:"):
+    elif config.entry[cmd_id_column].startswith("0x07:"):
         aps_removedevice(pkt)
-    elif config.entry["aps_cmd_id"].startswith("0x08:"):
+    elif config.entry[cmd_id_column].startswith("0x08:"):
         aps_requestkey(pkt)
-    elif config.entry["aps_cmd_id"].startswith("0x09:"):
+    elif config.entry[cmd_id_column].startswith("0x09:"):
         aps_switchkey(pkt)
-    elif config.entry["aps_cmd_id"].startswith("0x0e:"):
+    elif config.entry[cmd_id_column].startswith("0x0e:"):
         aps_tunnel(pkt, msg_queue)
-    elif config.entry["aps_cmd_id"].startswith("0x0f:"):
+    elif config.entry[cmd_id_column].startswith("0x0f:"):
         aps_verifykey(pkt)
-    elif config.entry["aps_cmd_id"].startswith("0x10:"):
+    elif config.entry[cmd_id_column].startswith("0x10:"):
         aps_confirmkey(pkt)
     else:
         config.entry["error_msg"] = "Invalid APS command"
         return
 
 
-def aps_auxiliary(pkt, msg_queue):
+def aps_auxiliary(pkt, msg_queue, tunneled=False):
     # Security Control field (1 byte)
     # Security Level subfield (3 bits)
     if not config.set_entry(
@@ -753,26 +759,21 @@ def aps_auxiliary(pkt, msg_queue):
         return
 
     # Attempt to decrypt the payload
-    if (config.entry["aps_frametype"].startswith("0b01:")
-            and config.entry["aps_cmd_id"] is not None):
-        if config.entry["aps_cmd_id"].startswith("0x0e:"):
-            tunneled_framecontrol = (
-                    pkt[ZigbeeAppCommandPayload].aps_frametype
-                    + 4*pkt[ZigbeeAppCommandPayload].delivery_mode
-            )
-            if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
-                tunneled_framecontrol += 16
-            if pkt[ZigbeeAppCommandPayload].frame_control.security:
-                tunneled_framecontrol += 32
-            if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
-                tunneled_framecontrol += 64
-            if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
-                tunneled_framecontrol += 128
-            tunneled_counter = pkt[ZigbeeAppCommandPayload].counter
-            header = bytearray([tunneled_framecontrol, tunneled_counter])
-        else:
-            config.entry["error_msg"] = "Invalid APS command"
-            return
+    if tunneled:
+        tunneled_framecontrol = (
+                pkt[ZigbeeAppCommandPayload].aps_frametype
+                + 4*pkt[ZigbeeAppCommandPayload].delivery_mode
+        )
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
+            tunneled_framecontrol += 16
+        if pkt[ZigbeeAppCommandPayload].frame_control.security:
+            tunneled_framecontrol += 32
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
+            tunneled_framecontrol += 64
+        if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
+            tunneled_framecontrol += 128
+        tunneled_counter = pkt[ZigbeeAppCommandPayload].counter
+        header = bytearray([tunneled_framecontrol, tunneled_counter])
     else:
         aps_header = pkt[ZigbeeAppDataPayload].copy()
         aps_header.remove_payload()
@@ -820,7 +821,7 @@ def aps_auxiliary(pkt, msg_queue):
                     config.entry["aps_aux_decshow"] = (
                         dec_pkt.show(dump=True)
                     )
-                    aps_command_payload(dec_pkt, msg_queue)
+                    aps_command_payload(dec_pkt, msg_queue, tunneled=tunneled)
                     return
                 elif config.entry["aps_frametype"].startswith("0b10:"):
                     # APS Acknowledgments do not contain any other fields
@@ -927,7 +928,7 @@ def aps_data_header(pkt, msg_queue):
     if config.entry["aps_security"].startswith("0b1:"):
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue)
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
         else:
             config.entry["error_msg"] = (
                 "The APS Auxiliary Header is not included"
@@ -965,7 +966,7 @@ def aps_command_header(pkt, msg_queue):
     if config.entry["aps_security"].startswith("0b1:"):
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue)
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
         else:
             config.entry["error_msg"] = (
                 "The APS Auxiliary Header is not included"
@@ -974,7 +975,7 @@ def aps_command_header(pkt, msg_queue):
     elif config.entry["aps_security"].startswith("0b0:"):
         # APS Command fields (variable)
         if pkt.haslayer(ZigbeeAppCommandPayload):
-            aps_command_payload(pkt, msg_queue)
+            aps_command_payload(pkt, msg_queue, tunneled=False)
         else:
             config.entry["error_msg"] = "There are no APS Command fields"
             return
@@ -1068,7 +1069,7 @@ def aps_ack_header(pkt, msg_queue):
     if config.entry["aps_security"].startswith("0b1:"):
         # APS Auxiliary Header field (5/6/13/14 bytes)
         if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue)
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
         else:
             config.entry["error_msg"] = (
                 "The APS Auxiliary Header is not included"

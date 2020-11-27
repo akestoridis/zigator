@@ -223,6 +223,7 @@ PKT_COLUMNS = [
     ("aps_tunnel_ackreq", "TEXT"),
     ("aps_tunnel_exthdr", "TEXT"),
     ("aps_tunnel_counter", "INTEGER"),
+    ("aps_tunnel_cmd_id", "TEXT"),
     ("aps_verifykey_stdkeytype", "TEXT"),
     ("aps_verifykey_extendedaddr", "TEXT"),
     ("aps_verifykey_keyhash", "TEXT"),
