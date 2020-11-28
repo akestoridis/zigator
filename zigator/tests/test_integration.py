@@ -83,6 +83,12 @@ class TestIntegration(unittest.TestCase):
             self.assertNotEqual(
                 link_keys[i][:33],
                 "865eb452951420552e9fdbb3f16642ea\t")
+            self.assertNotEqual(
+                link_keys[i][:33],
+                "77777777777777777777777777777777\t")
+            self.assertNotEqual(
+                link_keys[i][:33],
+                "88888888888888888888888888888888\t")
         install_codes = config_list[2].split("\n")
         self.assertGreater(len(install_codes), 0)
         self.assertEqual(install_codes[0], "Install codes:")
@@ -341,6 +347,12 @@ class TestIntegration(unittest.TestCase):
             self.assertNotEqual(
                 link_keys[i][:33],
                 "865eb452951420552e9fdbb3f16642ea\t")
+            self.assertNotEqual(
+                link_keys[i][:33],
+                "77777777777777777777777777777777\t")
+            self.assertNotEqual(
+                link_keys[i][:33],
+                "88888888888888888888888888888888\t")
         install_codes = config_list[2].split("\n")
         self.assertGreater(len(install_codes), 0)
         self.assertEqual(install_codes[0], "Install codes:")
@@ -360,7 +372,7 @@ class TestIntegration(unittest.TestCase):
             config_list[3]) is not None)
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 41)
+        self.assertEqual(len(cm.output), 42)
 
         self.assertTrue(re.search(
             r"^INFO:root:Started Zigator version "
@@ -401,7 +413,7 @@ class TestIntegration(unittest.TestCase):
             r"\".+02-mac-testing.pcap\" file...$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 11 packets from the "
+            r"^INFO:root:Parsed 12 packets from the "
             r"\".+02-mac-testing.pcap\" file$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
@@ -423,7 +435,7 @@ class TestIntegration(unittest.TestCase):
             r"\".+04-aps-testing.pcap\" file...$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 5 packets from the "
+            r"^INFO:root:Parsed 11 packets from the "
             r"\".+04-aps-testing.pcap\" file$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
@@ -471,20 +483,20 @@ class TestIntegration(unittest.TestCase):
             r"^INFO:root:Sniffed 0 previously unknown network keys$",
             cm.output[28]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Sniffed 0 previously unknown link keys$",
+            r"^INFO:root:Sniffed 1 previously unknown link keys$",
             cm.output[29]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the EPID of 1 networks$",
             cm.output[30]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered the extended address of 10 devices$",
+            r"^INFO:root:Discovered the extended address of 11 devices$",
             cm.output[31]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Discovered the short-to-extended "
             r"address mapping of 13 devices$",
             cm.output[32]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered 11 flows of MAC Data packets$",
+            r"^INFO:root:Discovered 12 flows of MAC Data packets$",
             cm.output[33]) is not None)
         self.assertTrue(re.search(
             r"^INFO:root:Updating the database...$",
@@ -497,21 +509,25 @@ class TestIntegration(unittest.TestCase):
             r"Unable to decrypt the NWK payload\" parsing warnings$",
             cm.output[36]) is not None)
         self.assertTrue(re.search(
-            r"^WARNING:root:Generated 2 \"PE101: "
-            r"Invalid packet length\" parsing errors$",
+            r"^WARNING:root:Generated 3 \"PW401: "
+            r"Unable to decrypt the APS payload\" parsing warnings$",
             cm.output[37]) is not None)
         self.assertTrue(re.search(
-            r"^WARNING:root:Generated 1 \"PE102: "
-            r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
+            r"^WARNING:root:Generated 2 \"PE101: "
+            r"Invalid packet length\" parsing errors$",
             cm.output[38]) is not None)
+        self.assertTrue(re.search(
+            r"^WARNING:root:Generated 2 \"PE102: "
+            r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
+            cm.output[39]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE202: "
             r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
-            cm.output[39]) is not None)
+            cm.output[40]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE224: "
             r"Unexpected payload\" parsing errors$",
-            cm.output[40]) is not None)
+            cm.output[41]) is not None)
 
     def assertAddressesTable(self, cursor):
         cursor.execute("SELECT * FROM addresses ORDER BY extendedaddr, panid")
@@ -572,6 +588,9 @@ class TestIntegration(unittest.TestCase):
                     None,
                     None),
                 ("7777770000000005",
+                    None,
+                    None),
+                ("8888880000000001",
                     None,
                     None),
                 ("b19b10a7ed0ff1ce",
@@ -1388,6 +1407,13 @@ class TestIntegration(unittest.TestCase):
                     "No source MAC address"),
                 ("mac_seqnum", 180),
                 ("error_msg", "PE224: Unexpected payload"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 12),
+                ("pkt_time", 1599996428.0),
+                ("error_msg", "PE102: There are no IEEE 802.15.4 MAC fields"),
             ],
             [
                 ("pcap_directory", None),
@@ -3440,6 +3466,711 @@ class TestIntegration(unittest.TestCase):
             ],
             [
                 ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 6),
+                ("pkt_time", 1599996934.0),
+                ("phy_length", 94),
+                ("phy_payload", "618805dddd021100000806022200001e"
+                                "f5010002112808280000010000000077"
+                                "777700d19df543cb1215afff9214f79f"
+                                "dde657319e8d56f7b4f445ae538af8e9"
+                                "8375464eda7f1187c985ce73fdce05ac"
+                                "f3202d3d08c324c98678a51f71cc"),
+                ("mac_show", None),
+                ("mac_fcs", "0xcc71"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 5),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b1: "
+                    "NWK Source Route Included"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x2202"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 245),
+                ("nwk_srcroute_relaycount", 1),
+                ("nwk_srcroute_relayindex", 0),
+                ("nwk_srcroute_relaylist", "0x1102"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("nwk_aux_framecounter", 10248),
+                ("nwk_aux_srcaddr", "7777770000000001"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000001"),
+                ("nwk_aux_decpayload", "21693807280000010000000077777799"
+                                       "262fa4394ec3d25fa0974709a3543127"
+                                       "c5d73d2dc7d22cfcbc5099a8e92083c7"
+                                       "0b8465267d"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 105),
+                ("aps_aux_seclevel", "0b000: "
+                    "None"),
+                ("aps_aux_keytype", "0b11: "
+                    "Key-Load Key"),
+                ("aps_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("aps_aux_framecounter", 10247),
+                ("aps_aux_srcaddr", "7777770000000001"),
+                ("aps_aux_deckey", "7ce4d9f97efa924c0c37617071954fb4"),
+                ("aps_aux_decsrc", "7777770000000001"),
+                ("aps_aux_decpayload", "05047777777777777777777777777777"
+                                       "77770500000000777777010000000077"
+                                       "7777"),
+                ("aps_aux_decshow", None),
+                ("aps_cmd_id", "0x05: "
+                    "APS Transport Key"),
+                ("aps_transportkey_stdkeytype", "0x04: "
+                    "Trust Center Link Key"),
+                ("aps_transportkey_key", "77777777777777777777777777777777"),
+                ("aps_transportkey_dstextendedaddr", "7777770000000005"),
+                ("aps_transportkey_srcextendedaddr", "7777770000000001"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Coordinator"),
+                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_mac_srcextendedaddr", "7777770000000001"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x2202"),
+                ("der_nwk_dstextendedaddr", "7777770000000005"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("der_nwk_srcextendedaddr", "7777770000000001"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 7),
+                ("pkt_time", 1599996935.0),
+                ("phy_length", 65),
+                ("phy_payload", "618806dddd021102220822000002221e"
+                                "f6280928000005000000007777770076"
+                                "8f7929dd7656778f5f7be60cfd955544"
+                                "b806f43876c6ce07dff20d1d7a6af509"
+                                "5a"),
+                ("mac_show", None),
+                ("mac_fcs", "0x5a09"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 6),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x2202"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b1: "
+                    "NWK End Device Initiator"),
+                ("nwk_dstshortaddr", "0x0000"),
+                ("nwk_srcshortaddr", "0x2202"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 246),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("nwk_aux_framecounter", 10249),
+                ("nwk_aux_srcaddr", "7777770000000005"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000005"),
+                ("nwk_aux_decpayload", "416a0f04050000000077777744761a20"
+                                       "e1b77e6d6da445f80dc9bee6"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b1: "
+                    "The sender requests an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 106),
+                ("aps_cmd_id", "0x0f: "
+                    "APS Verify Key"),
+                ("aps_verifykey_stdkeytype", "0x04: "
+                    "Trust Center Link Key"),
+                ("aps_verifykey_extendedaddr", "7777770000000005"),
+                ("aps_verifykey_keyhash", "44761a20e1b77e6d6da445f80dc9bee6"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Coordinator"),
+                ("der_nwk_srctype", "NWK Src Type: None"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x2202"),
+                ("der_mac_srcextendedaddr", "7777770000000005"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x0000"),
+                ("der_nwk_dstextendedaddr", "7777770000000001"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x2202"),
+                ("der_nwk_srcextendedaddr", "7777770000000005"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 8),
+                ("pkt_time", 1599996936.0),
+                ("phy_length", 71),
+                ("phy_payload", "618807dddd021100000806022200001e"
+                                "f701000211280b280000010000000077"
+                                "777700a51ab28a7b75473e079cfae1dd"
+                                "4b0465e7c324fed38728259f8005b18a"
+                                "f2aa35b585b4f9"),
+                ("mac_show", None),
+                ("mac_fcs", "0xf9b4"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 7),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b1: "
+                    "NWK Source Route Included"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x2202"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 247),
+                ("nwk_srcroute_relaycount", 1),
+                ("nwk_srcroute_relayindex", 0),
+                ("nwk_srcroute_relaylist", "0x1102"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("nwk_aux_framecounter", 10251),
+                ("nwk_aux_srcaddr", "7777770000000001"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000001"),
+                ("nwk_aux_decpayload", "616b200a2800000100000000777777f4"
+                                       "7eaf4f21f699864b20fd30db5d1e"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_ackreq", "0b1: "
+                    "The sender requests an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 107),
+                ("aps_aux_seclevel", "0b000: "
+                    "None"),
+                ("aps_aux_keytype", "0b00: "
+                    "Data Key"),
+                ("aps_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("aps_aux_framecounter", 10250),
+                ("aps_aux_srcaddr", "7777770000000001"),
+                ("aps_aux_deckey", "77777777777777777777777777777777"),
+                ("aps_aux_decsrc", "7777770000000001"),
+                ("aps_aux_decpayload", "1000040500000000777777"),
+                ("aps_aux_decshow", None),
+                ("aps_cmd_id", "0x10: "
+                    "APS Confirm Key"),
+                ("aps_confirmkey_status", "0x00: "
+                    "SUCCESS"),
+                ("aps_confirmkey_stdkeytype", "0x04: "
+                    "Trust Center Link Key"),
+                ("aps_confirmkey_extendedaddr", "7777770000000005"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Coordinator"),
+                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_mac_srcextendedaddr", "7777770000000001"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x2202"),
+                ("der_nwk_dstextendedaddr", "7777770000000005"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("der_nwk_srcextendedaddr", "7777770000000001"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 9),
+                ("pkt_time", 1599996937.0),
+                ("phy_length", 73),
+                ("phy_payload", "618808ccbb023300000800023300001e"
+                                "f8216c300c2800000100000000888888"
+                                "8845b02807a59c4ec310ceaf16630456"
+                                "1794f1e8ed2e4b9f584fc41bae5ab7ca"
+                                "2c10b160c6442fcd4b"),
+                ("mac_show", None),
+                ("mac_fcs", "0x4bcd"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 8),
+                ("mac_dstpanid", "0xbbcc"),
+                ("mac_dstshortaddr", "0x3302"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b0: "
+                    "NWK Security Disabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x3302"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 248),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 108),
+                ("aps_aux_seclevel", "0b000: "
+                    "None"),
+                ("aps_aux_keytype", "0b10: "
+                    "Key-Transport Key"),
+                ("aps_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("aps_aux_framecounter", 10252),
+                ("aps_aux_srcaddr", "8888880000000001"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_srctype", "MAC Src Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: None"),
+                ("der_mac_dstpanid", "0xbbcc"),
+                ("der_mac_dstshortaddr", "0x3302"),
+                ("der_mac_srcpanid", "0xbbcc"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_nwk_dstpanid", "0xbbcc"),
+                ("der_nwk_dstshortaddr", "0x3302"),
+                ("der_nwk_srcpanid", "0xbbcc"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("warning_msg", "PW401: Unable to decrypt the APS payload"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 10),
+                ("pkt_time", 1599996938.0),
+                ("phy_length", 102),
+                ("phy_payload", "618809dddd021100000802021100001e"
+                                "f9280e28000001000000007777770091"
+                                "2877e54569311d5801bb164a4f22aacf"
+                                "0271e4e3ab3034ad3ed6011519e6281a"
+                                "437cf2020f351cef28a43aa02e4fe88c"
+                                "ac30135bacec3453ea2478af4e0343a6"
+                                "abdf871f690f"),
+                ("mac_show", None),
+                ("mac_fcs", "0x0f69"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 9),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b0: "
+                    "NWK Source Route Omitted"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x1102"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 249),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("nwk_aux_framecounter", 10254),
+                ("nwk_aux_srcaddr", "7777770000000001"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000001"),
+                ("nwk_aux_decpayload", "016d0e0600000000777777216e300d28"
+                                       "00000100000000777777212d9e96d1d1"
+                                       "9d39efe53d826e20921ace4ef24e4108"
+                                       "172c5ccdf55383cb0aad2603e31bbc85"
+                                       "ba"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b0: "
+                    "APS Security Disabled"),
+                ("aps_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 109),
+                ("aps_tunnel_dstextendedaddr", "7777770000000006"),
+                ("aps_tunnel_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_tunnel_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_tunnel_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_tunnel_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_tunnel_ackreq", "0b0: "
+                    "The sender does not request an APS ACK"),
+                ("aps_tunnel_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_tunnel_counter", 110),
+                ("aps_aux_seclevel", "0b000: "
+                    "None"),
+                ("aps_aux_keytype", "0b10: "
+                    "Key-Transport Key"),
+                ("aps_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("aps_aux_framecounter", 10253),
+                ("aps_aux_srcaddr", "7777770000000001"),
+                ("aps_cmd_id", "0x0e: "
+                    "APS Tunnel"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Coordinator"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Router"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_mac_srcextendedaddr", "7777770000000001"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x1102"),
+                ("der_nwk_dstextendedaddr", "7777770000000003"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("der_nwk_srcextendedaddr", "7777770000000001"),
+                ("warning_msg", "PW401: Unable to decrypt the APS payload"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "04-aps-testing.pcap"),
+                ("pkt_num", 11),
+                ("pkt_time", 1599996939.0),
+                ("phy_length", 71),
+                ("phy_payload", "61880adddd021100000806042200001e"
+                                "fa010002112810280000010000000077"
+                                "77770064daa9fd5bf73111bfe5590ef3"
+                                "d37667c1f524ac937a39ee7ddda6661d"
+                                "4c614fcb1ed67a"),
+                ("mac_show", None),
+                ("mac_fcs", "0x7ad6"),
+                ("mac_frametype", "0b001: "
+                    "MAC Data"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b1: "
+                    "The source PAN ID is the same "
+                    "as the destination PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b10: "
+                    "Short source MAC address"),
+                ("mac_seqnum", 10),
+                ("mac_dstpanid", "0xdddd"),
+                ("mac_dstshortaddr", "0x1102"),
+                ("mac_srcshortaddr", "0x0000"),
+                ("nwk_frametype", "0b00: "
+                    "NWK Data"),
+                ("nwk_protocolversion", "0b0010: "
+                    "Zigbee PRO"),
+                ("nwk_discroute", "0b0: "
+                    "Suppress route discovery"),
+                ("nwk_multicast", "0b0: "
+                    "NWK Multicast Disabled"),
+                ("nwk_security", "0b1: "
+                    "NWK Security Enabled"),
+                ("nwk_srcroute", "0b1: "
+                    "NWK Source Route Included"),
+                ("nwk_extendeddst", "0b0: "
+                    "NWK Extended Destination Omitted"),
+                ("nwk_extendedsrc", "0b0: "
+                    "NWK Extended Source Omitted"),
+                ("nwk_edinitiator", "0b0: "
+                    "NWK Not End Device Initiator"),
+                ("nwk_dstshortaddr", "0x2204"),
+                ("nwk_srcshortaddr", "0x0000"),
+                ("nwk_radius", 30),
+                ("nwk_seqnum", 250),
+                ("nwk_srcroute_relaycount", 1),
+                ("nwk_srcroute_relayindex", 0),
+                ("nwk_srcroute_relaylist", "0x1102"),
+                ("nwk_aux_seclevel", "0b000: "
+                    "None"),
+                ("nwk_aux_keytype", "0b01: "
+                    "Network Key"),
+                ("nwk_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("nwk_aux_framecounter", 10256),
+                ("nwk_aux_srcaddr", "7777770000000001"),
+                ("nwk_aux_keyseqnum", 0),
+                ("nwk_aux_deckey", "11111111111111111111111111111111"),
+                ("nwk_aux_decsrc", "7777770000000001"),
+                ("nwk_aux_decpayload", "616f200f2800000100000000777777ee"
+                                       "b4ddfdebbb3954077f42c3f435c6"),
+                ("nwk_aux_decshow", None),
+                ("aps_frametype", "0b01: "
+                    "APS Command"),
+                ("aps_delmode", "0b00: "
+                    "Normal unicast delivery"),
+                ("aps_ackformat", "0b0: "
+                    "APS ACK Format Disabled"),
+                ("aps_security", "0b1: "
+                    "APS Security Enabled"),
+                ("aps_ackreq", "0b1: "
+                    "The sender requests an APS ACK"),
+                ("aps_exthdr", "0b0: "
+                    "The extended header is not included"),
+                ("aps_counter", 111),
+                ("aps_aux_seclevel", "0b000: "
+                    "None"),
+                ("aps_aux_keytype", "0b00: "
+                    "Data Key"),
+                ("aps_aux_extnonce", "0b1: "
+                    "The source address is present"),
+                ("aps_aux_framecounter", 10255),
+                ("aps_aux_srcaddr", "7777770000000001"),
+                ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
+                ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+                ("der_tx_type", "Multi-Hop Transmission"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Coordinator"),
+                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
+                ("der_mac_dstpanid", "0xdddd"),
+                ("der_mac_dstshortaddr", "0x1102"),
+                ("der_mac_dstextendedaddr", "7777770000000003"),
+                ("der_mac_srcpanid", "0xdddd"),
+                ("der_mac_srcshortaddr", "0x0000"),
+                ("der_mac_srcextendedaddr", "7777770000000001"),
+                ("der_nwk_dstpanid", "0xdddd"),
+                ("der_nwk_dstshortaddr", "0x2204"),
+                ("der_nwk_srcpanid", "0xdddd"),
+                ("der_nwk_srcshortaddr", "0x0000"),
+                ("der_nwk_srcextendedaddr", "7777770000000001"),
+                ("warning_msg", "PW401: Unable to decrypt the APS payload"),
+            ],
+            [
+                ("pcap_directory", None),
                 ("pcap_filename", "05-zdp-testing.pcap"),
                 ("pkt_num", 1),
                 ("pkt_time", 1599997185.0),
@@ -3721,9 +4452,10 @@ class TestIntegration(unittest.TestCase):
                 ("0x1102", "0x2201", "0x7777", 1599996679.0, 1599996679.0),
                 ("0x1102", "0x2202", "0x7777", 1599996684.0, 1599996684.0),
                 ("0xb000", "0x0000", "0x9999", 1599996686.0, 1599996687.0),
+                ("0x0000", "0x3302", "0xbbcc", 1599996937.0, 1599996937.0),
                 ("0x1102", "0x0000", "0xdddd", 1599996929.0, 1599996931.0),
                 ("0x0000", "0x1102", "0xdddd", 1599996930.0, 1599997441.0),
-                ("0x2202", "0x1102", "0xdddd", 1599996932.0, 1599996932.0),
+                ("0x2202", "0x1102", "0xdddd", 1599996932.0, 1599996935.0),
                 ("0xf001", "0x0000", "0xddee", 1599996425.0, 1599996425.0),
             ])
 
