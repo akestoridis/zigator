@@ -42,14 +42,14 @@ __classifiers__ = [
     "Topic :: Security",
 ]
 __install_requires__ = [
-    "graphviz>=0.15",
-    "numpy>=1.19.4",
-    "pycrc>=0.9.2",
-    "pycryptodomex>=3.9.9",
+    "graphviz>=0.15, <1",
+    "numpy>=1.19.4, <2",
+    "pycrc>=0.9.2, <1",
+    "pycryptodomex>=3.9.9, <4",
     "scapy @ git+https://github.com/secdev/scapy@a3d691f5b7f51bfc5248e4b6fbb40c77139f26c3#egg=scapy",
-    "scikit-learn>=0.23.2",
+    "scikit-learn>=0.23.2, <1",
 ]
-__python_requires__ = ">=3.7.3"
+__python_requires__ = ">=3.7, <4"
 __entry_points__ = {
     "console_scripts": [
         "zigator=zigator.entry_point:entry_point"
