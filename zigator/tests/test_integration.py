@@ -31,6 +31,13 @@ DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 class TestIntegration(unittest.TestCase):
     def test_integration_info(self):
         """Test integration with INFO logging."""
+        self.assertPrintConfig()
+        self.assertAddConfigEntry()
+        self.assertParse()
+        self.assertRmConfigEntry()
+        self.assertPrintConfig()
+
+    def assertPrintConfig(self):
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             with self.assertLogs(level="INFO") as cm:
@@ -107,6 +114,7 @@ class TestIntegration(unittest.TestCase):
             r"^Configuration directory: \".+zigator\"$",
             config_list[3]) is not None)
 
+    def assertAddConfigEntry(self):
         with self.assertLogs(level="INFO") as cm:
             zigator.main([
                 "zigator",
@@ -207,6 +215,7 @@ class TestIntegration(unittest.TestCase):
             r"^Configuration directory: \".+zigator\"$",
             config_list[3]) is not None)
 
+    def assertParse(self):
         pcap_directory = os.path.join(DIR_PATH, "data")
         db_filepath = os.path.join(DIR_PATH, "info-logging.db")
         with self.assertLogs(level="INFO") as cm:
@@ -241,6 +250,7 @@ class TestIntegration(unittest.TestCase):
         cursor.close()
         connection.close()
 
+    def assertRmConfigEntry(self):
         with self.assertLogs(level="INFO") as cm:
             zigator.main([
                 "zigator",
@@ -294,82 +304,6 @@ class TestIntegration(unittest.TestCase):
             r"\"test_55555555555555555555555555555555a9d1\" install code "
             r"from the \".+install-codes.tsv\" configuration file$",
             cm.output[1]) is not None)
-
-        tmp_stdout = io.StringIO()
-        with contextlib.redirect_stdout(tmp_stdout):
-            with self.assertLogs(level="INFO") as cm:
-                zigator.main([
-                    "zigator",
-                    "print-config",
-                ])
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertEqual(len(cm.output), 2)
-        self.assertTrue(re.search(
-            r"^INFO:root:Started Zigator version "
-            r"(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
-            cm.output[0]) is not None)
-        self.assertTrue(re.search(
-            r"^INFO:root:Printing the current configuration...$",
-            cm.output[1]) is not None)
-        config_list = captured_output.split("\n\n")
-        self.assertEqual(len(config_list), 4)
-        network_keys = config_list[0].split("\n")
-        self.assertGreater(len(network_keys), 0)
-        self.assertEqual(network_keys[0], "Network keys:")
-        for i in range(1, len(network_keys)):
-            self.assertGreater(len(network_keys[i]), 33)
-            self.assertNotEqual(
-                network_keys[i][:33],
-                "11111111111111111111111111111111\t")
-            self.assertNotEqual(
-                network_keys[i][33:],
-                "test_11111111111111111111111111111111")
-            self.assertNotEqual(
-                network_keys[i][:33],
-                "22222222222222222222222222222222\t")
-        link_keys = config_list[1].split("\n")
-        self.assertGreater(len(link_keys), 0)
-        self.assertEqual(link_keys[0], "Link keys:")
-        for i in range(1, len(link_keys)):
-            self.assertGreater(len(link_keys[i]), 33)
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "33333333333333333333333333333333\t")
-            self.assertNotEqual(
-                link_keys[i][33:],
-                "test_33333333333333333333333333333333")
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "44444444444444444444444444444444\t")
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "3c6047f3c55c8c8290a5839c213b6714\t")
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "865eb452951420552e9fdbb3f16642ea\t")
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "77777777777777777777777777777777\t")
-            self.assertNotEqual(
-                link_keys[i][:33],
-                "88888888888888888888888888888888\t")
-        install_codes = config_list[2].split("\n")
-        self.assertGreater(len(install_codes), 0)
-        self.assertEqual(install_codes[0], "Install codes:")
-        for i in range(1, len(install_codes)):
-            self.assertGreater(len(install_codes[i]), 37)
-            self.assertNotEqual(
-                install_codes[i][:37],
-                "55555555555555555555555555555555a9d1\t")
-            self.assertNotEqual(
-                install_codes[i][37:],
-                "test_55555555555555555555555555555555a9d1")
-            self.assertNotEqual(
-                install_codes[i][:37],
-                "66666666666666666666666666666666a603\t")
-        self.assertTrue(re.search(
-            r"^Configuration directory: \".+zigator\"$",
-            config_list[3]) is not None)
 
     def assertLoggingOutput(self, cm):
         self.assertEqual(len(cm.output), 42)
