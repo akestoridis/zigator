@@ -19,49 +19,48 @@ from .. import config
 
 def map_epids_to_panids():
     if config.entry["mac_frametype"].startswith("0b000:"):
-        panid = config.entry["mac_srcpanid"]
-        epid = config.entry["nwk_beacon_epid"]
-
-        config.map_networks(epid, panid)
+        config.map_networks(
+            config.entry["nwk_beacon_epid"],
+            config.entry["mac_srcpanid"])
 
 
 def compare_short_addresses():
     # Check whether the MAC and NWK Destination is the same or not
     if (config.entry["error_msg"] is None
-        and config.entry["mac_frametype"].startswith("0b001:")
-        and config.entry["mac_panidcomp"].startswith("0b1:")
-        and config.entry["mac_dstaddrmode"].startswith("0b10:")
-        and config.entry["nwk_dstshortaddr"] is not None):
+            and config.entry["mac_frametype"].startswith("0b001:")
+            and config.entry["mac_panidcomp"].startswith("0b1:")
+            and config.entry["mac_dstaddrmode"].startswith("0b10:")
+            and config.entry["nwk_dstshortaddr"] is not None):
         config.entry["der_same_macnwkdst"] = "Same MAC/NWK Dst: {}".format(
             config.entry["mac_dstshortaddr"]
-                == config.entry["nwk_dstshortaddr"])
+            == config.entry["nwk_dstshortaddr"])
 
     # Check whether the MAC and NWK Source is the same or not
     if (config.entry["error_msg"] is None
-        and config.entry["mac_frametype"].startswith("0b001:")
-        and config.entry["mac_panidcomp"].startswith("0b1:")
-        and config.entry["mac_srcaddrmode"].startswith("0b10:")
-        and config.entry["nwk_srcshortaddr"] is not None):
+            and config.entry["mac_frametype"].startswith("0b001:")
+            and config.entry["mac_panidcomp"].startswith("0b1:")
+            and config.entry["mac_srcaddrmode"].startswith("0b10:")
+            and config.entry["nwk_srcshortaddr"] is not None):
         config.entry["der_same_macnwksrc"] = "Same MAC/NWK Src: {}".format(
             config.entry["mac_srcshortaddr"]
-                == config.entry["nwk_srcshortaddr"])
+            == config.entry["nwk_srcshortaddr"])
 
 
 def infer_transmission_type():
     # Check whether this is a single-hop or a multi-hop transmission
     if (config.entry["mac_frametype"].startswith("0b010:")
-        or config.entry["mac_frametype"].startswith("0b000:")
-        or config.entry["mac_frametype"].startswith("0b011:")):
+            or config.entry["mac_frametype"].startswith("0b000:")
+            or config.entry["mac_frametype"].startswith("0b011:")):
         config.entry["der_tx_type"] = "Single-Hop Transmission"
     elif config.entry["nwk_radius"] is not None:
         if config.entry["nwk_radius"] > 1:
             config.entry["der_tx_type"] = "Multi-Hop Transmission"
         elif config.entry["nwk_radius"] == 1:
             if (config.entry["der_same_macnwksrc"]
-                == "Same MAC/NWK Src: True"):
+                    == "Same MAC/NWK Src: True"):
                 config.entry["der_tx_type"] = "Single-Hop Transmission"
             elif (config.entry["der_same_macnwksrc"]
-                  == "Same MAC/NWK Src: False"):
+                    == "Same MAC/NWK Src: False"):
                 config.entry["der_tx_type"] = "Multi-Hop Transmission"
 
 
@@ -175,11 +174,11 @@ def derive_logical_device_types():
         macdevtype = "Full-Function Device"
         nwkdevtype = None
         if ((config.entry["nwk_beacon_devdepth"] == 0)
-            and config.entry["mac_beacon_pancoord"].startswith("0b1:")):
+                and config.entry["mac_beacon_pancoord"].startswith("0b1:")):
             # Zigbee Coordinators are always PAN Coordinators with zero depth
             nwkdevtype = "Zigbee Coordinator"
         elif ((config.entry["nwk_beacon_devdepth"] > 0)
-              and config.entry["mac_beacon_pancoord"].startswith("0b0:")):
+                and config.entry["mac_beacon_pancoord"].startswith("0b0:")):
             # Zigbee Routers transmit beacons with depth greater than zero
             nwkdevtype = "Zigbee Router"
         if extendedaddr is not None:
@@ -310,8 +309,8 @@ def derive_logical_device_types():
                 config.update_devices(extendedaddr, macdevtype, nwkdevtype)
     elif config.entry["mac_frametype"].startswith("0b001:"):
         if (config.entry["nwk_frametype"].startswith("0b01:")
-            and config.entry["nwk_dstshortaddr"] == "0xfffc"
-            and config.entry["der_tx_type"] == "Single-Hop Transmission"):
+                and config.entry["nwk_dstshortaddr"] == "0xfffc"
+                and config.entry["der_tx_type"] == "Single-Hop Transmission"):
             # Only Zigbee Routers and the Zigbee Coordinator transmit Link
             # Status commands, which are the only single-hop NWK commands that
             # are broadcasted to all Zigbee Routers and the Zigbee Coordinator
@@ -329,8 +328,8 @@ def derive_logical_device_types():
             if extendedaddr is not None:
                 config.update_devices(extendedaddr, macdevtype, nwkdevtype)
         elif (config.entry["nwk_frametype"].startswith("0b01:")
-            and config.entry["nwk_cmd_payloadlength"] == 3
-            and config.entry["der_tx_type"] == "Single-Hop Transmission"):
+                and config.entry["nwk_cmd_payloadlength"] == 3
+                and config.entry["der_tx_type"] == "Single-Hop Transmission"):
             # Only Zigbee Routers and the Zigbee Coordinator transmit Rejoin
             # Responses, which are the only single-hop NWK commands that can
             # have a payload length of 3 bytes according to the Zigbee PRO
@@ -348,8 +347,8 @@ def derive_logical_device_types():
             if extendedaddr is not None:
                 config.update_devices(extendedaddr, macdevtype, nwkdevtype)
         elif (config.entry["mac_panidcomp"].startswith("0b1:")
-            and (config.entry["nwk_srcshortaddr"] == "0x0000"
-                 or config.entry["nwk_dstshortaddr"] == "0x0000")):
+                and (config.entry["nwk_srcshortaddr"] == "0x0000"
+                     or config.entry["nwk_dstshortaddr"] == "0x0000")):
             # Zigbee Coordinators always use 0x0000 as their short address
             panid = config.entry["mac_dstpanid"]
             shortaddr = "0x0000"
@@ -365,7 +364,7 @@ def derive_logical_device_types():
 
 def derive_address_types():
     if (config.entry["mac_frametype"].startswith("0b001:")
-        and not config.entry["mac_panidcomp"].startswith("0b1:")):
+            and not config.entry["mac_panidcomp"].startswith("0b1:")):
         # Ignore Inter-PAN packets
         return
 
