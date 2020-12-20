@@ -92,7 +92,7 @@ parse_parser.add_argument(
     type=int,
     action="store",
     help="the number of workers that will parse pcap files",
-    default=None)
+    default=argparse.SUPPRESS)
 
 analyze_parser = zigator_subparsers.add_parser(
     "analyze",
@@ -115,7 +115,7 @@ analyze_parser.add_argument(
     type=int,
     action="store",
     help="the number of workers that will analyze the database",
-    default=None)
+    default=argparse.SUPPRESS)
 
 visualize_parser = zigator_subparsers.add_parser(
     "visualize",
@@ -155,7 +155,7 @@ train_parser.add_argument(
     type=int,
     action="store",
     help="seed for the pseudorandom number generator",
-    default=None)
+    default=argparse.SUPPRESS)
 train_parser.add_argument(
     "--restricted",
     action="store_true",

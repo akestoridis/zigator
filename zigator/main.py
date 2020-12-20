@@ -61,34 +61,43 @@ def main(argv):
     if args.SUBCOMMAND == "print-config":
         config.print_config()
     elif args.SUBCOMMAND == "add-config-entry":
-        config.add_config_entry(args.ENTRY_TYPE,
-                                args.ENTRY_VALUE,
-                                args.ENTRY_NAME)
+        config.add_config_entry(
+            args.ENTRY_TYPE,
+            args.ENTRY_VALUE,
+            args.ENTRY_NAME)
     elif args.SUBCOMMAND == "rm-config-entry":
-        config.rm_config_entry(args.ENTRY_TYPE,
-                               args.ENTRY_NAME)
+        config.rm_config_entry(
+            args.ENTRY_TYPE,
+            args.ENTRY_NAME)
     elif args.SUBCOMMAND == "parse":
-        parsing.main(args.PCAP_DIRECTORY,
-                     args.DATABASE_FILEPATH,
-                     args.num_workers)
+        parsing.main(
+            args.PCAP_DIRECTORY,
+            args.DATABASE_FILEPATH,
+            None if not hasattr(args, "num_workers") else args.num_workers)
     elif args.SUBCOMMAND == "analyze":
-        analysis.main(args.DATABASE_FILEPATH,
-                      args.OUTPUT_DIRECTORY,
-                      args.num_workers)
+        analysis.main(
+            args.DATABASE_FILEPATH,
+            args.OUTPUT_DIRECTORY,
+            None if not hasattr(args, "num_workers") else args.num_workers)
     elif args.SUBCOMMAND == "visualize":
-        visualization.main(args.DATABASE_FILEPATH,
-                           args.OUTPUT_DIRECTORY)
+        visualization.main(
+            args.DATABASE_FILEPATH,
+            args.OUTPUT_DIRECTORY)
     elif args.SUBCOMMAND == "train":
-        training.main("enc-nwk-cmd",
-                      args.DATABASE_FILEPATH,
-                      args.OUTPUT_DIRECTORY,
-                      args.seed,
-                      args.restricted)
+        training.main(
+            "enc-nwk-cmd",
+            args.DATABASE_FILEPATH,
+            args.OUTPUT_DIRECTORY,
+            None if not hasattr(args, "seed") else args.seed,
+            args.restricted)
     elif args.SUBCOMMAND == "inject":
-        injection.main(args)
+        injection.main(
+            args)
     elif args.SUBCOMMAND == "atusb":
-        atusb.main(args.REPO_DIRECTORY)
+        atusb.main(
+            args.REPO_DIRECTORY)
     elif args.SUBCOMMAND == "monitor":
-        monitoring.main(args.PCAP_FILEPATH)
+        monitoring.main(
+            args.PCAP_FILEPATH)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.SUBCOMMAND))
