@@ -18,14 +18,14 @@
 Command-line interface for the zigator package
 """
 
+import argparse
 import os
 
-from argparse import ArgumentParser
 
-
-zigator_parser = ArgumentParser(
+zigator_parser = argparse.ArgumentParser(
     prog="zigator",
     description="Zigator: Security analysis tool for Zigbee networks",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     add_help=True)
 zigator_subparsers = zigator_parser.add_subparsers(
     dest="SUBCOMMAND",
@@ -33,10 +33,12 @@ zigator_subparsers = zigator_parser.add_subparsers(
 
 zigator_subparsers.add_parser(
     "print-config",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="print the current configuration")
 
 add_config_entry_parser = zigator_subparsers.add_parser(
     "add-config-entry",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="add a configuration entry")
 add_config_entry_parser.add_argument(
     "ENTRY_TYPE",
@@ -57,6 +59,7 @@ add_config_entry_parser.add_argument(
 
 rm_config_entry_parser = zigator_subparsers.add_parser(
     "rm-config-entry",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="remove a configuration entry")
 rm_config_entry_parser.add_argument(
     "ENTRY_TYPE",
@@ -72,6 +75,7 @@ rm_config_entry_parser.add_argument(
 
 parse_parser = zigator_subparsers.add_parser(
     "parse",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="parse pcap files")
 parse_parser.add_argument(
     "PCAP_DIRECTORY",
@@ -92,6 +96,7 @@ parse_parser.add_argument(
 
 analyze_parser = zigator_subparsers.add_parser(
     "analyze",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="analyze data from a database")
 analyze_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -114,6 +119,7 @@ analyze_parser.add_argument(
 
 visualize_parser = zigator_subparsers.add_parser(
     "visualize",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="visualize data from a database")
 visualize_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -130,6 +136,7 @@ visualize_parser.add_argument(
 
 train_parser = zigator_subparsers.add_parser(
     "train",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="train a classifier using data from a database")
 train_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -163,6 +170,7 @@ train_parser.set_defaults(restricted=False)
 
 inject_parser = zigator_subparsers.add_parser(
     "inject",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged packet")
 inject_parser.add_argument(
     "FW_PROTOCOL",
@@ -194,6 +202,7 @@ inject_subparsers = inject_parser.add_subparsers(
 
 mpdu_parser = inject_subparsers.add_parser(
     "mpdu",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged MPDU")
 mpdu_parser.add_argument(
     "--raw",
@@ -204,6 +213,7 @@ mpdu_parser.add_argument(
 
 beacon_parser = inject_subparsers.add_parser(
     "beacon",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged beacon")
 beacon_parser.add_argument(
     "--mac_seqnum",
@@ -258,6 +268,7 @@ beacon_parser.add_argument(
 
 beaconreq_parser = inject_subparsers.add_parser(
     "beaconreq",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged Beacon Request")
 beaconreq_parser.add_argument(
     "--mac_seqnum",
@@ -268,6 +279,7 @@ beaconreq_parser.add_argument(
 
 orphannotif_parser = inject_subparsers.add_parser(
     "orphannotif",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged Orphan Notification")
 orphannotif_parser.add_argument(
     "--mac_seqnum",
@@ -284,6 +296,7 @@ orphannotif_parser.add_argument(
 
 rejoinreq_parser = inject_subparsers.add_parser(
     "rejoinreq",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged Rejoin Request")
 rejoinreq_parser.add_argument(
     "--mac_seqnum",
@@ -345,6 +358,7 @@ rejoinreq_parser.add_argument(
 
 atusb_parser = zigator_subparsers.add_parser(
     "atusb",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="launch selective jamming and spoofing attacks with an ATUSB")
 atusb_parser.add_argument(
     "REPO_DIRECTORY",
@@ -354,6 +368,7 @@ atusb_parser.add_argument(
 
 monitor_parser = zigator_subparsers.add_parser(
     "monitor",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="monitor packets from a pcap file continuously")
 monitor_parser.add_argument(
     "PCAP_FILEPATH",
