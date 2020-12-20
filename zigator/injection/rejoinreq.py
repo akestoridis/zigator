@@ -22,6 +22,26 @@ from scapy.all import ZigbeeNWKCommandPayload
 
 def rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr, nwk_seqnum,
               srcextendedaddr, devtype, powsrc, rxidle):
+    # Sanity checks
+    if mac_seqnum < 0 or mac_seqnum > 255:
+        raise ValueError("Invalid MAC sequence number")
+    elif panid < 0 or panid.bit_length() > 16:
+        raise ValueError("Invalid PAN ID")
+    elif dstshortaddr < 0 or dstshortaddr.bit_length() > 16:
+        raise ValueError("Invalid short destination address")
+    elif srcshortaddr < 0 or srcshortaddr.bit_length() > 16:
+        raise ValueError("Invalid short source address")
+    elif nwk_seqnum < 0 or nwk_seqnum > 255:
+        raise ValueError("Invalid NWK sequence number")
+    elif srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
+        raise ValueError("Invalid extended source address")
+    elif devtype not in {0, 1}:
+        raise ValueError("Invalid Device Type field value")
+    elif powsrc not in {0, 1}:
+        raise ValueError("Invalid Power Source field value")
+    elif rxidle not in {0, 1}:
+        raise ValueError("Invalid Receiver On When Idle field value")
+
     # Forge a rejoin request
     forged_pkt = (
         Dot15d4FCS(

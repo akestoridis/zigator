@@ -19,6 +19,12 @@ from scapy.all import Dot15d4FCS
 
 
 def orphannotif(mac_seqnum, srcextendedaddr):
+    # Sanity checks
+    if mac_seqnum < 0 or mac_seqnum > 255:
+        raise ValueError("Invalid MAC sequence number")
+    elif srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
+        raise ValueError("Invalid extended source address")
+
     # Forge an orphan notification
     forged_pkt = (
         Dot15d4FCS(

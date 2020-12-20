@@ -21,6 +21,24 @@ from scapy.all import ZigBeeBeacon
 
 def beacon(mac_seqnum, panid, srcshortaddr, pancoord, assocpermit, devdepth,
            epid, updateid):
+    # Sanity checks
+    if mac_seqnum < 0 or mac_seqnum > 255:
+        raise ValueError("Invalid MAC sequence number")
+    elif panid < 0 or panid.bit_length() > 16:
+        raise ValueError("Invalid PAN ID")
+    elif srcshortaddr < 0 or srcshortaddr.bit_length() > 16:
+        raise ValueError("Invalid short source address")
+    elif pancoord not in {0, 1}:
+        raise ValueError("Invalid PAN Coordinator field value")
+    elif assocpermit not in {0, 1}:
+        raise ValueError("Invalid Association Permit field value")
+    elif devdepth < 0 or devdepth > 15:
+        raise ValueError("Invalid Device Depth field value")
+    elif epid < 0 or epid.bit_length() > 64:
+        raise ValueError("Invalid Extended PAN ID")
+    elif updateid < 0 or updateid > 255:
+        raise ValueError("Invalid Update ID field value")
+
     # Forge a beacon
     forged_pkt = (
         Dot15d4FCS(

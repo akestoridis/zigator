@@ -311,15 +311,15 @@ def add_config_entry(entry_type, entry_value, entry_name):
     entry_value = entry_value.replace(":", "")
 
     # Identify the type of the provided configuration entry
-    if entry_type.lower() == "network-key":
+    if entry_type == "network-key":
         config_entries = network_keys
         config_filepath = NETWORK_FILEPATH
         expected_length = 32
-    elif entry_type.lower() == "link-key":
+    elif entry_type == "link-key":
         config_entries = link_keys
         config_filepath = LINK_FILEPATH
         expected_length = 32
-    elif entry_type.lower() == "install-code":
+    elif entry_type == "install-code":
         config_entries = install_codes
         config_filepath = INSTALL_FILEPATH
         expected_length = 36
@@ -345,19 +345,19 @@ def add_config_entry(entry_type, entry_value, entry_name):
     # Sanity checks
     if entry_bytes in config_entries.values():
         raise ValueError("The {} {} was already loaded"
-                         "".format(entry_type.lower().replace("-", " "),
+                         "".format(entry_type.replace("-", " "),
                                    entry_bytes.hex()))
     elif entry_name in config_entries.keys():
         raise ValueError("Could not add the {} {} because its "
                          "name \"{}\" is already used by the {} {}"
-                         "".format(entry_type.lower().replace("-", " "),
+                         "".format(entry_type.replace("-", " "),
                                    entry_bytes.hex(),
                                    entry_name,
-                                   entry_type.lower().replace("-", " "),
+                                   entry_type.replace("-", " "),
                                    config_entries[entry_name].hex()))
 
     # If the provided configuration entry is an install code, check its CRC
-    if entry_type.lower() == "install-code":
+    if entry_type == "install-code":
         computed_crc, received_crc = fs.check_crc(entry_bytes)
         if computed_crc != received_crc:
             raise ValueError("The CRC value of the install code {} "
@@ -373,7 +373,7 @@ def add_config_entry(entry_type, entry_value, entry_name):
         fp.write("{}\t{}\n".format(config_entries[entry_name].hex(),
                                    entry_name))
     logging.info("Saved the {} {} in the \"{}\" configuration file"
-                 "".format(entry_type.lower().replace("-", " "),
+                 "".format(entry_type.replace("-", " "),
                            entry_bytes.hex(),
                            config_filepath))
 
@@ -384,13 +384,13 @@ def rm_config_entry(entry_type, entry_name):
     global install_codes
 
     # Identify the type of the provided configuration entry
-    if entry_type.lower() == "network-key":
+    if entry_type == "network-key":
         config_entries = network_keys
         config_filepath = NETWORK_FILEPATH
-    elif entry_type.lower() == "link-key":
+    elif entry_type == "link-key":
         config_entries = link_keys
         config_filepath = LINK_FILEPATH
-    elif entry_type.lower() == "install-code":
+    elif entry_type == "install-code":
         config_entries = install_codes
         config_filepath = INSTALL_FILEPATH
     else:
@@ -400,7 +400,7 @@ def rm_config_entry(entry_type, entry_name):
     if entry_name not in config_entries.keys():
         raise ValueError("The name \"{}\" is not used by any {}"
                          "".format(entry_name,
-                                   entry_type.lower().replace("-", " ")))
+                                   entry_type.replace("-", " ")))
 
     # Update the corresponding configuration file
     del config_entries[entry_name]
@@ -411,7 +411,7 @@ def rm_config_entry(entry_type, entry_name):
                                            tmp_name))
     logging.info("Removed the \"{}\" {} from the \"{}\" configuration file"
                  "".format(entry_name,
-                           entry_type.lower().replace("-", " "),
+                           entry_type.replace("-", " "),
                            config_filepath))
 
 

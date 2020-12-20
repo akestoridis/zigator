@@ -30,14 +30,14 @@ def main(argv):
     """Handle user input and call the required functions."""
     # Sanity check
     if argv is None:
-        cli.print_help()
+        cli.print_zigator_help()
         return
 
     # Parse the provided list of arguments
     if len(argv) > 1:
         args = cli.parse_args(argv[1:])
     else:
-        cli.print_help()
+        cli.print_zigator_help()
         return
 
     # Check whether the logging level should be set to DEBUG or not
@@ -45,64 +45,50 @@ def main(argv):
         config.enable_debug_logging()
 
     # Make sure that a subcommand was selected
-    if args.subcommand is None:
-        cli.print_help()
+    if args.SUBCOMMAND is None:
+        cli.print_zigator_help()
+        return
+
+    # Make sure that a packet type was selected when needed
+    if args.SUBCOMMAND == "inject" and args.PKT_TYPE is None:
+        cli.print_zigator_inject_help()
         return
 
     # Load Zigator's configuration files
     config.load_config_files()
 
     # Process the user's input
-    if args.subcommand == "print-config":
+    if args.SUBCOMMAND == "print-config":
         config.print_config()
-    elif args.subcommand == "add-config-entry":
+    elif args.SUBCOMMAND == "add-config-entry":
         config.add_config_entry(args.ENTRY_TYPE,
                                 args.ENTRY_VALUE,
                                 args.ENTRY_NAME)
-    elif args.subcommand == "rm-config-entry":
+    elif args.SUBCOMMAND == "rm-config-entry":
         config.rm_config_entry(args.ENTRY_TYPE,
                                args.ENTRY_NAME)
-    elif args.subcommand == "parse":
+    elif args.SUBCOMMAND == "parse":
         parsing.main(args.PCAP_DIRECTORY,
                      args.DATABASE_FILEPATH,
                      args.num_workers)
-    elif args.subcommand == "analyze":
+    elif args.SUBCOMMAND == "analyze":
         analysis.main(args.DATABASE_FILEPATH,
                       args.OUTPUT_DIRECTORY,
                       args.num_workers)
-    elif args.subcommand == "visualize":
+    elif args.SUBCOMMAND == "visualize":
         visualization.main(args.DATABASE_FILEPATH,
                            args.OUTPUT_DIRECTORY)
-    elif args.subcommand == "train":
+    elif args.SUBCOMMAND == "train":
         training.main("enc-nwk-cmd",
                       args.DATABASE_FILEPATH,
                       args.OUTPUT_DIRECTORY,
                       args.seed,
                       args.restricted)
-    elif args.subcommand == "inject":
-        injection.main(args.PKT_TYPE,
-                       args.FW_PROTOCOL,
-                       args.ipaddr,
-                       args.portnum,
-                       args.ifname,
-                       args.raw,
-                       args.mac_seqnum,
-                       args.panid,
-                       args.dstshortaddr,
-                       args.srcshortaddr,
-                       args.srcextendedaddr,
-                       args.pancoord,
-                       args.assocpermit,
-                       args.devdepth,
-                       args.epid,
-                       args.updateid,
-                       args.nwk_seqnum,
-                       args.devtype,
-                       args.powsrc,
-                       args.rxidle)
-    elif args.subcommand == "atusb":
+    elif args.SUBCOMMAND == "inject":
+        injection.main(args)
+    elif args.SUBCOMMAND == "atusb":
         atusb.main(args.REPO_DIRECTORY)
-    elif args.subcommand == "monitor":
+    elif args.SUBCOMMAND == "monitor":
         monitoring.main(args.PCAP_FILEPATH)
     else:
-        raise ValueError("Unknown subcommand \"{}\"".format(args.subcommand))
+        raise ValueError("Unknown subcommand \"{}\"".format(args.SUBCOMMAND))

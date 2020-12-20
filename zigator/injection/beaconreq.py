@@ -19,6 +19,10 @@ from scapy.all import Dot15d4FCS
 
 
 def beaconreq(mac_seqnum):
+    # Sanity check
+    if mac_seqnum < 0 or mac_seqnum > 255:
+        raise ValueError("Invalid MAC sequence number")
+
     # Forge a beacon request
     forged_pkt = (
         Dot15d4FCS(
