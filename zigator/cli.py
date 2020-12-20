@@ -158,15 +158,8 @@ train_parser.add_argument(
     default=None)
 train_parser.add_argument(
     "--restricted",
-    dest="restricted",
     action="store_true",
     help="use a restricted set of features")
-train_parser.add_argument(
-    "--unrestricted",
-    dest="restricted",
-    action="store_false",
-    help="use an unrestricted set of features")
-train_parser.set_defaults(restricted=False)
 
 inject_parser = zigator_subparsers.add_parser(
     "inject",
