@@ -48,10 +48,10 @@ def main(args):
             logging.info("Canceling the injection of a forged packet...")
             return
         # Sanity check
-        if len(args.raw) < 1 or len(args.raw) > 127:
-            raise ValueError("Invalid number of raw bytes")
+        if len(args.phy_payload) < 1 or len(args.phy_payload) > 127:
+            raise ValueError("Invalid PHY-layer payload length")
         # Forge the packet
-        forged_pkt = Dot15d4FCS(bytes.fromhex(args.raw))
+        forged_pkt = Dot15d4FCS(bytes.fromhex(args.phy_payload))
     elif args.PKT_TYPE == "beacon":
         # Print a disclaimer
         print("############################################################")
@@ -73,9 +73,10 @@ def main(args):
             return
         # Forge the packet
         forged_pkt = beacon(
-            args.mac_seqnum, int(args.panid, 16), int(args.srcshortaddr, 16),
-            args.pancoord, args.assocpermit, args.devdepth,
-            int(args.epid, 16), args.updateid)
+            args.mac_seqnum, int(args.mac_srcpanid, 16),
+            int(args.mac_srcshortaddr, 16), args.mac_beacon_pancoord,
+            args.mac_beacon_assocpermit, args.nwk_beacon_devdepth,
+            int(args.nwk_beacon_epid, 16), args.nwk_beacon_updateid)
     elif args.PKT_TYPE == "beaconreq":
         # Print a disclaimer
         print("############################################################")
@@ -118,7 +119,7 @@ def main(args):
             return
         # Forge the packet
         forged_pkt = orphannotif(
-            args.mac_seqnum, int(args.srcextendedaddr, 16))
+            args.mac_seqnum, int(args.mac_srcextendedaddr, 16))
     elif args.PKT_TYPE == "rejoinreq":
         # Print a disclaimer
         print("############################################################")
@@ -142,10 +143,11 @@ def main(args):
             return
         # Forge the packet
         forged_pkt = rejoinreq(
-            args.mac_seqnum, int(args.panid, 16), int(args.dstshortaddr, 16),
-            int(args.srcshortaddr, 16), args.nwk_seqnum,
-            int(args.srcextendedaddr, 16), args.devtype, args.powsrc,
-            args.rxidle)
+            args.mac_seqnum, int(args.mac_dstpanid, 16),
+            int(args.mac_dstshortaddr, 16), int(args.mac_srcshortaddr, 16),
+            args.nwk_seqnum, int(args.nwk_srcextendedaddr, 16),
+            args.nwk_rejoinreq_devtype, args.nwk_rejoinreq_powsrc,
+            args.nwk_rejoinreq_rxidle)
     else:
         raise ValueError("Unknown packet type \"{}\"".format(args.PKT_TYPE))
     logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))

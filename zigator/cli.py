@@ -198,10 +198,10 @@ mpdu_parser = inject_subparsers.add_parser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged MPDU")
 mpdu_parser.add_argument(
-    "--raw",
+    "--phy_payload",
     type=str,
     action="store",
-    help="the raw bytes of MPDUs in hexadecimal notation",
+    help="the PHY-layer payload in hexadecimal notation",
     default="418889aa990000adde5241576e7f")
 
 beacon_parser = inject_subparsers.add_parser(
@@ -215,48 +215,48 @@ beacon_parser.add_argument(
     help="the MAC sequence number",
     default=137)
 beacon_parser.add_argument(
-    "--panid",
+    "--mac_srcpanid",
     type=str,
     action="store",
-    help="the PAN ID in hexadecimal notation",
+    help="the source PAN ID in hexadecimal notation",
     default="0x99aa")
 beacon_parser.add_argument(
-    "--srcshortaddr",
+    "--mac_srcshortaddr",
     type=str,
     action="store",
-    help="the short source address in hexadecimal notation",
+    help="the short source MAC address in hexadecimal notation",
     default="0xdead")
 beacon_parser.add_argument(
-    "--pancoord",
+    "--mac_beacon_pancoord",
     type=int,
     choices=range(2),
     action="store",
-    help="the PAN Coordinator field of beacons",
+    help="the PAN Coordinator beacon field value",
     default=0)
 beacon_parser.add_argument(
-    "--assocpermit",
+    "--mac_beacon_assocpermit",
     type=int,
     choices=range(2),
     action="store",
-    help="the Association Permit field of beacons",
+    help="the Association Permit beacon field value",
     default=0)
 beacon_parser.add_argument(
-    "--devdepth",
+    "--nwk_beacon_devdepth",
     type=int,
     action="store",
-    help="the Device Depth field of beacons",
+    help="the Device Depth beacon field value",
     default=2)
 beacon_parser.add_argument(
-    "--epid",
+    "--nwk_beacon_epid",
     type=str,
     action="store",
-    help="the EPID field of beacons in hexadecimal notation",
+    help="the Extended PAN ID beacon field value in hexadecimal notation",
     default="facefeedbeefcafe")
 beacon_parser.add_argument(
-    "--updateid",
+    "--nwk_beacon_updateid",
     type=int,
     action="store",
-    help="the Update ID field of beacons",
+    help="the Update ID beacon field value",
     default=0)
 
 beaconreq_parser = inject_subparsers.add_parser(
@@ -281,10 +281,10 @@ orphannotif_parser.add_argument(
     help="the MAC sequence number",
     default=137)
 orphannotif_parser.add_argument(
-    "--srcextendedaddr",
+    "--mac_srcextendedaddr",
     type=str,
     action="store",
-    help="the extended source address in hexadecimal notation",
+    help="the extended source MAC address in hexadecimal notation",
     default="1122334455667788")
 
 rejoinreq_parser = inject_subparsers.add_parser(
@@ -298,22 +298,22 @@ rejoinreq_parser.add_argument(
     help="the MAC sequence number",
     default=137)
 rejoinreq_parser.add_argument(
-    "--panid",
+    "--mac_dstpanid",
     type=str,
     action="store",
-    help="the PAN ID in hexadecimal notation",
+    help="the destination PAN ID in hexadecimal notation",
     default="0x99aa")
 rejoinreq_parser.add_argument(
-    "--dstshortaddr",
+    "--mac_dstshortaddr",
     type=str,
     action="store",
-    help="the short destination address in hexadecimal notation",
+    help="the short destination MAC address in hexadecimal notation",
     default="0x0000")
 rejoinreq_parser.add_argument(
-    "--srcshortaddr",
+    "--mac_srcshortaddr",
     type=str,
     action="store",
-    help="the short source address in hexadecimal notation",
+    help="the short source MAC address in hexadecimal notation",
     default="0xdead")
 rejoinreq_parser.add_argument(
     "--nwk_seqnum",
@@ -322,31 +322,31 @@ rejoinreq_parser.add_argument(
     help="the NWK sequence number",
     default=232)
 rejoinreq_parser.add_argument(
-    "--srcextendedaddr",
+    "--nwk_srcextendedaddr",
     type=str,
     action="store",
-    help="the extended source address in hexadecimal notation",
+    help="the extended source NWK address in hexadecimal notation",
     default="1122334455667788")
 rejoinreq_parser.add_argument(
-    "--devtype",
+    "--nwk_rejoinreq_devtype",
     type=int,
     choices=range(2),
     action="store",
-    help="the Device Type field of rejoin requests",
+    help="the Device Type rejoin request field value",
     default=0)
 rejoinreq_parser.add_argument(
-    "--powsrc",
+    "--nwk_rejoinreq_powsrc",
     type=int,
     choices=range(2),
     action="store",
-    help="the Power Source field of rejoin requests",
+    help="the Power Source rejoin request field value",
     default=0)
 rejoinreq_parser.add_argument(
-    "--rxidle",
+    "--nwk_rejoinreq_rxidle",
     type=int,
     choices=range(2),
     action="store",
-    help="the Receiver On When Idle field of rejoin requests",
+    help="the Receiver On When Idle rejoin request field value",
     default=0)
 
 atusb_parser = zigator_subparsers.add_parser(

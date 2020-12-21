@@ -20,27 +20,29 @@ from scapy.all import ZigbeeNWK
 from scapy.all import ZigbeeNWKCommandPayload
 
 
-def rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr, nwk_seqnum,
-              srcextendedaddr, devtype, powsrc, rxidle):
+def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
+              nwk_seqnum, nwk_srcextendedaddr, nwk_rejoinreq_devtype,
+              nwk_rejoinreq_powsrc, nwk_rejoinreq_rxidle):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
-    elif panid < 0 or panid.bit_length() > 16:
-        raise ValueError("Invalid PAN ID")
-    elif dstshortaddr < 0 or dstshortaddr.bit_length() > 16:
-        raise ValueError("Invalid short destination address")
-    elif srcshortaddr < 0 or srcshortaddr.bit_length() > 16:
-        raise ValueError("Invalid short source address")
+    elif mac_dstpanid < 0 or mac_dstpanid.bit_length() > 16:
+        raise ValueError("Invalid destination PAN ID")
+    elif mac_dstshortaddr < 0 or mac_dstshortaddr.bit_length() > 16:
+        raise ValueError("Invalid short destination MAC address")
+    elif mac_srcshortaddr < 0 or mac_srcshortaddr.bit_length() > 16:
+        raise ValueError("Invalid short source MAC address")
     elif nwk_seqnum < 0 or nwk_seqnum > 255:
         raise ValueError("Invalid NWK sequence number")
-    elif srcextendedaddr < 0 or srcextendedaddr.bit_length() > 64:
-        raise ValueError("Invalid extended source address")
-    elif devtype not in {0, 1}:
-        raise ValueError("Invalid Device Type field value")
-    elif powsrc not in {0, 1}:
-        raise ValueError("Invalid Power Source field value")
-    elif rxidle not in {0, 1}:
-        raise ValueError("Invalid Receiver On When Idle field value")
+    elif nwk_srcextendedaddr < 0 or nwk_srcextendedaddr.bit_length() > 64:
+        raise ValueError("Invalid extended source NWK address")
+    elif nwk_rejoinreq_devtype not in {0, 1}:
+        raise ValueError("Invalid Device Type rejoin request field value")
+    elif nwk_rejoinreq_powsrc not in {0, 1}:
+        raise ValueError("Invalid Power Source rejoin request field value")
+    elif nwk_rejoinreq_rxidle not in {0, 1}:
+        raise ValueError("Invalid Receiver On When Idle "
+                         "rejoin request field value")
 
     # Forge a rejoin request
     forged_pkt = (
@@ -55,25 +57,25 @@ def rejoinreq(mac_seqnum, panid, dstshortaddr, srcshortaddr, nwk_seqnum,
             fcf_srcaddrmode=2,
             seqnum=mac_seqnum)
         / Dot15d4Data(
-            dest_panid=panid,
-            dest_addr=dstshortaddr,
-            src_addr=srcshortaddr)
+            dest_panid=mac_dstpanid,
+            dest_addr=mac_dstshortaddr,
+            src_addr=mac_srcshortaddr)
         / ZigbeeNWK(
             frametype=1,
             proto_version=2,
             discover_route=0,
             flags=0b010000,
-            destination=dstshortaddr,
-            source=srcshortaddr,
+            destination=mac_dstshortaddr,
+            source=mac_srcshortaddr,
             radius=1,
             seqnum=nwk_seqnum,
-            ext_src=srcextendedaddr)
+            ext_src=nwk_srcextendedaddr)
         / ZigbeeNWKCommandPayload(
             cmd_identifier=6,
             alternate_pan_coordinator=0,
-            device_type=devtype,
-            power_source=powsrc,
-            receiver_on_when_idle=rxidle,
+            device_type=nwk_rejoinreq_devtype,
+            power_source=nwk_rejoinreq_powsrc,
+            receiver_on_when_idle=nwk_rejoinreq_rxidle,
             security_capability=0,
             allocate_address=1)
     )
