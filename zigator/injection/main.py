@@ -48,7 +48,7 @@ def main(args):
             logging.info("Canceling the injection of a forged packet...")
             return
         # Sanity check
-        if len(args.phy_payload) < 1 or len(args.phy_payload) > 127:
+        if len(args.phy_payload) < 2 or len(args.phy_payload) > 254:
             raise ValueError("Invalid PHY-layer payload length")
         # Forge the packet
         forged_pkt = Dot15d4FCS(bytes.fromhex(args.phy_payload))
