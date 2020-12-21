@@ -19,10 +19,13 @@ from scapy.all import Dot15d4FCS
 from scapy.all import ZigbeeNWK
 from scapy.all import ZigbeeNWKCommandPayload
 
+from .secure_nwk_layer import secure_nwk_layer
+
 
 def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
               nwk_seqnum, nwk_srcextendedaddr, nwk_rejoinreq_devtype,
-              nwk_rejoinreq_powsrc, nwk_rejoinreq_rxidle):
+              nwk_rejoinreq_powsrc, nwk_rejoinreq_rxidle, nwk_security,
+              nwk_aux_framecounter, nwk_aux_keyseqnum, nwk_key):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -43,6 +46,14 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
     elif nwk_rejoinreq_rxidle not in {0, 1}:
         raise ValueError("Invalid Receiver On When Idle "
                          "rejoin request field value")
+    elif nwk_security not in {0, 1}:
+        raise ValueError("Invalid NWK security field value")
+    elif nwk_aux_framecounter < 0 or nwk_aux_framecounter.bit_length() > 32:
+        raise ValueError("Invalid NWK auxiliary frame counter")
+    elif nwk_aux_keyseqnum < 0 or nwk_aux_keyseqnum > 255:
+        raise ValueError("Invalid NWK auxiliary key sequence number")
+    elif len(nwk_key) != 16:
+        raise ValueError("Invalid network key length")
 
     # Forge a rejoin request
     forged_pkt = (
@@ -79,5 +90,11 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             security_capability=0,
             allocate_address=1)
     )
+
+    # Check whether the forged packet should be secured or not
+    if nwk_security == 1:
+        forged_pkt = secure_nwk_layer(
+            forged_pkt, nwk_key, True, nwk_aux_framecounter,
+            nwk_srcextendedaddr, nwk_aux_keyseqnum)
 
     return forged_pkt

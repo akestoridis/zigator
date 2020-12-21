@@ -348,6 +348,31 @@ rejoinreq_parser.add_argument(
     action="store",
     help="the Receiver On When Idle rejoin request field value",
     default=0)
+rejoinreq_parser.add_argument(
+    "--nwk_security",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the NWK security field value",
+    default=0)
+rejoinreq_parser.add_argument(
+    "--nwk_aux_framecounter",
+    type=int,
+    action="store",
+    help="the NWK auxiliary frame counter",
+    default=10000)
+rejoinreq_parser.add_argument(
+    "--nwk_aux_keyseqnum",
+    type=int,
+    action="store",
+    help="the NWK auxiliary key sequence number",
+    default=0)
+rejoinreq_parser.add_argument(
+    "--nwk_key",
+    type=str,
+    action="store",
+    help="the network key in hexadecimal notation",
+    default="11111111111111111111111111111111")
 
 atusb_parser = zigator_subparsers.add_parser(
     "atusb",

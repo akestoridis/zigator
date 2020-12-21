@@ -125,9 +125,9 @@ def main(args):
         print("############################################################")
         print("#                        DISCLAIMER                        #")
         print("#                                                          #")
-        print("# The injection of an unsecured Rejoin Request may result  #")
-        print("# in the disclosure of the network key that a legitimate   #")
-        print("# Zigbee network is using and may also interfere with the  #")
+        print("# The injection of a Rejoin Request may result in the      #")
+        print("# disclosure of the network key that a legitimate Zigbee   #")
+        print("# network is using and may also interfere with the         #")
         print("# operation of legitimate IEEE 802.15.4-based networks.    #")
         print("# The users of this tool are responsible for making sure   #")
         print("# that they are compliant with their local laws and that   #")
@@ -147,7 +147,9 @@ def main(args):
             int(args.mac_dstshortaddr, 16), int(args.mac_srcshortaddr, 16),
             args.nwk_seqnum, int(args.nwk_srcextendedaddr, 16),
             args.nwk_rejoinreq_devtype, args.nwk_rejoinreq_powsrc,
-            args.nwk_rejoinreq_rxidle)
+            args.nwk_rejoinreq_rxidle, args.nwk_security,
+            args.nwk_aux_framecounter, args.nwk_aux_keyseqnum,
+            bytes.fromhex(args.nwk_key))
     else:
         raise ValueError("Unknown packet type \"{}\"".format(args.PKT_TYPE))
     logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))
