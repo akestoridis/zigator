@@ -23,6 +23,7 @@ from .beacon import beacon
 from .beaconreq import beaconreq
 from .orphannotif import orphannotif
 from .rejoinreq import rejoinreq
+from .updatedevice import updatedevice
 
 
 def main(args):
@@ -150,6 +151,38 @@ def main(args):
             args.nwk_rejoinreq_rxidle, args.nwk_security,
             args.nwk_aux_framecounter, args.nwk_aux_keyseqnum,
             bytes.fromhex(args.nwk_key))
+    elif args.PKT_TYPE == "updatedevice":
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of an Update-Device command may interfere  #")
+        print("# with the operation of legitimate IEEE 802.15.4-based     #")
+        print("# networks. The users of this tool are responsible for     #")
+        print("# making sure that they are compliant with their local     #")
+        print("# laws and that they have proper permission from the       #")
+        print("# affected network owners.                                 #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
+        # Forge the packet
+        forged_pkt = updatedevice(
+            args.mac_seqnum, int(args.mac_dstpanid, 16),
+            int(args.mac_dstshortaddr, 16), int(args.mac_srcshortaddr, 16),
+            int(args.nwk_dstshortaddr, 16), int(args.nwk_srcshortaddr, 16),
+            args.nwk_radius, args.nwk_seqnum, args.aps_counter,
+            int(args.aps_updatedevice_extendedaddr, 16),
+            int(args.aps_updatedevice_shortaddr, 16),
+            args.aps_updatedevice_status, args.nwk_aux_framecounter,
+            int(args.nwk_aux_srcaddr, 16), args.nwk_aux_keyseqnum,
+            bytes.fromhex(args.nwk_key), args.aps_security,
+            bool(args.aps_aux_extnonce), args.aps_aux_framecounter,
+            int(args.aps_aux_srcaddr, 16), bytes.fromhex(args.aps_key))
     else:
         raise ValueError("Unknown packet type \"{}\"".format(args.PKT_TYPE))
     logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))

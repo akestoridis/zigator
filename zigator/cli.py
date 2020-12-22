@@ -374,6 +374,140 @@ rejoinreq_parser.add_argument(
     help="the network key in hexadecimal notation",
     default="11111111111111111111111111111111")
 
+updatedevice_parser = inject_subparsers.add_parser(
+    "updatedevice",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged Update-Device command")
+updatedevice_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137)
+updatedevice_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa")
+updatedevice_parser.add_argument(
+    "--mac_dstshortaddr",
+    type=str,
+    action="store",
+    help="the short destination MAC address in hexadecimal notation",
+    default="0x0000")
+updatedevice_parser.add_argument(
+    "--mac_srcshortaddr",
+    type=str,
+    action="store",
+    help="the short source MAC address in hexadecimal notation",
+    default="0xdead")
+updatedevice_parser.add_argument(
+    "--nwk_dstshortaddr",
+    type=str,
+    action="store",
+    help="the short destination NWK address in hexadecimal notation",
+    default="0x0000")
+updatedevice_parser.add_argument(
+    "--nwk_srcshortaddr",
+    type=str,
+    action="store",
+    help="the short source NWK address in hexadecimal notation",
+    default="0xdead")
+updatedevice_parser.add_argument(
+    "--nwk_radius",
+    type=int,
+    action="store",
+    help="the NWK radius",
+    default=30)
+updatedevice_parser.add_argument(
+    "--nwk_seqnum",
+    type=int,
+    action="store",
+    help="the NWK sequence number",
+    default=232)
+updatedevice_parser.add_argument(
+    "--aps_counter",
+    type=int,
+    action="store",
+    help="the APS counter",
+    default=210)
+updatedevice_parser.add_argument(
+    "--aps_updatedevice_extendedaddr",
+    type=str,
+    action="store",
+    help="the extended Update-Device address in hexadecimal notation",
+    default="7777770000000004")
+updatedevice_parser.add_argument(
+    "--aps_updatedevice_shortaddr",
+    type=str,
+    action="store",
+    help="the short Update-Device address in hexadecimal notation",
+    default="0x2201")
+updatedevice_parser.add_argument(
+    "--aps_updatedevice_status",
+    type=int,
+    choices=range(4),
+    action="store",
+    help="the Update-Device status field value",
+    default=1)
+updatedevice_parser.add_argument(
+    "--nwk_aux_framecounter",
+    type=int,
+    action="store",
+    help="the NWK auxiliary frame counter",
+    default=10000)
+updatedevice_parser.add_argument(
+    "--nwk_aux_srcaddr",
+    type=str,
+    action="store",
+    help="the NWK auxiliary extended source address in hexadecimal notation",
+    default="7777770000000003")
+updatedevice_parser.add_argument(
+    "--nwk_aux_keyseqnum",
+    type=int,
+    action="store",
+    help="the NWK auxiliary key sequence number",
+    default=0)
+updatedevice_parser.add_argument(
+    "--nwk_key",
+    type=str,
+    action="store",
+    help="the network key in hexadecimal notation",
+    default="11111111111111111111111111111111")
+updatedevice_parser.add_argument(
+    "--aps_security",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the APS security field value",
+    default=0)
+updatedevice_parser.add_argument(
+    "--aps_aux_extnonce",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the APS auxiliary extended nonce field value",
+    default=1)
+updatedevice_parser.add_argument(
+    "--aps_aux_framecounter",
+    type=int,
+    action="store",
+    help="the APS auxiliary frame counter",
+    default=4096)
+updatedevice_parser.add_argument(
+    "--aps_aux_srcaddr",
+    type=str,
+    action="store",
+    help="the APS auxiliary extended source address in hexadecimal notation",
+    default="7777770000000003")
+updatedevice_parser.add_argument(
+    "--aps_key",
+    type=str,
+    action="store",
+    help="the link key in hexadecimal notation",
+    default="33333333333333333333333333333333")
+
 atusb_parser = zigator_subparsers.add_parser(
     "atusb",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
