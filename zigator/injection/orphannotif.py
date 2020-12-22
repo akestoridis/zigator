@@ -25,7 +25,7 @@ def orphannotif(mac_seqnum, mac_srcextendedaddr):
     elif mac_srcextendedaddr < 0 or mac_srcextendedaddr.bit_length() > 64:
         raise ValueError("Invalid extended source MAC address")
 
-    # Forge an orphan notification
+    # Forge an Orphan Notification
     forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=3,

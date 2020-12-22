@@ -38,8 +38,8 @@ NWK_PROTOCOL_VERSIONS = {
 }
 
 NWK_DR_STATES = {
-    0: "0b0: Suppress route discovery",
-    1: "0b1: Enable route discovery"
+    0: "0b00: Suppress route discovery",
+    1: "0b01: Enable route discovery"
 }
 
 NWK_MULTICAST_STATES = {

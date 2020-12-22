@@ -23,7 +23,7 @@ def beaconreq(mac_seqnum):
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
 
-    # Forge a beacon request
+    # Forge a Beacon Request
     forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=3,

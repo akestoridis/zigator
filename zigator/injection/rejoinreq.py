@@ -55,7 +55,7 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
     elif len(nwk_key) != 16:
         raise ValueError("Invalid network key length")
 
-    # Forge a rejoin request
+    # Forge a Rejoin Request
     forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=1,
@@ -91,10 +91,14 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             allocate_address=1)
     )
 
-    # Check whether the forged packet should be secured or not
+    # Check whether its NWK layer should be secured or not
     if nwk_security == 1:
         forged_pkt = secure_nwk_layer(
-            forged_pkt, nwk_key, True, nwk_aux_framecounter,
-            nwk_srcextendedaddr, nwk_aux_keyseqnum)
+            forged_pkt,
+            nwk_key,
+            True,
+            nwk_aux_framecounter,
+            nwk_srcextendedaddr,
+            nwk_aux_keyseqnum)
 
     return forged_pkt

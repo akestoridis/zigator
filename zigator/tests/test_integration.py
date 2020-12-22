@@ -1251,7 +1251,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1386,7 +1386,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1487,7 +1487,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1593,7 +1593,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1688,7 +1688,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1785,7 +1785,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1879,7 +1879,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -1984,7 +1984,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2080,7 +2080,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2179,7 +2179,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2276,7 +2276,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2372,7 +2372,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2468,7 +2468,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2568,7 +2568,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2674,7 +2674,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2763,7 +2763,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Command"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2846,7 +2846,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -2954,7 +2954,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3064,7 +3064,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3171,7 +3171,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3292,7 +3292,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3437,7 +3437,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3566,7 +3566,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3675,7 +3675,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3800,7 +3800,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -3896,7 +3896,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -4027,7 +4027,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -4140,7 +4140,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
@@ -4248,7 +4248,7 @@ class TestIntegration(unittest.TestCase):
                     "NWK Data"),
                 ("nwk_protocolversion", "0b0010: "
                     "Zigbee PRO"),
-                ("nwk_discroute", "0b0: "
+                ("nwk_discroute", "0b00: "
                     "Suppress route discovery"),
                 ("nwk_multicast", "0b0: "
                     "NWK Multicast Disabled"),
