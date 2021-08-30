@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from scapy.all import ZigbeeAppCommandPayload
@@ -368,9 +369,12 @@ def aps_transportkey(pkt, msg_queue):
                 config.entry["pcap_directory"],
                 config.entry["pcap_filename"]),
             config.entry["pkt_num"])
-        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
-        if warning_msg is not None:
-            msg_queue.put((config.WARNING_MSG, warning_msg))
+        return_msg = config.add_new_key(key_bytes, key_type, key_name)
+        if return_msg is not None:
+            if msg_queue is None:
+                logging.warning(return_msg)
+            else:
+                msg_queue.put((config.WARNING_MSG, return_msg))
     elif config.entry["aps_transportkey_stdkeytype"].startswith("0x04:"):
         # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = (
@@ -393,9 +397,12 @@ def aps_transportkey(pkt, msg_queue):
                 config.entry["pcap_directory"],
                 config.entry["pcap_filename"]),
             config.entry["pkt_num"])
-        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
-        if warning_msg is not None:
-            msg_queue.put((config.WARNING_MSG, warning_msg))
+        return_msg = config.add_new_key(key_bytes, key_type, key_name)
+        if return_msg is not None:
+            if msg_queue is None:
+                logging.warning(return_msg)
+            else:
+                msg_queue.put((config.WARNING_MSG, return_msg))
     elif config.entry["aps_transportkey_stdkeytype"].startswith("0x03:"):
         # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = (
@@ -422,9 +429,12 @@ def aps_transportkey(pkt, msg_queue):
                 config.entry["pcap_directory"],
                 config.entry["pcap_filename"]),
             config.entry["pkt_num"])
-        warning_msg = config.add_sniffed_key(key_bytes, key_type, key_name)
-        if warning_msg is not None:
-            msg_queue.put((config.WARNING_MSG, warning_msg))
+        return_msg = config.add_new_key(key_bytes, key_type, key_name)
+        if return_msg is not None:
+            if msg_queue is None:
+                logging.warning(return_msg)
+            else:
+                msg_queue.put((config.WARNING_MSG, return_msg))
     else:
         config.entry["error_msg"] = "Invalid standard key type"
         return
@@ -447,7 +457,7 @@ def aps_updatedevice(pkt):
     # Status field (1 byte)
     if not config.set_entry(
             "aps_updatedevice_status",
-            pkt[ZigbeeAppCommandPayload].status,
+            pkt[ZigbeeAppCommandPayload].update_status,
             UD_STATUSES):
         config.entry["error_msg"] = "PE415: Unknown UD status"
         return
@@ -706,22 +716,14 @@ def aps_auxiliary(pkt, msg_queue, tunneled=False):
             pkt[ZigbeeSecurityHeader].source, "016x")
         potential_sources = set([pkt[ZigbeeSecurityHeader].source])
     elif config.entry["aps_aux_extnonce"].startswith("0b0:"):
-        potential_sources = set()
-        shortaddr = config.entry["nwk_srcshortaddr"]
         panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["nwk_srcshortaddr"]
+        potential_sources = config.get_alternative_addresses(panid, shortaddr)
 
-        if (shortaddr, panid) in config.addresses:
-            if config.addresses[(shortaddr, panid)] != "Conflicting Data":
-                potential_sources.add(
-                    int(config.addresses[(shortaddr, panid)], 16))
-            else:
-                potential_sources.update(
-                    [int(extendedaddr, 16)
-                     for extendedaddr in config.devices.keys()])
-        else:
-            potential_sources.update(
+        if len(potential_sources) == 0:
+            potential_sources = set(
                 [int(extendedaddr, 16)
-                 for extendedaddr in config.devices.keys()])
+                 for extendedaddr in config.extended_addresses.keys()])
 
         if config.entry["nwk_aux_srcaddr"] is not None:
             potential_sources.add(
@@ -836,12 +838,16 @@ def aps_auxiliary(pkt, msg_queue, tunneled=False):
                         "Unexpected format of the decrypted APS payload"
                     )
                     return
-    msg_queue.put(
-        (config.DEBUG_MSG,
-         "Unable to decrypt with a {} the APS payload of packet #{} in {}"
-         "".format(config.entry["aps_aux_keytype"],
-                   config.entry["pkt_num"],
-                   config.entry["pcap_filename"])))
+    msg_obj = (
+        "Unable to decrypt with a {} the APS payload of packet #{} in {}"
+        "".format(config.entry["aps_aux_keytype"],
+                  config.entry["pkt_num"],
+                  config.entry["pcap_filename"])
+    )
+    if msg_queue is None:
+        logging.debug(msg_obj)
+    else:
+        msg_queue.put((config.DEBUG_MSG, msg_obj))
     config.entry["warning_msg"] = "PW401: Unable to decrypt the APS payload"
 
 
@@ -1139,12 +1145,16 @@ def aps_fields(pkt, msg_queue):
     elif config.entry["aps_frametype"].startswith("0b10:"):
         aps_ack_header(pkt, msg_queue)
     elif config.entry["aps_frametype"].startswith("0b11:"):
-        msg_queue.put(
-            (config.DEBUG_MSG,
-             "Packet #{} in {} contains Inter-PAN fields"
-             "which were ignored"
-             "".format(config.entry["pkt_num"],
-                       config.entry["pcap_filename"])))
+        msg_obj = (
+            "Packet #{} in {} contains Inter-PAN fields"
+            "which were ignored"
+            "".format(config.entry["pkt_num"],
+                      config.entry["pcap_filename"])
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((config.DEBUG_MSG, msg_obj))
         config.entry["error_msg"] = "Ignored the Inter-PAN fields"
         return
     else:

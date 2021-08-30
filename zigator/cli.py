@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -508,6 +508,136 @@ updatedevice_parser.add_argument(
     help="the link key in hexadecimal notation",
     default="33333333333333333333333333333333")
 
+deviceannce_parser = inject_subparsers.add_parser(
+    "deviceannce",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged Device_annce")
+deviceannce_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137)
+deviceannce_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa")
+deviceannce_parser.add_argument(
+    "--mac_srcshortaddr",
+    type=str,
+    action="store",
+    help="the short source MAC address in hexadecimal notation",
+    default="0xdead")
+deviceannce_parser.add_argument(
+    "--nwk_seqnum",
+    type=int,
+    action="store",
+    help="the NWK sequence number",
+    default=232)
+deviceannce_parser.add_argument(
+    "--nwk_srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source NWK address in hexadecimal notation",
+    default="1122334455667788")
+deviceannce_parser.add_argument(
+    "--aps_counter",
+    type=int,
+    action="store",
+    help="the APS counter",
+    default=12)
+deviceannce_parser.add_argument(
+    "--zdp_seqnum",
+    type=int,
+    action="store",
+    help="the ZDP sequence number",
+    default=129)
+deviceannce_parser.add_argument(
+    "--nwk_aux_framecounter",
+    type=int,
+    action="store",
+    help="the NWK auxiliary frame counter",
+    default=10000)
+deviceannce_parser.add_argument(
+    "--nwk_aux_keyseqnum",
+    type=int,
+    action="store",
+    help="the NWK auxiliary key sequence number",
+    default=0)
+deviceannce_parser.add_argument(
+    "--nwk_key",
+    type=str,
+    action="store",
+    help="the network key in hexadecimal notation",
+    default="11111111111111111111111111111111")
+
+activeepreq_parser = inject_subparsers.add_parser(
+    "activeepreq",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged Active_EP_req")
+activeepreq_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137)
+activeepreq_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa")
+activeepreq_parser.add_argument(
+    "--mac_dstshortaddr",
+    type=str,
+    action="store",
+    help="the short destination MAC address in hexadecimal notation",
+    default="0xdead")
+activeepreq_parser.add_argument(
+    "--nwk_seqnum",
+    type=int,
+    action="store",
+    help="the NWK sequence number",
+    default=232)
+activeepreq_parser.add_argument(
+    "--aps_counter",
+    type=int,
+    action="store",
+    help="the APS counter",
+    default=12)
+activeepreq_parser.add_argument(
+    "--zdp_seqnum",
+    type=int,
+    action="store",
+    help="the ZDP sequence number",
+    default=129)
+activeepreq_parser.add_argument(
+    "--nwk_aux_framecounter",
+    type=int,
+    action="store",
+    help="the NWK auxiliary frame counter",
+    default=10000)
+activeepreq_parser.add_argument(
+    "--nwk_aux_srcaddr",
+    type=str,
+    action="store",
+    help="the NWK auxiliary extended source address in hexadecimal notation",
+    default="1122334455667788")
+activeepreq_parser.add_argument(
+    "--nwk_aux_keyseqnum",
+    type=int,
+    action="store",
+    help="the NWK auxiliary key sequence number",
+    default=0)
+activeepreq_parser.add_argument(
+    "--nwk_key",
+    type=str,
+    action="store",
+    help="the network key in hexadecimal notation",
+    default="11111111111111111111111111111111")
+
 atusb_parser = zigator_subparsers.add_parser(
     "atusb",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -527,6 +657,75 @@ monitor_parser.add_argument(
     type=str,
     action="store",
     help="path of the pcap file")
+
+wids_parser = zigator_subparsers.add_parser(
+    "wids",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="operate as a WIDS sensor")
+wids_parser.add_argument(
+    "SENSOR_ID",
+    type=str,
+    action="store",
+    help="identifier for the WIDS sensor")
+wids_parser.add_argument(
+    "PANID",
+    type=str,
+    action="store",
+    help="the PAN ID of the user's network in hexadecimal notation")
+wids_parser.add_argument(
+    "EPID",
+    type=str,
+    action="store",
+    help="the Extended PAN ID of the user's network in hexadecimal notation")
+wids_parser.add_argument(
+    "DATABASE_FILEPATH",
+    type=str,
+    action="store",
+    help="path for the database file")
+wids_parser.add_argument(
+    "OUTPUT_DIRECTORY",
+    type=str,
+    action="store",
+    help="directory for the output files",
+    nargs="?",
+    default=os.path.join(os.getcwd(), "wids-output"))
+wids_parser.add_argument(
+    "--ifname",
+    type=str,
+    action="store",
+    help="the name of the IEEE 802.15.4 interface",
+    default="wpan0")
+wids_parser.add_argument(
+    "--pcap_period",
+    type=float,
+    action="store",
+    help="the maximum number of seconds of traffic for each pcap file",
+    default=3600.0)
+wids_parser.add_argument(
+    "--num_zip_files",
+    type=int,
+    action="store",
+    help="the maximum positive number of concurrently stored zip files",
+    default=16)
+wids_parser.add_argument(
+    "--link_key_names",
+    type=str,
+    action="store",
+    help="the names of link keys that ideally should not be used",
+    nargs="*",
+    default=[])
+wids_parser.add_argument(
+    "--ipaddr",
+    type=str,
+    action="store",
+    help="the IP address of the WIDS sensor",
+    default=argparse.SUPPRESS)
+wids_parser.add_argument(
+    "--portnum",
+    type=int,
+    action="store",
+    help="the port number of the WIDS sensor",
+    default=argparse.SUPPRESS)
 
 
 def init(derived_version):

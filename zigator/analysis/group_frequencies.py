@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -91,7 +91,10 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             count_errors = True
         else:
             count_errors = False
-        results = config.db.grouped_count(column_names, count_errors)
+        results = config.db.grouped_count(
+            "packets",
+            column_names,
+            count_errors)
 
         # Write the computed frequencies in the output file
         config.fs.write_tsv(results, out_filepath)

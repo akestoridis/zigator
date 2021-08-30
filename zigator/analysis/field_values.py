@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -33,7 +33,7 @@ IGNORED_COLUMNS = set([
     "nwk_aux_decpayload",
     "nwk_aux_decshow",
     "aps_counter",
-    "apx_aux_framecounter",
+    "aps_aux_framecounter",
     "aps_aux_decpayload",
     "aps_aux_decshow",
     "aps_tunnel_counter",
@@ -269,6 +269,47 @@ PACKET_TYPES = [
             ("aps_cmd_id", "0x10: APS Confirm Key"),
         ),
     ),
+    (
+        "zdp_activeepreq.tsv",
+        (
+            ("error_msg", None),
+            ("aps_frametype", "0b00: APS Data"),
+            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
+            ("aps_cluster_id", "0x0005: Active_EP_req"),
+        ),
+    ),
+    (
+        "zdp_activeepreq_specialcase.tsv",
+        (
+            ("error_msg", None),
+            ("nwk_srcroute", "0b0: NWK Source Route Omitted"),
+            ("aps_frametype", "0b00: APS Data"),
+            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
+            ("aps_cluster_id", "0x0005: Active_EP_req"),
+            ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+        ),
+    ),
+    (
+        "zdp_deviceannce.tsv",
+        (
+            ("error_msg", None),
+            ("aps_frametype", "0b00: APS Data"),
+            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
+            ("aps_cluster_id", "0x0013: Device_annce"),
+        ),
+    ),
+    (
+        "zdp_deviceannce_specialcase.tsv",
+        (
+            ("error_msg", None),
+            ("mac_dstshortaddr", "0xffff"),
+            ("nwk_extendedsrc", "0b1: NWK Extended Source Included"),
+            ("aps_frametype", "0b00: APS Data"),
+            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
+            ("aps_cluster_id", "0x0013: Device_annce"),
+            ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
+        ),
+    ),
 ]
 
 
@@ -291,6 +332,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Fetch the distinct values of the inspected columns
         fetched_tuples = config.db.fetch_values(
+            "packets",
             INSPECTED_COLUMNS,
             conditions,
             True)

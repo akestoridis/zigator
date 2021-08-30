@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -930,6 +930,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Compute the distinct values of the varying columns
         var_values = config.db.fetch_values(
+            "packets",
             var_columns,
             conditions,
             True)
@@ -937,6 +938,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Fetch the distinct values with the listed columns
         fetched_tuples = config.db.fetch_values(
+            "packets",
             list(var_columns) + column_names,
             conditions,
             True)

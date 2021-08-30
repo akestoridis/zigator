@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -1274,6 +1274,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Compute the distinct values of the varying columns
         var_values = config.db.fetch_values(
+            "packets",
             var_columns,
             conditions,
             True)
@@ -1285,7 +1286,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             var_conditions = list(conditions)
             for i in range(len(var_value)):
                 var_conditions.append((var_columns[i], var_value[i]))
-            matches = config.db.matching_frequency(var_conditions)
+            matches = config.db.matching_frequency("packets", var_conditions)
             results.append((var_value, matches))
 
         # Write the matching frequencies in the output file

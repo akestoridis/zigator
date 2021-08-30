@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -48,8 +48,8 @@ PKT_MSG = 7
 NETWORK_KEYS_MSG = 8
 LINK_KEYS_MSG = 9
 NETWORKS_MSG = 10
-DEVICES_MSG = 11
-ADDRESSES_MSG = 12
+SHORT_ADDRESSES_MSG = 11
+EXTENDED_ADDRESSES_MSG = 12
 PAIRS_MSG = 13
 
 # Initialize the global variables
@@ -58,8 +58,8 @@ network_keys = {}
 link_keys = {}
 install_codes = {}
 networks = {}
-devices = {}
-addresses = {}
+short_addresses = {}
+extended_addresses = {}
 pairs = {}
 entry = {column_name: None for column_name in db.PKT_COLUMN_NAMES}
 
@@ -164,41 +164,175 @@ def custom_sorter(var_value):
     return ",".join(str_repr)
 
 
-def update_devices(extendedaddr, macdevtype, nwkdevtype):
-    global devices
+def update_networks(panid, epidset, earliest, latest):
+    global networks
 
     # Sanity checks
+    if panid is None:
+        raise ValueError("The PAN ID is required")
+    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
+        # Ignore invalid PAN IDs
+        return
+
+    # Update the dictionary of networks
+    if panid in networks.keys():
+        networks[panid]["epidset"] = (
+            networks[panid]["epidset"].union(epidset)
+        )
+
+        if earliest is not None:
+            if networks[panid]["earliest"] is None:
+                networks[panid]["earliest"] = earliest
+            elif earliest < networks[panid]["earliest"]:
+                networks[panid]["earliest"] = earliest
+
+        if latest is not None:
+            if networks[panid]["latest"] is None:
+                networks[panid]["latest"] = latest
+            elif latest > networks[panid]["latest"]:
+                networks[panid]["latest"] = latest
+    else:
+        networks[panid] = {
+            "epidset": epidset,
+            "earliest": earliest,
+            "latest": latest,
+        }
+
+
+def update_short_addresses(panid, shortaddr, altset, macset, nwkset, earliest,
+                           latest):
+    global short_addresses
+
+    # Sanity checks
+    if panid is None:
+        raise ValueError("The PAN ID is required")
+    elif shortaddr is None:
+        raise ValueError("The short address is required")
+    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
+        # Ignore invalid PAN IDs
+        return
+    elif int(shortaddr, 16) < 0 or int(shortaddr, 16) > 65527:
+        # Ignore invalid device short addresses
+        return
+
+    # Update the dictionary of short addresses
+    if (panid, shortaddr) in short_addresses.keys():
+        short_addresses[(panid, shortaddr)]["altset"] = (
+            short_addresses[(panid, shortaddr)]["altset"].union(altset)
+        )
+
+        short_addresses[(panid, shortaddr)]["macset"] = (
+            short_addresses[(panid, shortaddr)]["macset"].union(macset)
+        )
+
+        short_addresses[(panid, shortaddr)]["nwkset"] = (
+            short_addresses[(panid, shortaddr)]["nwkset"].union(nwkset)
+        )
+
+        if earliest is not None:
+            if short_addresses[(panid, shortaddr)]["earliest"] is None:
+                short_addresses[(panid, shortaddr)]["earliest"] = earliest
+            elif earliest < short_addresses[(panid, shortaddr)]["earliest"]:
+                short_addresses[(panid, shortaddr)]["earliest"] = earliest
+
+        if latest is not None:
+            if short_addresses[(panid, shortaddr)]["latest"] is None:
+                short_addresses[(panid, shortaddr)]["latest"] = latest
+            elif latest > short_addresses[(panid, shortaddr)]["latest"]:
+                short_addresses[(panid, shortaddr)]["latest"] = latest
+    else:
+        short_addresses[(panid, shortaddr)] = {
+            "altset": altset,
+            "macset": macset,
+            "nwkset": nwkset,
+            "earliest": earliest,
+            "latest": latest,
+        }
+
+
+def update_extended_addresses(extendedaddr, altset, macset, nwkset, earliest,
+                              latest):
+    global extended_addresses
+
+    # Sanity check
     if extendedaddr is None:
         raise ValueError("The extended address is required")
-    elif macdevtype not in {None, "Full-Function Device",
-                            "Reduced-Function Device", "Conflicting Data"}:
-        raise ValueError("Unexpected MAC device type")
-    elif nwkdevtype not in {None, "Zigbee Coordinator", "Zigbee Router",
-                            "Zigbee End Device", "Conflicting Data"}:
-        raise ValueError("Unexpected NWK device type")
 
-    # Check whether it is a previously unknown device or not
-    if extendedaddr not in devices.keys():
-        devices[extendedaddr] = {
-            "macdevtype": macdevtype,
-            "nwkdevtype": nwkdevtype,
-        }
+    # Update the dictionary of extended addresses
+    if extendedaddr in extended_addresses.keys():
+        extended_addresses[extendedaddr]["altset"] = (
+            extended_addresses[extendedaddr]["altset"].union(altset)
+        )
+
+        extended_addresses[extendedaddr]["macset"] = (
+            extended_addresses[extendedaddr]["macset"].union(macset)
+        )
+
+        extended_addresses[extendedaddr]["nwkset"] = (
+            extended_addresses[extendedaddr]["nwkset"].union(nwkset)
+        )
+
+        if earliest is not None:
+            if extended_addresses[extendedaddr]["earliest"] is None:
+                extended_addresses[extendedaddr]["earliest"] = earliest
+            elif earliest < extended_addresses[extendedaddr]["earliest"]:
+                extended_addresses[extendedaddr]["earliest"] = earliest
+
+        if latest is not None:
+            if extended_addresses[extendedaddr]["latest"] is None:
+                extended_addresses[extendedaddr]["latest"] = latest
+            elif latest > extended_addresses[extendedaddr]["latest"]:
+                extended_addresses[extendedaddr]["latest"] = latest
     else:
-        # Check whether the device's information should be updated or not
-        if macdevtype is not None:
-            if devices[extendedaddr]["macdevtype"] is None:
-                devices[extendedaddr]["macdevtype"] = macdevtype
-            elif devices[extendedaddr]["macdevtype"] != macdevtype:
-                devices[extendedaddr]["macdevtype"] = "Conflicting Data"
-
-        if nwkdevtype is not None:
-            if devices[extendedaddr]["nwkdevtype"] is None:
-                devices[extendedaddr]["nwkdevtype"] = nwkdevtype
-            elif devices[extendedaddr]["nwkdevtype"] != nwkdevtype:
-                devices[extendedaddr]["nwkdevtype"] = "Conflicting Data"
+        extended_addresses[extendedaddr] = {
+            "altset": altset,
+            "macset": macset,
+            "nwkset": nwkset,
+            "earliest": earliest,
+            "latest": latest,
+        }
 
 
-def update_pairs(srcaddr, dstaddr, panid, time):
+def update_alternative_addresses(panid, shortaddr, extendedaddr):
+    if None not in {panid, shortaddr, extendedaddr}:
+        update_short_addresses(
+            panid,
+            shortaddr,
+            set([extendedaddr]),
+            set(),
+            set(),
+            None,
+            None)
+        update_extended_addresses(
+            extendedaddr,
+            set([(panid, shortaddr)]),
+            set(),
+            set(),
+            None,
+            None)
+
+
+def update_devtypes(panid, shortaddr, extendedaddr, macdevtype, nwkdevtype):
+    if panid is not None and shortaddr is not None:
+        update_short_addresses(
+            panid,
+            shortaddr,
+            set(),
+            set([macdevtype]) if macdevtype is not None else set(),
+            set([nwkdevtype]) if nwkdevtype is not None else set(),
+            None,
+            None)
+    if extendedaddr is not None:
+        update_extended_addresses(
+            extendedaddr,
+            set(),
+            set([macdevtype]) if macdevtype is not None else set(),
+            set([nwkdevtype]) if nwkdevtype is not None else set(),
+            None,
+            None)
+
+
+def update_pairs(panid, srcaddr, dstaddr, earliest, latest):
     global pairs
 
     # Sanity checks
@@ -208,8 +342,10 @@ def update_pairs(srcaddr, dstaddr, panid, time):
         raise ValueError("The source address is required")
     elif dstaddr is None:
         raise ValueError("The destination address is required")
-    elif time is None:
-        raise ValueError("The arrival time is required")
+    elif earliest is None:
+        raise ValueError("The earliest time is required")
+    elif latest is None:
+        raise ValueError("The latest time is required")
     elif int(panid, 16) < 0 or int(panid, 16) > 65534:
         # Ignore invalid PAN IDs
         return
@@ -221,57 +357,483 @@ def update_pairs(srcaddr, dstaddr, panid, time):
         return
 
     # Update the dictionary of pairs
-    if (srcaddr, dstaddr, panid) not in pairs.keys():
-        pairs[(srcaddr, dstaddr, panid)] = {
-            "first": time,
-            "last": time,
-        }
-    elif time > pairs[(srcaddr, dstaddr, panid)]["last"]:
-        pairs[(srcaddr, dstaddr, panid)]["last"] = time
-    elif time < pairs[(srcaddr, dstaddr, panid)]["first"]:
-        pairs[(srcaddr, dstaddr, panid)]["first"] = time
+    if (panid, srcaddr, dstaddr) in pairs.keys():
+        if latest > pairs[(panid, srcaddr, dstaddr)]["latest"]:
+            pairs[(panid, srcaddr, dstaddr)]["latest"] = latest
 
-
-def map_addresses(shortaddr, panid, extendedaddr):
-    global addresses
-
-    # Sanity checks
-    if panid is None:
-        raise ValueError("The PAN ID of the device is required")
-    elif shortaddr is None or extendedaddr is None:
-        raise ValueError("Both addresses of the device are required")
-    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
-        # Ignore invalid PAN IDs
-        return
-    elif int(shortaddr, 16) < 0 or int(shortaddr, 16) > 65527:
-        # Ignore invalid device short addresses
-        return
-
-    # Update the dictionary of addresses
-    if (shortaddr, panid) not in addresses.keys():
-        addresses[(shortaddr, panid)] = extendedaddr
-    elif addresses[(shortaddr, panid)] != extendedaddr:
-        addresses[(shortaddr, panid)] = "Conflicting Data"
-
-
-def map_networks(epid, panid):
-    global networks
-
-    # Sanity checks
-    if epid is None or panid is None:
-        raise ValueError("Both network IDs are required")
-    elif int(panid, 16) < 0 or int(panid, 16) > 65534:
-        # Ignore invalid PAN IDs
-        return
-
-    # Update the dictionary of networks
-    if epid not in networks.keys():
-        networks[epid] = set([panid])
+        if earliest < pairs[(panid, srcaddr, dstaddr)]["earliest"]:
+            pairs[(panid, srcaddr, dstaddr)]["earliest"] = earliest
     else:
-        networks[epid].add(panid)
+        pairs[(panid, srcaddr, dstaddr)] = {
+            "earliest": earliest,
+            "latest": latest,
+        }
 
 
-def add_sniffed_key(key_bytes, key_type, key_name):
+def get_alternative_addresses(panid, shortaddr):
+    if (panid, shortaddr) in short_addresses.keys():
+        return set([int(extendedaddr, 16) for extendedaddr
+                   in short_addresses[(panid, shortaddr)]["altset"]])
+    else:
+        return set()
+
+
+def get_extendedaddr(panid, shortaddr):
+    if (panid, shortaddr) in short_addresses.keys():
+        if len(short_addresses[(panid, shortaddr)]["altset"]) == 0:
+            return None
+        elif len(short_addresses[(panid, shortaddr)]["altset"]) == 1:
+            return list(short_addresses[(panid, shortaddr)]["altset"])[0]
+        else:
+            return "Conflicting Data"
+    else:
+        return None
+
+
+def get_nwkdevtype(panid, shortaddr, extendedaddr):
+    nwkset = set()
+
+    if (panid, shortaddr) in short_addresses.keys():
+        nwkset = nwkset.union(short_addresses[(panid, shortaddr)]["nwkset"])
+        if len(nwkset) > 1:
+            return "Conflicting Data"
+
+    if extendedaddr in extended_addresses.keys():
+        nwkset = nwkset.union(extended_addresses[extendedaddr]["nwkset"])
+
+    if len(nwkset) == 0:
+        return None
+    elif len(nwkset) == 1:
+        return list(nwkset)[0]
+    else:
+        return "Conflicting Data"
+
+
+def update_derived_entries():
+    # Update previously unknown MAC Destination extended addresses
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_dstpanid",
+            "der_mac_dstshortaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_mac_dstpanid", None),
+            ("!der_mac_dstshortaddr", None),
+            ("!der_mac_dstshortaddr", "0xffff"),
+            ("der_mac_dstextendedaddr", None),
+        ],
+        True)
+    for (panid, shortaddr) in fetched_tuples:
+        extendedaddr = get_extendedaddr(panid, shortaddr)
+        if extendedaddr is not None:
+            db.update_packets(
+                [
+                    "der_mac_dstextendedaddr",
+                ],
+                [
+                    extendedaddr,
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_dstpanid", panid),
+                    ("der_mac_dstshortaddr", shortaddr),
+                    ("der_mac_dstextendedaddr", None),
+                ])
+
+    # Update previously unknown MAC Source extended addresses
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_srcpanid",
+            "der_mac_srcshortaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_mac_srcpanid", None),
+            ("!der_mac_srcshortaddr", None),
+            ("der_mac_srcextendedaddr", None),
+        ],
+        True)
+    for (panid, shortaddr) in fetched_tuples:
+        extendedaddr = get_extendedaddr(panid, shortaddr)
+        if extendedaddr is not None:
+            db.update_packets(
+                [
+                    "der_mac_srcextendedaddr",
+                ],
+                [
+                    extendedaddr,
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_srcpanid", panid),
+                    ("der_mac_srcshortaddr", shortaddr),
+                    ("der_mac_srcextendedaddr", None),
+                ])
+
+    # Update previously unknown NWK Destination extended addresses
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_dstpanid",
+            "der_nwk_dstshortaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_nwk_dstpanid", None),
+            ("!der_nwk_dstshortaddr", None),
+            ("!der_nwk_dstshortaddr", "0xffff"),
+            ("!der_nwk_dstshortaddr", "0xfffd"),
+            ("!der_nwk_dstshortaddr", "0xfffc"),
+            ("!der_nwk_dstshortaddr", "0xfffb"),
+            ("der_nwk_dstextendedaddr", None),
+        ],
+        True)
+    for (panid, shortaddr) in fetched_tuples:
+        extendedaddr = get_extendedaddr(panid, shortaddr)
+        if extendedaddr is not None:
+            db.update_packets(
+                [
+                    "der_nwk_dstextendedaddr",
+                ],
+                [
+                    extendedaddr,
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_dstpanid", panid),
+                    ("der_nwk_dstshortaddr", shortaddr),
+                    ("der_nwk_dstextendedaddr", None),
+                ])
+
+    # Update previously unknown NWK Source extended addresses
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_srcpanid",
+            "der_nwk_srcshortaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_nwk_srcpanid", None),
+            ("!der_nwk_srcshortaddr", None),
+            ("der_nwk_srcextendedaddr", None),
+        ],
+        True)
+    for (panid, shortaddr) in fetched_tuples:
+        extendedaddr = get_extendedaddr(panid, shortaddr)
+        if extendedaddr is not None:
+            db.update_packets(
+                [
+                    "der_nwk_srcextendedaddr",
+                ],
+                [
+                    extendedaddr,
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_srcpanid", panid),
+                    ("der_nwk_srcshortaddr", shortaddr),
+                    ("der_nwk_srcextendedaddr", None),
+                ])
+
+    # Update previously unknown MAC Destination types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_dstpanid",
+            "der_mac_dstshortaddr",
+            "der_mac_dstextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("der_mac_dsttype", "MAC Dst Type: None"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype is not None:
+            db.update_packets(
+                [
+                    "der_mac_dsttype",
+                ],
+                [
+                    "MAC Dst Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_dstpanid", panid),
+                    ("der_mac_dstshortaddr", shortaddr),
+                    ("der_mac_dstextendedaddr", extendedaddr),
+                ])
+
+    # Update previously unknown MAC Source types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_srcpanid",
+            "der_mac_srcshortaddr",
+            "der_mac_srcextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("der_mac_srctype", "MAC Src Type: None"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype is not None:
+            db.update_packets(
+                [
+                    "der_mac_srctype",
+                ],
+                [
+                    "MAC Src Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_srcpanid", panid),
+                    ("der_mac_srcshortaddr", shortaddr),
+                    ("der_mac_srcextendedaddr", extendedaddr),
+                ])
+
+    # Update previously unknown NWK Destination types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_dstpanid",
+            "der_nwk_dstshortaddr",
+            "der_nwk_dstextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("der_nwk_dsttype", "NWK Dst Type: None"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype is not None:
+            db.update_packets(
+                [
+                    "der_nwk_dsttype",
+                ],
+                [
+                    "NWK Dst Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_dstpanid", panid),
+                    ("der_nwk_dstshortaddr", shortaddr),
+                    ("der_nwk_dstextendedaddr", extendedaddr),
+                ])
+
+    # Update previously unknown NWK Source types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_srcpanid",
+            "der_nwk_srcshortaddr",
+            "der_nwk_srcextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("der_nwk_srctype", "NWK Src Type: None"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype is not None:
+            db.update_packets(
+                [
+                    "der_nwk_srctype",
+                ],
+                [
+                    "NWK Src Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_srcpanid", panid),
+                    ("der_nwk_srcshortaddr", shortaddr),
+                    ("der_nwk_srcextendedaddr", extendedaddr),
+                ])
+
+    # Check for conflicting extended addresses
+    for (panid, shortaddr) in short_addresses.keys():
+        if len(short_addresses[(panid, shortaddr)]["altset"]) > 1:
+            db.update_packets(
+                [
+                    "der_mac_dstextendedaddr",
+                ],
+                [
+                    "Conflicting Data",
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_dstpanid", panid),
+                    ("der_mac_dstshortaddr", shortaddr),
+                ])
+            db.update_packets(
+                [
+                    "der_mac_srcextendedaddr",
+                ],
+                [
+                    "Conflicting Data",
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_srcpanid", panid),
+                    ("der_mac_srcshortaddr", shortaddr),
+                ])
+            db.update_packets(
+                [
+                    "der_nwk_dstextendedaddr",
+                ],
+                [
+                    "Conflicting Data",
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_dstpanid", panid),
+                    ("der_nwk_dstshortaddr", shortaddr),
+                ])
+            db.update_packets(
+                [
+                    "der_nwk_srcextendedaddr",
+                ],
+                [
+                    "Conflicting Data",
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_srcpanid", panid),
+                    ("der_nwk_srcshortaddr", shortaddr),
+                ])
+
+    # Check for conflicting MAC Destination types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_dstpanid",
+            "der_mac_dstshortaddr",
+            "der_mac_dstextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_mac_dstshortaddr", "0xffff"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype == "Conflicting Data":
+            db.update_packets(
+                [
+                    "der_mac_dsttype",
+                ],
+                [
+                    "MAC Dst Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_dstpanid", panid),
+                    ("der_mac_dstshortaddr", shortaddr),
+                    ("der_mac_dstextendedaddr", extendedaddr),
+                ])
+
+    # Check for conflicting MAC Source types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_mac_srcpanid",
+            "der_mac_srcshortaddr",
+            "der_mac_srcextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype == "Conflicting Data":
+            db.update_packets(
+                [
+                    "der_mac_srctype",
+                ],
+                [
+                    "MAC Src Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_mac_srcpanid", panid),
+                    ("der_mac_srcshortaddr", shortaddr),
+                    ("der_mac_srcextendedaddr", extendedaddr),
+                ])
+
+    # Check for conflicting NWK Destination types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_dstpanid",
+            "der_nwk_dstshortaddr",
+            "der_nwk_dstextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+            ("!der_nwk_dstshortaddr", "0xffff"),
+            ("!der_nwk_dstshortaddr", "0xfffd"),
+            ("!der_nwk_dstshortaddr", "0xfffc"),
+            ("!der_nwk_dstshortaddr", "0xfffb"),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype == "Conflicting Data":
+            db.update_packets(
+                [
+                    "der_nwk_dsttype",
+                ],
+                [
+                    "NWK Dst Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_dstpanid", panid),
+                    ("der_nwk_dstshortaddr", shortaddr),
+                    ("der_nwk_dstextendedaddr", extendedaddr),
+                ])
+
+    # Check for conflicting NWK Source types
+    fetched_tuples = db.fetch_values(
+        "packets",
+        [
+            "der_nwk_srcpanid",
+            "der_nwk_srcshortaddr",
+            "der_nwk_srcextendedaddr",
+        ],
+        [
+            ("error_msg", None),
+        ],
+        True)
+    for (panid, shortaddr, extendedaddr) in fetched_tuples:
+        nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
+        if nwkdevtype == "Conflicting Data":
+            db.update_packets(
+                [
+                    "der_nwk_srctype",
+                ],
+                [
+                    "NWK Src Type: {}".format(nwkdevtype),
+                ],
+                [
+                    ("error_msg", None),
+                    ("der_nwk_srcpanid", panid),
+                    ("der_nwk_srcshortaddr", shortaddr),
+                    ("der_nwk_srcextendedaddr", extendedaddr),
+                ])
+
+
+def add_new_key(key_bytes, key_type, key_name):
     global network_keys
     global link_keys
 
@@ -283,12 +845,12 @@ def add_sniffed_key(key_bytes, key_type, key_name):
     else:
         raise ValueError("Unknown key type \"{}\"".format(key_type))
 
-    # Add the sniffed key if it is not already loaded
+    # Make sure that the provided key is not already loaded
     if key_bytes not in loaded_keys.values():
         # Make sure that its name is unique before adding it
         if key_name in loaded_keys.keys():
-            return ("The sniffed key {} was not added because "
-                    "its name \"{}\" is also used by the {} key {}"
+            return ("The key {} was not added because its "
+                    "name \"{}\" is also used by the {} key {}"
                     "".format(key_bytes.hex(),
                               key_name,
                               key_type.lower(),

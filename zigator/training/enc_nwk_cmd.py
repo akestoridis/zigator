@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -105,7 +105,11 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         ("nwk_security", "0b1: NWK Security Enabled"),
         ("!nwk_cmd_id", None),
     ]
-    raw_samples = config.db.fetch_values(columns, conditions, False)
+    raw_samples = config.db.fetch_values(
+        "packets",
+        columns,
+        conditions,
+        False)
     logging.info("Fetched {} raw samples of encrypted NWK commands"
                  "".format(len(raw_samples)))
 
@@ -292,7 +296,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     # Use one-hot encoding for the categorical features
     enc = OneHotEncoder(sparse=False)
     encoded_table = enc.fit_transform(categorical_table)
-    encoded_features = enc.get_feature_names()
+    encoded_features = enc.get_feature_names().tolist()
 
     # Generate the table and the features of the dataset
     dataset_table = np.concatenate(
@@ -300,7 +304,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         axis=1)
     dataset_features = (
         [fd[0] for fd in feature_definitions if fd[1] == "NUMERICAL"]
-        + enc.get_feature_names().tolist()
+        + encoded_features
     )
     logging.info("The classifier will use {} encoded features"
                  "".format(len(dataset_features)))

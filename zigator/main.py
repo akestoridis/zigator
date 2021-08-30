@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -24,6 +24,7 @@ from . import monitoring
 from . import parsing
 from . import training
 from . import visualization
+from . import wids
 
 
 def main(argv):
@@ -99,5 +100,18 @@ def main(argv):
     elif args.SUBCOMMAND == "monitor":
         monitoring.main(
             args.PCAP_FILEPATH)
+    elif args.SUBCOMMAND == "wids":
+        wids.main(
+            args.SENSOR_ID,
+            args.PANID,
+            args.EPID,
+            args.DATABASE_FILEPATH,
+            args.OUTPUT_DIRECTORY,
+            args.ifname,
+            args.pcap_period,
+            args.num_zip_files,
+            args.link_key_names,
+            None if not hasattr(args, "ipaddr") else args.ipaddr,
+            None if not hasattr(args, "portnum") else args.portnum)
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.SUBCOMMAND))

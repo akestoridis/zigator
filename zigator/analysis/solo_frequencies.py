@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -33,7 +33,7 @@ IGNORED_COLUMNS = set([
     "nwk_aux_decpayload",
     "nwk_aux_decshow",
     "aps_counter",
-    "apx_aux_framecounter",
+    "aps_aux_framecounter",
     "aps_aux_decpayload",
     "aps_aux_decshow",
     "aps_tunnel_counter",
@@ -60,8 +60,11 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Derive the path of the output file
         global_index = config.db.PKT_COLUMN_NAMES.index(column_name)
-        out_filepath = os.path.join(out_dirpath, "{}-{}-frequency.tsv"
-            "".format(str(global_index).zfill(3), column_name))
+        out_filepath = os.path.join(
+            out_dirpath,
+            "{}-{}-frequency.tsv".format(
+                str(global_index).zfill(3),
+                column_name))
 
         # Do not count entries with errors,
         # except when we want to count the errors themselves
@@ -69,7 +72,10 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             count_errors = True
         else:
             count_errors = False
-        results = config.db.grouped_count([column_name], count_errors)
+        results = config.db.grouped_count(
+            "packets",
+            [column_name],
+            count_errors)
 
         # Write the computed frequencies in the output file
         config.fs.write_tsv(results, out_filepath)

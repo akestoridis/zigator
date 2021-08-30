@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -288,6 +288,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Compute the distinct matching values of the inspected columns
         form_values = config.db.fetch_values(
+            "packets",
             INSPECTED_COLUMNS,
             conditions,
             True)
@@ -299,7 +300,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             form_conditions = list(conditions)
             for i in range(len(form_value)):
                 form_conditions.append((INSPECTED_COLUMNS[i], form_value[i]))
-            matches = config.db.matching_frequency(form_conditions)
+            matches = config.db.matching_frequency("packets", form_conditions)
             results.append((form_value, matches))
 
         # Write the frequency of each form in the output file

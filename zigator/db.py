@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -18,7 +18,6 @@
 Database module for the zigator package
 """
 
-import logging
 import sqlite3
 import string
 
@@ -231,6 +230,15 @@ PKT_COLUMNS = [
     ("aps_confirmkey_stdkeytype", "TEXT"),
     ("aps_confirmkey_extendedaddr", "TEXT"),
     ("zdp_seqnum", "INTEGER"),
+    ("zdp_activeepreq_nwkaddr", "TEXT"),
+    ("zdp_deviceannce_nwkaddr", "TEXT"),
+    ("zdp_deviceannce_ieeeaddr", "TEXT"),
+    ("zdp_deviceannce_apc", "TEXT"),
+    ("zdp_deviceannce_devtype", "TEXT"),
+    ("zdp_deviceannce_powsrc", "TEXT"),
+    ("zdp_deviceannce_rxidle", "TEXT"),
+    ("zdp_deviceannce_seccap", "TEXT"),
+    ("zdp_deviceannce_allocaddr", "TEXT"),
     ("zcl_frametype", "TEXT"),
     ("zcl_manufspecific", "TEXT"),
     ("zcl_direction", "TEXT"),
@@ -238,6 +246,39 @@ PKT_COLUMNS = [
     ("zcl_manufcode", "TEXT"),
     ("zcl_seqnum", "INTEGER"),
     ("zcl_cmd_id", "TEXT"),
+    ("zcl_readattributes_identifiers", "TEXT"),
+    ("zcl_readattributesresponse_identifiers", "TEXT"),
+    ("zcl_readattributesresponse_statuses", "TEXT"),
+    ("zcl_readattributesresponse_datatypes", "TEXT"),
+    ("zcl_readattributesresponse_values", "TEXT"),
+    ("zcl_writeattributes_identifiers", "TEXT"),
+    ("zcl_writeattributes_datatypes", "TEXT"),
+    ("zcl_writeattributes_data", "TEXT"),
+    ("zcl_writeattributesresponse_statuses", "TEXT"),
+    ("zcl_writeattributesresponse_identifiers", "TEXT"),
+    ("zcl_configurereporting_directions", "TEXT"),
+    ("zcl_configurereporting_identifiers", "TEXT"),
+    ("zcl_configurereporting_datatypes", "TEXT"),
+    ("zcl_configurereporting_minintervals", "TEXT"),
+    ("zcl_configurereporting_maxintervals", "TEXT"),
+    ("zcl_configurereporting_changes", "TEXT"),
+    ("zcl_configurereporting_timeoutperiods", "TEXT"),
+    ("zcl_configurereportingresponse_statuses", "TEXT"),
+    ("zcl_configurereportingresponse_directions", "TEXT"),
+    ("zcl_configurereportingresponse_identifiers", "TEXT"),
+    ("zcl_reportattributes_identifiers", "TEXT"),
+    ("zcl_reportattributes_datatypes", "TEXT"),
+    ("zcl_reportattributes_data", "TEXT"),
+    ("zcl_defaultresponse_rspcmdid", "TEXT"),
+    ("zcl_defaultresponse_status", "TEXT"),
+    ("zcl_iaszone_zoneenrollrsp_code", "TEXT"),
+    ("zcl_iaszone_zoneenrollrsp_zoneid", "TEXT"),
+    ("zcl_iaszone_zonestatuschangenotif_zonestatus", "TEXT"),
+    ("zcl_iaszone_zonestatuschangenotif_extendedstatus", "TEXT"),
+    ("zcl_iaszone_zonestatuschangenotif_zoneid", "TEXT"),
+    ("zcl_iaszone_zonestatuschangenotif_delay", "TEXT"),
+    ("zcl_iaszone_zoneenrollreq_zonetype", "TEXT"),
+    ("zcl_iaszone_zoneenrollreq_manufcode", "TEXT"),
     ("der_same_macnwkdst", "TEXT"),
     ("der_same_macnwksrc", "TEXT"),
     ("der_tx_type", "TEXT"),
@@ -261,8 +302,40 @@ PKT_COLUMNS = [
     ("error_msg", "TEXT"),
 ]
 
+# Define the columns of the basic_information table in the database
+BASIC_INFO_COLUMNS = [
+    ("pkt_time", "REAL"),
+    ("phy_length", "INTEGER"),
+    ("mac_frametype", "TEXT"),
+    ("mac_seqnum", "INTEGER"),
+    ("nwk_seqnum", "INTEGER"),
+    ("nwk_aux_framecounter", "INTEGER"),
+    ("der_same_macnwksrc", "TEXT"),
+    ("der_mac_srcpanid", "TEXT"),
+    ("der_mac_srcshortaddr", "TEXT"),
+    ("der_mac_srcextendedaddr", "TEXT"),
+    ("error_msg", "TEXT"),
+]
+
+# Define the columns of the battery_percentages table in the database
+BTRY_PERC_COLUMNS = [
+    ("pkt_time", "REAL"),
+    ("srcpanid", "TEXT"),
+    ("srcshortaddr", "TEXT"),
+    ("percentage", "REAL"),
+]
+
+# Define the columns of the events table in the database
+EVENTS_COLUMNS = [
+    ("pkt_time", "REAL"),
+    ("description", "TEXT"),
+]
+
 # Define a list that contains only the column names for each table
 PKT_COLUMN_NAMES = [column[0] for column in PKT_COLUMNS]
+BASIC_INFO_COLUMN_NAMES = [column[0] for column in BASIC_INFO_COLUMNS]
+BTRY_PERC_COLUMN_NAMES = [column[0] for column in BTRY_PERC_COLUMNS]
+EVENTS_COLUMN_NAMES = [column[0] for column in EVENTS_COLUMNS]
 
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
@@ -272,6 +345,19 @@ CONSTRAINED_PKT_COLUMNS = set([
     "pcap_filename",
     "pkt_num",
     "pkt_time",
+])
+CONSTRAINED_BASIC_INFO_COLUMNS = set([
+    "pkt_time",
+])
+CONSTRAINED_BTRY_PERC_COLUMNS = set([
+    "pkt_time",
+    "srcpanid",
+    "srcshortaddr",
+    "percentage",
+])
+CONSTRAINED_EVENTS_COLUMNS = set([
+    "pkt_time",
+    "description",
 ])
 
 # Initialize global variables for interacting with the database
@@ -290,12 +376,19 @@ def connect(db_filepath):
 
 
 def create_table(tablename):
-    global connection
-    global cursor
-
+    # Use the variables of the corresponding table
     if tablename == "packets":
-        columns = PKT_COLUMNS
-        constrained_columns = CONSTRAINED_PKT_COLUMNS
+        table_columns = PKT_COLUMNS
+        constrained_table_columns = CONSTRAINED_PKT_COLUMNS
+    elif tablename == "basic_information":
+        table_columns = BASIC_INFO_COLUMNS
+        constrained_table_columns = CONSTRAINED_BASIC_INFO_COLUMNS
+    elif tablename == "battery_percentages":
+        table_columns = BTRY_PERC_COLUMNS
+        constrained_table_columns = CONSTRAINED_BTRY_PERC_COLUMNS
+    elif tablename == "events":
+        table_columns = EVENTS_COLUMNS
+        constrained_table_columns = CONSTRAINED_EVENTS_COLUMNS
     else:
         raise ValueError("Unknown table name \"{}\"".format(tablename))
 
@@ -306,7 +399,7 @@ def create_table(tablename):
     # Create the table
     table_creation_command = "CREATE TABLE {}(".format(tablename)
     delimiter_needed = False
-    for column in columns:
+    for column in table_columns:
         if delimiter_needed:
             table_creation_command += ", "
         else:
@@ -335,7 +428,7 @@ def create_table(tablename):
 
         table_creation_command += " " + column_type
 
-        if column_name in constrained_columns:
+        if column_name in constrained_table_columns:
             table_creation_command += " NOT NULL"
     table_creation_command += ")"
 
@@ -343,40 +436,63 @@ def create_table(tablename):
     cursor.execute(table_creation_command)
 
 
-def insert_pkt(entry):
-    global cursor
+def insert(tablename, row_data):
+    # Use the variables of the corresponding table
+    if tablename == "packets":
+        table_columns = PKT_COLUMNS
+        table_column_names = PKT_COLUMN_NAMES
+    elif tablename == "basic_information":
+        table_columns = BASIC_INFO_COLUMNS
+        table_column_names = BASIC_INFO_COLUMN_NAMES
+    elif tablename == "battery_percentages":
+        table_columns = BTRY_PERC_COLUMNS
+        table_column_names = BTRY_PERC_COLUMN_NAMES
+    elif tablename == "events":
+        table_columns = EVENTS_COLUMNS
+        table_column_names = EVENTS_COLUMN_NAMES
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
 
     # Sanity check
-    if len(entry.keys()) != len(PKT_COLUMN_NAMES):
+    if len(row_data.keys()) != len(table_column_names):
         raise ValueError("Unexpected number of data entries: {}"
-                         "".format(len(entry.keys())))
+                         "".format(len(row_data.keys())))
 
-    # Insert the parsed data into the database
-    cursor.execute("INSERT INTO packets VALUES ({})"
-                   "".format(", ".join("?"*len(PKT_COLUMNS))),
-                   tuple(entry[column_name]
-                         for column_name in PKT_COLUMN_NAMES))
+    # Insert the provided data entries into the corresponding table
+    cursor.execute("INSERT INTO {} VALUES ({})"
+                   "".format(tablename, ", ".join("?"*len(table_columns))),
+                   tuple(row_data[column_name]
+                         for column_name in table_column_names))
 
 
 def commit():
-    global connection
-
     connection.commit()
 
 
-def grouped_count(selected_columns, count_errors):
-    global cursor
+def grouped_count(tablename, selected_columns, count_errors):
+    # Use the variables of the corresponding table
+    if tablename == "packets":
+        table_column_names = PKT_COLUMN_NAMES
+    elif tablename == "basic_information":
+        table_column_names = BASIC_INFO_COLUMN_NAMES
+    elif tablename == "battery_percentages":
+        table_column_names = BTRY_PERC_COLUMN_NAMES
+    elif tablename == "events":
+        table_column_names = EVENTS_COLUMN_NAMES
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
 
     # Sanity checks
     if len(selected_columns) == 0:
         raise ValueError("At least one selected column is required")
     for column_name in selected_columns:
-        if column_name not in PKT_COLUMN_NAMES:
+        if column_name not in table_column_names:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
 
     # Construct the selection command
     column_csv = ", ".join(selected_columns)
-    select_command = "SELECT {}, COUNT(*) FROM packets".format(column_csv)
+    select_command = "SELECT {}, COUNT(*)".format(column_csv)
+    select_command += " FROM {}".format(tablename)
     if not count_errors:
         select_command += " WHERE error_msg IS NULL"
     select_command += " GROUP BY {}".format(column_csv)
@@ -386,22 +502,32 @@ def grouped_count(selected_columns, count_errors):
     return cursor.fetchall()
 
 
-def fetch_values(selected_columns, conditions, distinct):
-    global cursor
+def fetch_values(tablename, selected_columns, conditions, distinct):
+    # Use the variables of the corresponding table
+    if tablename == "packets":
+        table_column_names = PKT_COLUMN_NAMES
+    elif tablename == "basic_information":
+        table_column_names = BASIC_INFO_COLUMN_NAMES
+    elif tablename == "battery_percentages":
+        table_column_names = BTRY_PERC_COLUMN_NAMES
+    elif tablename == "events":
+        table_column_names = EVENTS_COLUMN_NAMES
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
 
     # Sanity checks
     if len(selected_columns) == 0:
         raise ValueError("At least one selected column is required")
     for column_name in selected_columns:
-        if column_name not in PKT_COLUMN_NAMES:
+        if column_name not in table_column_names:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
 
     # Construct the selection command
     column_csv = ", ".join(selected_columns)
+    select_command = "SELECT"
     if distinct:
-        select_command = "SELECT DISTINCT {} FROM packets".format(column_csv)
-    else:
-        select_command = "SELECT {} FROM packets".format(column_csv)
+        select_command += " DISTINCT"
+    select_command += " {} FROM {}".format(column_csv, tablename)
     expr_statements = []
     expr_values = []
     if conditions is not None:
@@ -414,7 +540,7 @@ def fetch_values(selected_columns, conditions, distinct):
                 param = param[1:]
             else:
                 neq = False
-            if param not in PKT_COLUMN_NAMES:
+            if param not in table_column_names:
                 raise ValueError("Unknown column name \"{}\"".format(param))
             elif value is None:
                 if neq:
@@ -434,11 +560,21 @@ def fetch_values(selected_columns, conditions, distinct):
     return cursor.fetchall()
 
 
-def matching_frequency(conditions):
-    global cursor
+def matching_frequency(tablename, conditions):
+    # Use the variables of the corresponding table
+    if tablename == "packets":
+        table_column_names = PKT_COLUMN_NAMES
+    elif tablename == "basic_information":
+        table_column_names = BASIC_INFO_COLUMN_NAMES
+    elif tablename == "battery_percentages":
+        table_column_names = BTRY_PERC_COLUMN_NAMES
+    elif tablename == "events":
+        table_column_names = EVENTS_COLUMN_NAMES
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
 
     # Construct the selection command
-    select_command = "SELECT COUNT(*) FROM packets"
+    select_command = "SELECT COUNT(*) FROM {}".format(tablename)
     expr_statements = []
     expr_values = []
     if conditions is not None:
@@ -451,7 +587,7 @@ def matching_frequency(conditions):
                 param = param[1:]
             else:
                 neq = False
-            if param not in PKT_COLUMN_NAMES:
+            if param not in table_column_names:
                 raise ValueError("Unknown column name \"{}\"".format(param))
             elif value is None:
                 if neq:
@@ -472,137 +608,126 @@ def matching_frequency(conditions):
 
 
 def store_networks(networks):
-    global cursor
-
     # Drop the table if it already exists
     cursor.execute("DROP TABLE IF EXISTS networks")
 
     # Create the table
-    cursor.execute("CREATE TABLE networks(epid TEXT NOT NULL, panids TEXT)")
+    cursor.execute("CREATE TABLE networks(panid TEXT NOT NULL, "
+                   "epidset TEXT NOT NULL, earliest REAL, latest REAL)")
 
-    # Insert the data into the database
-    for epid in networks.keys():
-        cursor.execute("INSERT INTO networks VALUES (?, ?)",
-                       tuple([epid, ",".join(networks[epid])]))
+    # Insert the data into the table
+    for panid in networks.keys():
+        cursor.execute(
+            "INSERT INTO networks VALUES (?, ?, ?, ?)",
+            (panid,
+             ";".join(epid for epid in sorted(list(
+                      networks[panid]["epidset"]))),
+             networks[panid]["earliest"],
+             networks[panid]["latest"]))
 
 
-def store_devices(devices):
-    global cursor
-
+def store_short_addresses(short_addresses):
     # Drop the table if it already exists
-    cursor.execute("DROP TABLE IF EXISTS devices")
+    cursor.execute("DROP TABLE IF EXISTS short_addresses")
 
     # Create the table
-    cursor.execute("CREATE TABLE devices(extendedaddr TEXT NOT NULL, "
-                   "macdevtype TEXT, nwkdevtype TEXT)")
+    cursor.execute("CREATE TABLE short_addresses(panid TEXT NOT NULL, "
+                   "shortaddr TEXT NOT NULL, altset TEXT NOT NULL, "
+                   "macset TEXT NOT NULL, nwkset TEXT NOT NULL, "
+                   "earliest REAL, latest REAL)")
 
-    # Insert the data into the database
-    for extendedaddr in devices.keys():
-        cursor.execute("INSERT INTO devices VALUES (?, ?, ?)",
-                       tuple([extendedaddr,
-                              devices[extendedaddr]["macdevtype"],
-                              devices[extendedaddr]["nwkdevtype"]]))
+    # Insert the data into the table
+    for (panid, shortaddr) in short_addresses.keys():
+        cursor.execute(
+            "INSERT INTO short_addresses VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (panid,
+             shortaddr,
+             ";".join(extendedaddr for extendedaddr in sorted(list(
+                      short_addresses[(panid, shortaddr)]["altset"]))),
+             ";".join(macdevtype for macdevtype in sorted(list(
+                      short_addresses[(panid, shortaddr)]["macset"]))),
+             ";".join(nwkdevtype for nwkdevtype in sorted(list(
+                      short_addresses[(panid, shortaddr)]["nwkset"]))),
+             short_addresses[(panid, shortaddr)]["earliest"],
+             short_addresses[(panid, shortaddr)]["latest"]))
 
 
-def store_addresses(addresses):
-    global cursor
-
+def store_extended_addresses(extended_addresses):
     # Drop the table if it already exists
-    cursor.execute("DROP TABLE IF EXISTS addresses")
+    cursor.execute("DROP TABLE IF EXISTS extended_addresses")
 
     # Create the table
-    cursor.execute("CREATE TABLE addresses(shortaddr TEXT NOT NULL, "
-                   "panid TEXT NOT NULL, extendedaddr TEXT)")
+    cursor.execute("CREATE TABLE extended_addresses("
+                   "extendedaddr TEXT NOT NULL, altset TEXT NOT NULL, "
+                   "macset TEXT NOT NULL, nwkset TEXT NOT NULL, "
+                   "earliest REAL, latest REAL)")
 
-    # Insert the data into the database
-    for addrpan in addresses.keys():
-        cursor.execute("INSERT INTO addresses VALUES (?, ?, ?)",
-                       tuple([addrpan[0], addrpan[1], addresses[addrpan]]))
+    # Insert the data into the table
+    for extendedaddr in extended_addresses.keys():
+        cursor.execute(
+            "INSERT INTO extended_addresses VALUES (?, ?, ?, ?, ?, ?)",
+            (extendedaddr,
+             ";".join(str(localaddr) for localaddr in sorted(list(
+                      extended_addresses[extendedaddr]["altset"]))),
+             ";".join(macdevtype for macdevtype in sorted(list(
+                      extended_addresses[extendedaddr]["macset"]))),
+             ";".join(nwkdevtype for nwkdevtype in sorted(list(
+                      extended_addresses[extendedaddr]["nwkset"]))),
+             extended_addresses[extendedaddr]["earliest"],
+             extended_addresses[extendedaddr]["latest"]))
 
 
 def store_pairs(pairs):
-    global cursor
-
     # Drop the table if it already exists
     cursor.execute("DROP TABLE IF EXISTS pairs")
 
     # Create the table
-    cursor.execute("CREATE TABLE pairs(srcaddr TEXT NOT NULL, "
-                   "dstaddr TEXT NOT NULL, panid TEXT NOT NULL, "
-                   "first REAL, last REAL)")
+    cursor.execute("CREATE TABLE pairs(panid TEXT NOT NULL, "
+                   "srcaddr TEXT NOT NULL, dstaddr TEXT NOT NULL, "
+                   "earliest REAL NOT NULL, latest REAL NOT NULL)")
 
-    # Insert the data into the database
-    for pairpan in pairs.keys():
+    # Insert the data into the table
+    for (panid, srcaddr, dstaddr) in pairs.keys():
         cursor.execute("INSERT INTO pairs VALUES (?, ?, ?, ?, ?)",
-                       tuple([pairpan[0],
-                              pairpan[1],
-                              pairpan[2],
-                              pairs[pairpan]["first"],
-                              pairs[pairpan]["last"]]))
+                       (panid,
+                        srcaddr,
+                        dstaddr,
+                        pairs[(panid, srcaddr, dstaddr)]["earliest"],
+                        pairs[(panid, srcaddr, dstaddr)]["latest"]))
 
 
-def get_macdevtype(shortaddr=None, panid=None, extendedaddr=None):
-    global cursor
+def get_nwkdevtype(panid, shortaddr, extendedaddr):
+    nwkset = set()
 
-    # Make sure that the extended address of the device is known
-    if extendedaddr is None:
-        cursor.execute("SELECT extendedaddr FROM addresses WHERE shortaddr=? "
-                       "AND panid=?", tuple([shortaddr, panid]))
+    if panid is not None and shortaddr is not None:
+        cursor.execute("SELECT nwkset FROM short_addresses WHERE panid=? "
+                       "AND shortaddr=?", (panid, shortaddr))
         results = cursor.fetchall()
-        if len(results) == 0:
-            return None
-        elif len(results) != 1:
+        if (len(results) > 1
+                or (len(results) == 1 and ";" in results[0][0])):
             return "Conflicting Data"
-        elif results[0][0] == "Conflicting Data":
-            return "Conflicting Data"
-        else:
-            extendedaddr = results[0][0]
+        elif len(results) == 1:
+            nwkset.add(results[0][0])
 
-    # Use the extended address of the device to determine its MAC device type
-    cursor.execute("SELECT macdevtype FROM devices WHERE extendedaddr=?",
-                   tuple([extendedaddr]))
-    results = cursor.fetchall()
-    if len(results) == 0:
-        return None
-    elif len(results) != 1:
-        return "Conflicting Data"
-    else:
-        return results[0][0]
-
-
-def get_nwkdevtype(shortaddr=None, panid=None, extendedaddr=None):
-    global cursor
-
-    # Make sure that the extended address of the device is known
-    if extendedaddr is None:
-        cursor.execute("SELECT extendedaddr FROM addresses WHERE shortaddr=? "
-                       "AND panid=?", tuple([shortaddr, panid]))
+    if extendedaddr is not None:
+        cursor.execute("SELECT nwkset FROM extended_addresses "
+                       "WHERE extendedaddr=?", (extendedaddr,))
         results = cursor.fetchall()
-        if len(results) == 0:
-            return None
-        elif len(results) != 1:
+        if (len(results) > 1
+                or (len(results) == 1 and ";" in results[0][0])):
             return "Conflicting Data"
-        elif results[0][0] == "Conflicting Data":
-            return "Conflicting Data"
-        else:
-            extendedaddr = results[0][0]
+        elif len(results) == 1:
+            nwkset.add(results[0][0])
 
-    # Use the extended address of the device to determine its NWK device type
-    cursor.execute("SELECT nwkdevtype FROM devices WHERE extendedaddr=?",
-                   tuple([extendedaddr]))
-    results = cursor.fetchall()
-    if len(results) == 0:
+    if len(nwkset) == 0:
         return None
-    elif len(results) != 1:
-        return "Conflicting Data"
+    elif len(nwkset) == 1:
+        return list(nwkset)[0]
     else:
-        return results[0][0]
+        return "Conflicting Data"
 
 
-def update_table(selected_columns, selected_values, conditions):
-    global connection
-    global cursor
-
+def update_packets(selected_columns, selected_values, conditions):
     # Sanity checks
     if len(selected_columns) == 0:
         raise ValueError("At least one selected column is required")
@@ -613,7 +738,7 @@ def update_table(selected_columns, selected_values, conditions):
         if column_name not in PKT_COLUMN_NAMES:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
 
-    # Update the table
+    # Update the packets table
     set_statements = ["{} = ?".format(x) for x in selected_columns]
     update_command = "UPDATE packets SET {}".format(", ".join(set_statements))
     expr_statements = []
@@ -645,621 +770,6 @@ def update_table(selected_columns, selected_values, conditions):
 
     # Execute the constructed command
     cursor.execute(update_command, tuple(expr_values))
-
-
-def update_packets():
-    global cursor
-
-    # Check for conflicting addresses
-    cursor.execute("SELECT DISTINCT shortaddr, panid FROM addresses "
-                   "WHERE extendedaddr=\"Conflicting Data\"")
-    results = cursor.fetchall()
-    for result in results:
-        shortaddr = result[0]
-        panid = result[1]
-        logging.warning("Observed conflicting data regarding the "
-                        "extended address of the device that uses "
-                        "{} as its short address and {} as its PAN ID"
-                        "".format(shortaddr, panid))
-
-        # Update the "MAC Destination Type" column
-        update_columns = (
-            "der_mac_dstextendedaddr",
-            "der_mac_dsttype",
-        )
-        update_values = (
-            "Conflicting Data",
-            "MAC Dst Type: Conflicting Data",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "0b10: "
-                "Short destination MAC address"),
-            ("der_mac_dstpanid", panid),
-            ("der_mac_dstshortaddr", shortaddr),
-            ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-        # Update the "MAC Source Type" column
-        update_columns = (
-            "der_mac_srcextendedaddr",
-            "der_mac_srctype",
-        )
-        update_values = (
-            "Conflicting Data",
-            "MAC Src Type: Conflicting Data",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "0b10: "
-                "Short source MAC address"),
-            ("der_mac_srcpanid", panid),
-            ("der_mac_srcshortaddr", shortaddr),
-            ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-        # Update the "NWK Destination Type" column
-        update_columns = (
-            "der_nwk_dstextendedaddr",
-            "der_nwk_dsttype",
-        )
-        update_values = (
-            "Conflicting Data",
-            "NWK Dst Type: Conflicting Data",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_dstshortaddr", None),
-            ("der_nwk_dstpanid", panid),
-            ("der_nwk_dstshortaddr", shortaddr),
-            ("!der_nwk_dsttype", "NWK Dst Type: Conflicting Data"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-        # Update the "NWK Source Type" column
-        update_columns = (
-            "der_nwk_srcextendedaddr",
-            "der_nwk_srctype",
-        )
-        update_values = (
-            "Conflicting Data",
-            "NWK Src Type: Conflicting Data",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_srcshortaddr", None),
-            ("der_nwk_srcpanid", panid),
-            ("der_nwk_srcshortaddr", shortaddr),
-            ("!der_nwk_srctype", "NWK Src Type: Conflicting Data"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown MAC Destination extended addresses
-    cursor.execute("SELECT DISTINCT der_mac_dstpanid, "
-                   "der_mac_dstshortaddr FROM packets "
-                   "WHERE der_mac_dsttype=\"MAC Dst Type: None\" "
-                   "AND der_mac_dstextendedaddr IS NULL")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "MAC Destination extended addresses..."
-                  "".format(len(results)))
-    for result in results:
-        panid = result[0]
-        shortaddr = result[1]
-        cursor.execute("SELECT extendedaddr FROM addresses "
-                       "WHERE shortaddr=? AND panid=?",
-                       (shortaddr, panid))
-        fetched_addresses = cursor.fetchall()
-        if len(fetched_addresses) == 0:
-            continue
-        elif len(fetched_addresses) != 1:
-            update_values = (
-                "Conflicting Data",
-                "MAC Dst Type: Conflicting Data",
-            )
-        elif fetched_addresses[0][0] == "Conflicting Data":
-            update_values = (
-                "Conflicting Data",
-                "MAC Dst Type: Conflicting Data",
-            )
-        else:
-            extendedaddr = fetched_addresses[0][0]
-            cursor.execute("SELECT nwkdevtype FROM devices "
-                           "WHERE extendedaddr=?",
-                           tuple([extendedaddr]))
-            fetched_nwkdevtype = cursor.fetchall()
-            if len(fetched_nwkdevtype) == 0:
-                update_values = (
-                    extendedaddr,
-                    "MAC Dst Type: None",
-                )
-            elif len(fetched_nwkdevtype) != 1:
-                update_values = (
-                    extendedaddr,
-                    "MAC Dst Type: Conflicting Data",
-                )
-            else:
-                update_values = (
-                    extendedaddr,
-                    "MAC Dst Type: {}".format(fetched_nwkdevtype[0][0]),
-                )
-        update_columns = (
-            "der_mac_dstextendedaddr",
-            "der_mac_dsttype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "0b10: "
-                "Short destination MAC address"),
-            ("der_mac_dstpanid", panid),
-            ("der_mac_dstshortaddr", shortaddr),
-            ("der_mac_dstextendedaddr", None),
-            ("der_mac_dsttype", "MAC Dst Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown MAC Source extended addresses
-    cursor.execute("SELECT DISTINCT der_mac_srcpanid, "
-                   "der_mac_srcshortaddr FROM packets "
-                   "WHERE der_mac_srctype=\"MAC Src Type: None\" "
-                   "AND der_mac_srcextendedaddr IS NULL")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "MAC Source extended addresses..."
-                  "".format(len(results)))
-    for result in results:
-        panid = result[0]
-        shortaddr = result[1]
-        cursor.execute("SELECT extendedaddr FROM addresses "
-                       "WHERE shortaddr=? AND panid=?",
-                       (shortaddr, panid))
-        fetched_addresses = cursor.fetchall()
-        if len(fetched_addresses) == 0:
-            continue
-        elif len(fetched_addresses) != 1:
-            update_values = (
-                "Conflicting Data",
-                "MAC Src Type: Conflicting Data",
-            )
-        elif fetched_addresses[0][0] == "Conflicting Data":
-            update_values = (
-                "Conflicting Data",
-                "MAC Src Type: Conflicting Data",
-            )
-        else:
-            extendedaddr = fetched_addresses[0][0]
-            cursor.execute("SELECT nwkdevtype FROM devices "
-                           "WHERE extendedaddr=?",
-                           tuple([extendedaddr]))
-            fetched_nwkdevtype = cursor.fetchall()
-            if len(fetched_nwkdevtype) == 0:
-                update_values = (
-                    extendedaddr,
-                    "MAC Src Type: None",
-                )
-            elif len(fetched_nwkdevtype) != 1:
-                update_values = (
-                    extendedaddr,
-                    "MAC Src Type: Conflicting Data",
-                )
-            else:
-                update_values = (
-                    extendedaddr,
-                    "MAC Src Type: {}".format(fetched_nwkdevtype[0][0]),
-                )
-        update_columns = (
-            "der_mac_srcextendedaddr",
-            "der_mac_srctype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "0b10: "
-                "Short source MAC address"),
-            ("der_mac_srcpanid", panid),
-            ("der_mac_srcshortaddr", shortaddr),
-            ("der_mac_srcextendedaddr", None),
-            ("der_mac_srctype", "MAC Src Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown NWK Destination extended addresses
-    cursor.execute("SELECT DISTINCT der_nwk_dstpanid, "
-                   "der_nwk_dstshortaddr FROM packets "
-                   "WHERE der_nwk_dsttype=\"NWK Dst Type: None\" "
-                   "AND der_nwk_dstextendedaddr IS NULL")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "NWK Destination extended addresses..."
-                  "".format(len(results)))
-    for result in results:
-        panid = result[0]
-        shortaddr = result[1]
-        cursor.execute("SELECT extendedaddr FROM addresses "
-                       "WHERE shortaddr=? AND panid=?",
-                       (shortaddr, panid))
-        fetched_addresses = cursor.fetchall()
-        if len(fetched_addresses) == 0:
-            continue
-        elif len(fetched_addresses) != 1:
-            update_values = (
-                "Conflicting Data",
-                "NWK Dst Type: Conflicting Data",
-            )
-        elif fetched_addresses[0][0] == "Conflicting Data":
-            update_values = (
-                "Conflicting Data",
-                "NWK Dst Type: Conflicting Data",
-            )
-        else:
-            extendedaddr = fetched_addresses[0][0]
-            cursor.execute("SELECT nwkdevtype FROM devices "
-                           "WHERE extendedaddr=?",
-                           tuple([extendedaddr]))
-            fetched_nwkdevtype = cursor.fetchall()
-            if len(fetched_nwkdevtype) == 0:
-                update_values = (
-                    extendedaddr,
-                    "NWK Dst Type: None",
-                )
-            elif len(fetched_nwkdevtype) != 1:
-                update_values = (
-                    extendedaddr,
-                    "NWK Dst Type: Conflicting Data",
-                )
-            else:
-                update_values = (
-                    extendedaddr,
-                    "NWK Dst Type: {}".format(fetched_nwkdevtype[0][0]),
-                )
-        update_columns = (
-            "der_nwk_dstextendedaddr",
-            "der_nwk_dsttype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_dstshortaddr", None),
-            ("der_nwk_dstpanid", panid),
-            ("der_nwk_dstshortaddr", shortaddr),
-            ("der_nwk_dstextendedaddr", None),
-            ("der_nwk_dsttype", "NWK Dst Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown NWK Source extended addresses
-    cursor.execute("SELECT DISTINCT der_nwk_srcpanid, "
-                   "der_nwk_srcshortaddr FROM packets "
-                   "WHERE der_nwk_srctype=\"NWK Src Type: None\" "
-                   "AND der_nwk_srcextendedaddr IS NULL")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "NWK Source extended addresses..."
-                  "".format(len(results)))
-    for result in results:
-        panid = result[0]
-        shortaddr = result[1]
-        cursor.execute("SELECT extendedaddr FROM addresses "
-                       "WHERE shortaddr=? AND panid=?",
-                       (shortaddr, panid))
-        fetched_addresses = cursor.fetchall()
-        if len(fetched_addresses) == 0:
-            continue
-        elif len(fetched_addresses) != 1:
-            update_values = (
-                "Conflicting Data",
-                "NWK Src Type: Conflicting Data",
-            )
-        elif fetched_addresses[0][0] == "Conflicting Data":
-            update_values = (
-                "Conflicting Data",
-                "NWK Src Type: Conflicting Data",
-            )
-        else:
-            extendedaddr = fetched_addresses[0][0]
-            cursor.execute("SELECT nwkdevtype FROM devices "
-                           "WHERE extendedaddr=?",
-                           tuple([extendedaddr]))
-            fetched_nwkdevtype = cursor.fetchall()
-            if len(fetched_nwkdevtype) == 0:
-                update_values = (
-                    extendedaddr,
-                    "NWK Src Type: None",
-                )
-            elif len(fetched_nwkdevtype) != 1:
-                update_values = (
-                    extendedaddr,
-                    "NWK Src Type: Conflicting Data",
-                )
-            else:
-                update_values = (
-                    extendedaddr,
-                    "NWK Src Type: {}".format(fetched_nwkdevtype[0][0]),
-                )
-        update_columns = (
-            "der_nwk_srcextendedaddr",
-            "der_nwk_srctype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_srcshortaddr", None),
-            ("der_nwk_srcpanid", panid),
-            ("der_nwk_srcshortaddr", shortaddr),
-            ("der_nwk_srcextendedaddr", None),
-            ("der_nwk_srctype", "NWK Src Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for conflicting device types
-    cursor.execute("SELECT DISTINCT extendedaddr FROM devices")
-    results = cursor.fetchall()
-    for result in results:
-        extendedaddr = result[0]
-        if get_macdevtype(extendedaddr=extendedaddr) == "Conflicting Data":
-            logging.warning("Observed conflicting data regarding the "
-                            "MAC device type of the device that uses "
-                            "{} as its extended address".format(extendedaddr))
-
-        if get_nwkdevtype(extendedaddr=extendedaddr) == "Conflicting Data":
-            logging.warning("Observed conflicting data regarding the "
-                            "NWK device type of the device that uses "
-                            "{} as its extended address".format(extendedaddr))
-
-            # Update the "MAC Destination Type" column
-            update_columns = (
-                "der_mac_dsttype",
-            )
-            update_values = (
-                "MAC Dst Type: Conflicting Data",
-            )
-            conditions = (
-                ("error_msg", None),
-                ("mac_panidcomp", "0b1: "
-                    "The source PAN ID is the same as the destination PAN ID"),
-                ("mac_dstaddrmode", "0b10: "
-                    "Short destination MAC address"),
-                ("der_mac_dstextendedaddr", extendedaddr),
-                ("!der_mac_dsttype", "MAC Dst Type: Conflicting Data"),
-            )
-            update_table(update_columns, update_values, conditions)
-
-            # Update the "MAC Source Type" column
-            update_columns = (
-                "der_mac_srctype",
-            )
-            update_values = (
-                "MAC Src Type: Conflicting Data",
-            )
-            conditions = (
-                ("error_msg", None),
-                ("mac_panidcomp", "0b1: "
-                    "The source PAN ID is the same as the destination PAN ID"),
-                ("mac_srcaddrmode", "0b10: "
-                    "Short source MAC address"),
-                ("der_mac_srcextendedaddr", extendedaddr),
-                ("!der_mac_srctype", "MAC Src Type: Conflicting Data"),
-            )
-            update_table(update_columns, update_values, conditions)
-
-            # Update the "NWK Destination Type" column
-            update_columns = (
-                "der_nwk_dsttype",
-            )
-            update_values = (
-                "NWK Dst Type: Conflicting Data",
-            )
-            conditions = (
-                ("error_msg", None),
-                ("mac_panidcomp", "0b1: "
-                    "The source PAN ID is the same as the destination PAN ID"),
-                ("!nwk_dstshortaddr", None),
-                ("der_nwk_dstextendedaddr", extendedaddr),
-                ("!der_nwk_dsttype", "NWK Dst Type: Conflicting Data"),
-            )
-            update_table(update_columns, update_values, conditions)
-
-            # Update the "NWK Source Type" column
-            update_columns = (
-                "der_nwk_srctype",
-            )
-            update_values = (
-                "NWK Src Type: Conflicting Data",
-            )
-            conditions = (
-                ("error_msg", None),
-                ("mac_panidcomp", "0b1: "
-                    "The source PAN ID is the same as the destination PAN ID"),
-                ("!nwk_srcshortaddr", None),
-                ("der_nwk_srcextendedaddr", extendedaddr),
-                ("!der_nwk_srctype", "NWK Src Type: Conflicting Data"),
-            )
-            update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown MAC Destination Types
-    cursor.execute("SELECT DISTINCT der_mac_dstextendedaddr FROM packets "
-                   "WHERE der_mac_dsttype=\"MAC Dst Type: None\" "
-                   "AND der_mac_dstextendedaddr IS NOT NULL "
-                   "AND der_mac_dstextendedaddr!=\"Conflicting Data\"")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "MAC Destination Types..."
-                  "".format(len(results)))
-    for result in results:
-        extendedaddr = result[0]
-        cursor.execute("SELECT nwkdevtype FROM devices "
-                       "WHERE extendedaddr=?",
-                       tuple([extendedaddr]))
-        fetched_nwkdevtype = cursor.fetchall()
-        if len(fetched_nwkdevtype) == 0:
-            continue
-        elif len(fetched_nwkdevtype) != 1:
-            update_values = (
-                "MAC Dst Type: Conflicting Data",
-            )
-        else:
-            nwkdevtype = fetched_nwkdevtype[0][0]
-            if nwkdevtype is None:
-                continue
-            else:
-                update_values = (
-                    "MAC Dst Type: {}".format(nwkdevtype),
-                )
-        update_columns = (
-            "der_mac_dsttype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_dstaddrmode", "0b10: "
-                "Short destination MAC address"),
-            ("der_mac_dstextendedaddr", extendedaddr),
-            ("der_mac_dsttype", "MAC Dst Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown MAC Source Types
-    cursor.execute("SELECT DISTINCT der_mac_srcextendedaddr FROM packets "
-                   "WHERE der_mac_srctype=\"MAC Src Type: None\" "
-                   "AND der_mac_srcextendedaddr IS NOT NULL "
-                   "AND der_mac_srcextendedaddr!=\"Conflicting Data\"")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "MAC Source Types..."
-                  "".format(len(results)))
-    for result in results:
-        extendedaddr = result[0]
-        cursor.execute("SELECT nwkdevtype FROM devices "
-                       "WHERE extendedaddr=?",
-                       tuple([extendedaddr]))
-        fetched_nwkdevtype = cursor.fetchall()
-        if len(fetched_nwkdevtype) == 0:
-            continue
-        elif len(fetched_nwkdevtype) != 1:
-            update_values = (
-                "MAC Src Type: Conflicting Data",
-            )
-        else:
-            nwkdevtype = fetched_nwkdevtype[0][0]
-            if nwkdevtype is None:
-                continue
-            else:
-                update_values = (
-                    "MAC Src Type: {}".format(nwkdevtype),
-                )
-        update_columns = (
-            "der_mac_srctype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("mac_srcaddrmode", "0b10: "
-                "Short source MAC address"),
-            ("der_mac_srcextendedaddr", extendedaddr),
-            ("der_mac_srctype", "MAC Src Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown NWK Destination Types
-    cursor.execute("SELECT DISTINCT der_nwk_dstextendedaddr FROM packets "
-                   "WHERE der_nwk_dsttype=\"NWK Dst Type: None\" "
-                   "AND der_nwk_dstextendedaddr IS NOT NULL "
-                   "AND der_nwk_dstextendedaddr!=\"Conflicting Data\"")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "NWK Destination Types..."
-                  "".format(len(results)))
-    for result in results:
-        extendedaddr = result[0]
-        cursor.execute("SELECT nwkdevtype FROM devices "
-                       "WHERE extendedaddr=?",
-                       tuple([extendedaddr]))
-        fetched_nwkdevtype = cursor.fetchall()
-        if len(fetched_nwkdevtype) == 0:
-            continue
-        elif len(fetched_nwkdevtype) != 1:
-            update_values = (
-                "NWK Dst Type: Conflicting Data",
-            )
-        else:
-            nwkdevtype = fetched_nwkdevtype[0][0]
-            if nwkdevtype is None:
-                continue
-            else:
-                update_values = (
-                    "NWK Dst Type: {}".format(nwkdevtype),
-                )
-        update_columns = (
-            "der_nwk_dsttype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_dstshortaddr", None),
-            ("der_nwk_dstextendedaddr", extendedaddr),
-            ("der_nwk_dsttype", "NWK Dst Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
-
-    # Check for previously unknown NWK Source Types
-    cursor.execute("SELECT DISTINCT der_nwk_srcextendedaddr FROM packets "
-                   "WHERE der_nwk_srctype=\"NWK Src Type: None\" "
-                   "AND der_nwk_srcextendedaddr IS NOT NULL "
-                   "AND der_nwk_srcextendedaddr!=\"Conflicting Data\"")
-    results = cursor.fetchall()
-    logging.debug("Trying to identify {} previously unknown "
-                  "NWK Source Types..."
-                  "".format(len(results)))
-    for result in results:
-        extendedaddr = result[0]
-        cursor.execute("SELECT nwkdevtype FROM devices "
-                       "WHERE extendedaddr=?",
-                       tuple([extendedaddr]))
-        fetched_nwkdevtype = cursor.fetchall()
-        if len(fetched_nwkdevtype) == 0:
-            continue
-        elif len(fetched_nwkdevtype) != 1:
-            update_values = (
-                "NWK Src Type: Conflicting Data",
-            )
-        else:
-            nwkdevtype = fetched_nwkdevtype[0][0]
-            if nwkdevtype is None:
-                continue
-            else:
-                update_values = (
-                    "NWK Src Type: {}".format(nwkdevtype),
-                )
-        update_columns = (
-            "der_nwk_srctype",
-        )
-        conditions = (
-            ("error_msg", None),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
-            ("!nwk_srcshortaddr", None),
-            ("der_nwk_srcextendedaddr", extendedaddr),
-            ("der_nwk_srctype", "NWK Src Type: None"),
-        )
-        update_table(update_columns, update_values, conditions)
 
 
 def disconnect():

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,9 +21,11 @@ from scapy.all import Dot15d4FCS
 
 from .beacon import beacon
 from .beaconreq import beaconreq
+from .deviceannce import deviceannce
 from .orphannotif import orphannotif
 from .rejoinreq import rejoinreq
 from .updatedevice import updatedevice
+from .activeepreq import activeepreq
 
 
 def main(args):
@@ -206,6 +208,68 @@ def main(args):
             args.aps_aux_framecounter,
             int(args.aps_aux_srcaddr, 16),
             bytes.fromhex(args.aps_key))
+    elif args.PKT_TYPE == "deviceannce":
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of a Device_annce command may interfere    #")
+        print("# with the operation of legitimate IEEE 802.15.4-based     #")
+        print("# networks. The users of this tool are responsible for     #")
+        print("# making sure that they are compliant with their local     #")
+        print("# laws and that they have proper permission from the       #")
+        print("# affected network owners.                                 #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
+        # Forge the packet
+        forged_pkt = deviceannce(
+            args.mac_seqnum,
+            int(args.mac_dstpanid, 16),
+            int(args.mac_srcshortaddr, 16),
+            args.nwk_seqnum,
+            int(args.nwk_srcextendedaddr, 16),
+            args.aps_counter,
+            args.zdp_seqnum,
+            args.nwk_aux_framecounter,
+            args.nwk_aux_keyseqnum,
+            bytes.fromhex(args.nwk_key))
+    elif args.PKT_TYPE == "activeepreq":
+        # Print a disclaimer
+        print("############################################################")
+        print("#                        DISCLAIMER                        #")
+        print("#                                                          #")
+        print("# The injection of an Active_EP_req command may interfere  #")
+        print("# with the operation of legitimate IEEE 802.15.4-based     #")
+        print("# networks. The users of this tool are responsible for     #")
+        print("# making sure that they are compliant with their local     #")
+        print("# laws and that they have proper permission from the       #")
+        print("# affected network owners.                                 #")
+        print("############################################################")
+        answer = input("Are you sure that you want to proceed? [y/N] ")
+        # Check the provided answer
+        if answer == "y":
+            print("You accepted responsibility for your actions")
+        else:
+            logging.info("Canceling the injection of a forged packet...")
+            return
+        # Forge the packet
+        forged_pkt = activeepreq(
+            args.mac_seqnum,
+            int(args.mac_dstpanid, 16),
+            int(args.mac_dstshortaddr, 16),
+            args.nwk_seqnum,
+            args.aps_counter,
+            args.zdp_seqnum,
+            args.nwk_aux_framecounter,
+            int(args.nwk_aux_srcaddr, 16),
+            args.nwk_aux_keyseqnum,
+            bytes.fromhex(args.nwk_key))
     else:
         raise ValueError("Unknown packet type \"{}\"".format(args.PKT_TYPE))
     logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -194,7 +194,7 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
         for selection in selections:
             name = selection[0]
             conditions = selection[1:]
-            matches = config.db.matching_frequency(conditions)
+            matches = config.db.matching_frequency("packets", conditions)
             results.append((name, matches))
 
         # Write the matching frequencies in the output file

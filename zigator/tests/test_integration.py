@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -236,17 +236,17 @@ class TestIntegration(unittest.TestCase):
             "ORDER BY name")
         self.assertEqual(
             cursor.fetchall(), [
-                ("addresses",),
-                ("devices",),
+                ("extended_addresses",),
                 ("networks",),
                 ("packets",),
-                ("pairs",)
+                ("pairs",),
+                ("short_addresses",),
             ])
-        self.assertAddressesTable(cursor)
-        self.assertDevicesTable(cursor)
+        self.assertExtendedAddressesTable(cursor)
         self.assertNetworksTable(cursor)
         self.assertPacketsTable(cursor)
         self.assertPairsTable(cursor)
+        self.assertShortAddresses(cursor)
         cursor.close()
         connection.close()
 
@@ -306,7 +306,7 @@ class TestIntegration(unittest.TestCase):
             cm.output[1]) is not None)
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 42)
+        self.assertEqual(len(cm.output), 44)
 
         self.assertTrue(re.search(
             r"^INFO:root:Started Zigator version "
@@ -347,7 +347,7 @@ class TestIntegration(unittest.TestCase):
             r"\".+02-mac-testing.pcap\" file...$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
-            r"^INFO:root:Parsed 12 packets from the "
+            r"^INFO:root:Parsed 13 packets from the "
             r"\".+02-mac-testing.pcap\" file$",
             log_msg) is not None for log_msg in cm.output[3:27]))
         self.assertTrue(any(re.search(
@@ -414,29 +414,31 @@ class TestIntegration(unittest.TestCase):
             r"completed their tasks$",
             cm.output[27]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Sniffed 0 previously unknown network keys$",
+            r"^INFO:root:Discovered 0 previously unknown network keys$",
             cm.output[28]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Sniffed 1 previously unknown link keys$",
+            r"^INFO:root:Discovered 1 previously unknown link keys$",
             cm.output[29]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered the EPID of 1 networks$",
+            r"^INFO:root:Discovered 6 pairs of network identifiers$",
             cm.output[30]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered the extended address of 11 devices$",
+            r"^INFO:root:Discovered 20 PAN ID and short address pairs$",
             cm.output[31]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered the short-to-extended "
-            r"address mapping of 13 devices$",
+            r"^INFO:root:Discovered 11 extended addresses$",
             cm.output[32]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Discovered 12 flows of MAC Data packets$",
+            r"^INFO:root:Discovered 12 source-destination pairs of "
+            r"MAC Data packets$",
             cm.output[33]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Updating the database...$",
+            r"^INFO:root:Updating the derived entries of "
+            r"parsed packets...$",
             cm.output[34]) is not None)
         self.assertTrue(re.search(
-            r"^INFO:root:Finished updating the database$",
+            r"^INFO:root:Finished updating the derived entries of "
+            r"parsed packets$",
             cm.output[35]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PW301: "
@@ -447,105 +449,153 @@ class TestIntegration(unittest.TestCase):
             r"Unable to decrypt the APS payload\" parsing warnings$",
             cm.output[37]) is not None)
         self.assertTrue(re.search(
+            r"^WARNING:root:Generated 1 \""
+            r"Unknown ZDP transaction data\" parsing warnings$",
+            cm.output[38]) is not None)
+        self.assertTrue(re.search(
             r"^WARNING:root:Generated 2 \"PE101: "
             r"Invalid packet length\" parsing errors$",
-            cm.output[38]) is not None)
+            cm.output[39]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 2 \"PE102: "
             r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
-            cm.output[39]) is not None)
+            cm.output[40]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE202: "
             r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
-            cm.output[40]) is not None)
+            cm.output[41]) is not None)
         self.assertTrue(re.search(
             r"^WARNING:root:Generated 1 \"PE224: "
             r"Unexpected payload\" parsing errors$",
-            cm.output[41]) is not None)
+            cm.output[42]) is not None)
+        self.assertTrue(re.search(
+            r"^WARNING:root:Generated 1 \""
+            r"There are no MAC Association Request fields\" parsing errors$",
+            cm.output[43]) is not None)
 
-    def assertAddressesTable(self, cursor):
-        cursor.execute("SELECT * FROM addresses ORDER BY extendedaddr, panid")
-        col_names = [col_name[0] for col_name in cursor.description]
-        self.assertEqual(
-            col_names, [
-                "shortaddr",
-                "panid",
-                "extendedaddr",
-            ])
-        self.assertEqual(
-            cursor.fetchall(), [
-                ("0xb000", "0x9999", "1122334444332211"),
-                ("0xf001", "0xddee", "1122334444332211"),
-                ("0xdead", "0x99aa", "1122334455667788"),
-                ("0x0000", "0x7777", "7777770000000001"),
-                ("0x0000", "0xdddd", "7777770000000001"),
-                ("0x1101", "0x7777", "7777770000000002"),
-                ("0x1102", "0x7777", "7777770000000003"),
-                ("0x1102", "0xdddd", "7777770000000003"),
-                ("0x2201", "0x7777", "7777770000000004"),
-                ("0x2202", "0x7777", "7777770000000005"),
-                ("0x2202", "0xdddd", "7777770000000005"),
-                ("0x50fa", "0xddee", "b19b10a7ed0ff1ce"),
-                ("0xb0a7", "0xddee", "d00dbad1cec0ffee"),
-            ])
-
-    def assertDevicesTable(self, cursor):
-        cursor.execute("SELECT * FROM devices ORDER BY extendedaddr")
+    def assertExtendedAddressesTable(self, cursor):
+        cursor.execute(
+            "SELECT * FROM extended_addresses ORDER BY extendedaddr")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
             col_names, [
                 "extendedaddr",
-                "macdevtype",
-                "nwkdevtype",
+                "altset",
+                "macset",
+                "nwkset",
+                "earliest",
+                "latest",
             ])
         self.assertEqual(
             cursor.fetchall(), [
-                ("0ff1cec0ffeed00d",
+                (
+                    "0ff1cec0ffeed00d",
+                    "",
                     "Full-Function Device",
-                    None),
-                ("1122334444332211",
+                    "",
+                    1599996419.0,
+                    1599996419.0,
+                ),
+                (
+                    "1122334444332211",
+                    "('0x9999', '0xb000');('0xddee', '0xf001')",
+                    "",
+                    "",
                     None,
-                    None),
-                ("1122334455667788",
-                    "Full-Function Device",
-                    "Zigbee Router"),
-                ("7777770000000001",
-                    "Full-Function Device",
-                    "Zigbee Coordinator"),
-                ("7777770000000002",
-                    "Full-Function Device",
-                    "Zigbee Router"),
-                ("7777770000000003",
-                    "Full-Function Device",
-                    "Zigbee Router"),
-                ("7777770000000004",
                     None,
-                    None),
-                ("7777770000000005",
-                    None,
-                    None),
-                ("8888880000000001",
-                    None,
-                    None),
-                ("b19b10a7ed0ff1ce",
+                ),
+                (
+                    "1122334455667788",
+                    "('0x99aa', '0xdead')",
                     "Full-Function Device",
-                    "Zigbee Router"),
-                ("d00dbad1cec0ffee",
+                    "Zigbee Router",
+                    1599996418.0,
+                    1599996418.0,
+                ),
+                (
+                    "7777770000000001",
+                    "('0x7777', '0x0000');('0xdddd', '0x0000')",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "7777770000000002",
+                    "('0x7777', '0x1101')",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    None,
+                    None,
+                ),
+                (
+                    "7777770000000003",
+                    "('0x7777', '0x1102');('0xdddd', '0x1102')",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    None,
+                    None,
+                ),
+                (
+                    "7777770000000004",
+                    "('0x7777', '0x2201')",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "7777770000000005",
+                    "('0x7777', '0x2202');('0xdddd', '0x2202')",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "8888880000000001",
+                    "",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "b19b10a7ed0ff1ce",
+                    "('0xddee', '0x50fa')",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    1599996423.0,
+                    1599996423.0,
+                ),
+                (
+                    "d00dbad1cec0ffee",
+                    "('0xddee', '0xb0a7')",
                     "Reduced-Function Device",
-                    "Zigbee End Device"),
+                    "Zigbee End Device",
+                    1599996421.0,
+                    1599996421.0,
+                ),
             ])
 
     def assertNetworksTable(self, cursor):
-        cursor.execute("SELECT * FROM networks ORDER BY epid")
+        cursor.execute("SELECT * FROM networks ORDER BY panid")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
             col_names, [
-                "epid",
-                "panids",
+                "panid",
+                "epidset",
+                "earliest",
+                "latest",
             ])
         self.assertEqual(
             cursor.fetchall(), [
-                ("facefeedbeefcafe", "0x99aa"),
+                ("0x7777", "", None, None),
+                ("0x9999", "", None, None),
+                ("0x99aa", "facefeedbeefcafe", 1599996424.0, 1599996424.0),
+                ("0xbbcc", "", None, None),
+                ("0xdddd", "", None, None),
+                ("0xddee", "", None, None),
             ])
 
     def assertPacketsTable(self, cursor):
@@ -761,6 +811,15 @@ class TestIntegration(unittest.TestCase):
                 "aps_confirmkey_stdkeytype",
                 "aps_confirmkey_extendedaddr",
                 "zdp_seqnum",
+                "zdp_activeepreq_nwkaddr",
+                "zdp_deviceannce_nwkaddr",
+                "zdp_deviceannce_ieeeaddr",
+                "zdp_deviceannce_apc",
+                "zdp_deviceannce_devtype",
+                "zdp_deviceannce_powsrc",
+                "zdp_deviceannce_rxidle",
+                "zdp_deviceannce_seccap",
+                "zdp_deviceannce_allocaddr",
                 "zcl_frametype",
                 "zcl_manufspecific",
                 "zcl_direction",
@@ -768,6 +827,39 @@ class TestIntegration(unittest.TestCase):
                 "zcl_manufcode",
                 "zcl_seqnum",
                 "zcl_cmd_id",
+                "zcl_readattributes_identifiers",
+                "zcl_readattributesresponse_identifiers",
+                "zcl_readattributesresponse_statuses",
+                "zcl_readattributesresponse_datatypes",
+                "zcl_readattributesresponse_values",
+                "zcl_writeattributes_identifiers",
+                "zcl_writeattributes_datatypes",
+                "zcl_writeattributes_data",
+                "zcl_writeattributesresponse_statuses",
+                "zcl_writeattributesresponse_identifiers",
+                "zcl_configurereporting_directions",
+                "zcl_configurereporting_identifiers",
+                "zcl_configurereporting_datatypes",
+                "zcl_configurereporting_minintervals",
+                "zcl_configurereporting_maxintervals",
+                "zcl_configurereporting_changes",
+                "zcl_configurereporting_timeoutperiods",
+                "zcl_configurereportingresponse_statuses",
+                "zcl_configurereportingresponse_directions",
+                "zcl_configurereportingresponse_identifiers",
+                "zcl_reportattributes_identifiers",
+                "zcl_reportattributes_datatypes",
+                "zcl_reportattributes_data",
+                "zcl_defaultresponse_rspcmdid",
+                "zcl_defaultresponse_status",
+                "zcl_iaszone_zoneenrollrsp_code",
+                "zcl_iaszone_zoneenrollrsp_zoneid",
+                "zcl_iaszone_zonestatuschangenotif_zonestatus",
+                "zcl_iaszone_zonestatuschangenotif_extendedstatus",
+                "zcl_iaszone_zonestatuschangenotif_zoneid",
+                "zcl_iaszone_zonestatuschangenotif_delay",
+                "zcl_iaszone_zoneenrollreq_zonetype",
+                "zcl_iaszone_zoneenrollreq_manufcode",
                 "der_same_macnwkdst",
                 "der_same_macnwksrc",
                 "der_tx_type",
@@ -956,7 +1048,7 @@ class TestIntegration(unittest.TestCase):
                 ("mac_assocreq_allocaddr", "0b1: "
                     "Requests a short address"),
                 ("der_tx_type", "Single-Hop Transmission"),
-                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Router"),
                 ("der_mac_dstpanid", "0x99aa"),
                 ("der_mac_dstshortaddr", "0xd0d0"),
             ],
@@ -1033,8 +1125,8 @@ class TestIntegration(unittest.TestCase):
                     "MAC Data Request"),
                 ("mac_cmd_payloadlength", 0),
                 ("der_tx_type", "Single-Hop Transmission"),
-                ("der_mac_dsttype", "MAC Dst Type: None"),
-                ("der_mac_srctype", "MAC Src Type: None"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Coordinator"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee End Device"),
                 ("der_mac_dstpanid", "0xbbcc"),
                 ("der_mac_dstshortaddr", "0x0000"),
                 ("der_mac_srcpanid", "0xbbcc"),
@@ -1289,9 +1381,9 @@ class TestIntegration(unittest.TestCase):
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
-                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Coordinator"),
                 ("der_mac_srctype", "MAC Src Type: None"),
-                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Coordinator"),
                 ("der_nwk_srctype", "NWK Src Type: None"),
                 ("der_mac_dstpanid", "0xddee"),
                 ("der_mac_dstshortaddr", "0x0000"),
@@ -1348,6 +1440,42 @@ class TestIntegration(unittest.TestCase):
                 ("pkt_num", 12),
                 ("pkt_time", 1599996428.0),
                 ("error_msg", "PE102: There are no IEEE 802.15.4 MAC fields"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 13),
+                ("pkt_time", 1599996429.0),
+                ("phy_length", 20),
+                ("phy_payload", "23c8daaa99d0d0ffff88776655443322"
+                                "1101596f"),
+                ("mac_show", None),
+                ("mac_fcs", "0x6f59"),
+                ("mac_frametype", "0b011: "
+                    "MAC Command"),
+                ("mac_security", "0b0: "
+                    "MAC Security Disabled"),
+                ("mac_framepending", "0b0: "
+                    "No additional packets are pending for the receiver"),
+                ("mac_ackreq", "0b1: "
+                    "The sender requests a MAC Acknowledgment"),
+                ("mac_panidcomp", "0b0: "
+                    "Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: "
+                    "Short destination MAC address"),
+                ("mac_frameversion", "0b00: "
+                    "IEEE 802.15.4-2003 Frame Version"),
+                ("mac_srcaddrmode", "0b11: "
+                    "Extended source MAC address"),
+                ("mac_seqnum", 218),
+                ("mac_dstpanid", "0x99aa"),
+                ("mac_dstshortaddr", "0xd0d0"),
+                ("mac_srcpanid", "0xffff"),
+                ("mac_srcextendedaddr", "1122334455667788"),
+                ("mac_cmd_id", "0x01: "
+                    "MAC Association Request"),
+                ("mac_cmd_payloadlength", 0),
+                ("error_msg", "There are no MAC Association Request fields"),
             ],
             [
                 ("pcap_directory", None),
@@ -2621,6 +2749,20 @@ class TestIntegration(unittest.TestCase):
                 ("aps_srcendpoint", 0),
                 ("aps_counter", 129),
                 ("zdp_seqnum", 129),
+                ("zdp_deviceannce_nwkaddr", "0x1101"),
+                ("zdp_deviceannce_ieeeaddr", "7777770000000002"),
+                ("zdp_deviceannce_apc", "0b0: "
+                    "The sender is not capable of becoming a PAN coordinator"),
+                ("zdp_deviceannce_devtype", "0b1: "
+                    "Full-Function Device"),
+                ("zdp_deviceannce_powsrc", "0b1: "
+                    "The sender is a mains-powered device"),
+                ("zdp_deviceannce_rxidle", "0b1: "
+                    "Does not disable the receiver to conserve power"),
+                ("zdp_deviceannce_seccap", "0b0: "
+                    "Cannot transmit and receive secure MAC frames"),
+                ("zdp_deviceannce_allocaddr", "0b1: "
+                    "Requests a short address"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: False"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),
@@ -2712,9 +2854,9 @@ class TestIntegration(unittest.TestCase):
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
-                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Coordinator"),
                 ("der_mac_srctype", "MAC Src Type: None"),
-                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Coordinator"),
                 ("der_nwk_srctype", "NWK Src Type: None"),
                 ("der_mac_dstpanid", "0x9999"),
                 ("der_mac_dstshortaddr", "0x0000"),
@@ -2794,9 +2936,9 @@ class TestIntegration(unittest.TestCase):
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Single-Hop Transmission"),
-                ("der_mac_dsttype", "MAC Dst Type: None"),
+                ("der_mac_dsttype", "MAC Dst Type: Zigbee Coordinator"),
                 ("der_mac_srctype", "MAC Src Type: None"),
-                ("der_nwk_dsttype", "NWK Dst Type: None"),
+                ("der_nwk_dsttype", "NWK Dst Type: Zigbee Coordinator"),
                 ("der_nwk_srctype", "NWK Src Type: None"),
                 ("der_mac_dstpanid", "0x9999"),
                 ("der_mac_dstshortaddr", "0x0000"),
@@ -3843,9 +3985,9 @@ class TestIntegration(unittest.TestCase):
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),
                 ("der_mac_dsttype", "MAC Dst Type: None"),
-                ("der_mac_srctype", "MAC Src Type: None"),
+                ("der_mac_srctype", "MAC Src Type: Zigbee Coordinator"),
                 ("der_nwk_dsttype", "NWK Dst Type: None"),
-                ("der_nwk_srctype", "NWK Src Type: None"),
+                ("der_nwk_srctype", "NWK Src Type: Zigbee Coordinator"),
                 ("der_mac_dstpanid", "0xbbcc"),
                 ("der_mac_dstshortaddr", "0x3302"),
                 ("der_mac_srcpanid", "0xbbcc"),
@@ -4210,6 +4352,7 @@ class TestIntegration(unittest.TestCase):
                 ("der_nwk_srcpanid", "0xdddd"),
                 ("der_nwk_srcshortaddr", "0x1102"),
                 ("der_nwk_srcextendedaddr", "7777770000000003"),
+                ("warning_msg", "Unknown ZDP transaction data")
             ],
             [
                 ("pcap_directory", None),
@@ -4309,6 +4452,7 @@ class TestIntegration(unittest.TestCase):
                 ("zcl_seqnum", 0),
                 ("zcl_cmd_id", "0x00: "
                     "Read Attributes"),
+                ("zcl_readattributes_identifiers", "0x0001"),
                 ("der_same_macnwkdst", "Same MAC/NWK Dst: True"),
                 ("der_same_macnwksrc", "Same MAC/NWK Src: True"),
                 ("der_tx_type", "Multi-Hop Transmission"),
@@ -4367,30 +4511,228 @@ class TestIntegration(unittest.TestCase):
         self.assert_entries(obtained_entries, expected_entries)
 
     def assertPairsTable(self, cursor):
-        cursor.execute("SELECT * FROM pairs ORDER BY panid, dstaddr, srcaddr")
+        cursor.execute("SELECT * FROM pairs ORDER BY panid, srcaddr, dstaddr")
         col_names = [col_name[0] for col_name in cursor.description]
         self.assertEqual(
             col_names, [
+                "panid",
                 "srcaddr",
                 "dstaddr",
-                "panid",
-                "first",
-                "last",
+                "earliest",
+                "latest",
             ])
         self.assertEqual(
             cursor.fetchall(), [
-                ("0x1102", "0x0000", "0x7777", 1599996677.0, 1599996681.0),
-                ("0x1102", "0x1101", "0x7777", 1599996674.0, 1599996675.0),
-                ("0x2201", "0x1102", "0x7777", 1599996678.0, 1599996678.0),
-                ("0x2202", "0x1102", "0x7777", 1599996683.0, 1599996683.0),
-                ("0x1102", "0x2201", "0x7777", 1599996679.0, 1599996679.0),
-                ("0x1102", "0x2202", "0x7777", 1599996684.0, 1599996684.0),
-                ("0xb000", "0x0000", "0x9999", 1599996686.0, 1599996687.0),
-                ("0x0000", "0x3302", "0xbbcc", 1599996937.0, 1599996937.0),
-                ("0x1102", "0x0000", "0xdddd", 1599996929.0, 1599996931.0),
-                ("0x0000", "0x1102", "0xdddd", 1599996930.0, 1599997441.0),
-                ("0x2202", "0x1102", "0xdddd", 1599996932.0, 1599996935.0),
-                ("0xf001", "0x0000", "0xddee", 1599996425.0, 1599996425.0),
+                ("0x7777", "0x1102", "0x0000", 1599996677.0, 1599996681.0),
+                ("0x7777", "0x1102", "0x1101", 1599996674.0, 1599996675.0),
+                ("0x7777", "0x1102", "0x2201", 1599996679.0, 1599996679.0),
+                ("0x7777", "0x1102", "0x2202", 1599996684.0, 1599996684.0),
+                ("0x7777", "0x2201", "0x1102", 1599996678.0, 1599996678.0),
+                ("0x7777", "0x2202", "0x1102", 1599996683.0, 1599996683.0),
+                ("0x9999", "0xb000", "0x0000", 1599996686.0, 1599996687.0),
+                ("0xbbcc", "0x0000", "0x3302", 1599996937.0, 1599996937.0),
+                ("0xdddd", "0x0000", "0x1102", 1599996930.0, 1599997441.0),
+                ("0xdddd", "0x1102", "0x0000", 1599996929.0, 1599996931.0),
+                ("0xdddd", "0x2202", "0x1102", 1599996932.0, 1599996935.0),
+                ("0xddee", "0xf001", "0x0000", 1599996425.0, 1599996425.0),
+            ])
+
+    def assertShortAddresses(self, cursor):
+        cursor.execute(
+            "SELECT * FROM short_addresses ORDER BY panid, shortaddr")
+        col_names = [col_name[0] for col_name in cursor.description]
+        self.assertEqual(
+            col_names, [
+                "panid",
+                "shortaddr",
+                "altset",
+                "macset",
+                "nwkset",
+                "earliest",
+                "latest",
+            ])
+        self.assertEqual(
+            cursor.fetchall(), [
+                (
+                    "0x7777",
+                    "0x0000",
+                    "7777770000000001",
+                    "Full-Function Device",
+                    "Zigbee Coordinator",
+                    1599996673.0,
+                    1599996682.0,
+                ),
+                (
+                    "0x7777",
+                    "0x1101",
+                    "7777770000000002",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    1599996680.0,
+                    1599996685.0,
+                ),
+                (
+                    "0x7777",
+                    "0x1102",
+                    "7777770000000003",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    1599996674.0,
+                    1599996684.0,
+                ),
+                (
+                    "0x7777",
+                    "0x2201",
+                    "7777770000000004",
+                    "",
+                    "",
+                    1599996678.0,
+                    1599996678.0,
+                ),
+                (
+                    "0x7777",
+                    "0x2202",
+                    "7777770000000005",
+                    "",
+                    "",
+                    1599996683.0,
+                    1599996683.0,
+                ),
+                (
+                    "0x9999",
+                    "0x0000",
+                    "",
+                    "Full-Function Device",
+                    "Zigbee Coordinator",
+                    None,
+                    None,
+                ),
+                (
+                    "0x9999",
+                    "0xb000",
+                    "1122334444332211",
+                    "",
+                    "",
+                    1599996686.0,
+                    1599996687.0,
+                ),
+                (
+                    "0x99aa",
+                    "0xd0d0",
+                    "",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    None,
+                    None,
+                ),
+                (
+                    "0x99aa",
+                    "0xdead",
+                    "1122334455667788",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    1599996424.0,
+                    1599996424.0,
+                ),
+                (
+                    "0xbbcc",
+                    "0x0000",
+                    "",
+                    "Full-Function Device",
+                    "Zigbee Coordinator",
+                    1599996937.0,
+                    1599996937.0,
+                ),
+                (
+                    "0xbbcc",
+                    "0x3302",
+                    "",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "0xbbcc",
+                    "0xfe7a",
+                    "",
+                    "Reduced-Function Device",
+                    "Zigbee End Device",
+                    1599996420.0,
+                    1599996420.0,
+                ),
+                (
+                    "0xdddd",
+                    "0x0000",
+                    "7777770000000001",
+                    "Full-Function Device",
+                    "Zigbee Coordinator",
+                    1599996930.0,
+                    1599997441.0,
+                ),
+                (
+                    "0xdddd",
+                    "0x1102",
+                    "7777770000000003",
+                    "",
+                    "",
+                    1599996929.0,
+                    1599997185.0,
+                ),
+                (
+                    "0xdddd",
+                    "0x2202",
+                    "7777770000000005",
+                    "",
+                    "",
+                    1599996932.0,
+                    1599996935.0,
+                ),
+                (
+                    "0xdddd",
+                    "0x2204",
+                    "",
+                    "",
+                    "",
+                    None,
+                    None,
+                ),
+                (
+                    "0xddee",
+                    "0x0000",
+                    "",
+                    "Full-Function Device",
+                    "Zigbee Coordinator",
+                    None,
+                    None,
+                ),
+                (
+                    "0xddee",
+                    "0x50fa",
+                    "b19b10a7ed0ff1ce",
+                    "Full-Function Device",
+                    "Zigbee Router",
+                    None,
+                    None,
+                ),
+                (
+                    "0xddee",
+                    "0xb0a7",
+                    "d00dbad1cec0ffee",
+                    "Reduced-Function Device",
+                    "Zigbee End Device",
+                    None,
+                    None,
+                ),
+                (
+                    "0xddee",
+                    "0xf001",
+                    "1122334444332211",
+                    "",
+                    "",
+                    1599996425.0,
+                    1599996425.0,
+                ),
             ])
 
     def obtain_entries(self, pkt_rows, table_columns):

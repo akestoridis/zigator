@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -28,6 +28,7 @@ def network_graphs(out_dirpath):
 
     # Get the path of each pcap file
     pcap_filepaths = config.db.fetch_values(
+        "packets",
         [
             "pcap_directory",
             "pcap_filename",
@@ -51,6 +52,7 @@ def network_graphs(out_dirpath):
 
         # Get all destination PAN IDs that were observed in these packets
         panids = config.db.fetch_values(
+            "packets",
             [
                 "mac_dstpanid",
             ],
@@ -66,6 +68,7 @@ def network_graphs(out_dirpath):
 
             # Get the addresses of nodes that have exchanged MAC Data packets
             addr_pairs = config.db.fetch_values(
+                "packets",
                 [
                     "mac_srcshortaddr",
                     "mac_dstshortaddr",
@@ -87,14 +90,15 @@ def network_graphs(out_dirpath):
                 engine="dot")
             for addr_node in addr_nodes:
                 nwkdevtype = config.db.get_nwkdevtype(
-                    shortaddr=addr_node,
-                    panid=panid[0])
+                    panid[0],
+                    addr_node,
+                    None)
                 if nwkdevtype == "Zigbee Coordinator":
-                    fillcolor = "#E080E0"
+                    fillcolor = "#FF0000"
                 elif nwkdevtype == "Zigbee Router":
-                    fillcolor = "#80FFFF"
+                    fillcolor = "#FFA500"
                 elif nwkdevtype == "Zigbee End Device":
-                    fillcolor = "#80FF00"
+                    fillcolor = "#FFFF00"
                 else:
                     fillcolor = "#FFFFFF"
                 digraph.node(

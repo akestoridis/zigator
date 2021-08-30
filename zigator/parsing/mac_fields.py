@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import struct
 
 from scapy.all import Dot15d4AuxSecurityHeader
@@ -386,12 +387,16 @@ def mac_command(pkt, msg_queue):
         return
     # Compute the length of the MAC Auxiliary Security Header field
     if config.entry["mac_security"].startswith("0b1:"):
-        msg_queue.put(
-            (config.DEBUG_MSG,
-             "Ignored packet #{} in {} because it utilizes "
-             "security services on the MAC layer"
-             "".format(config.entry["pkt_num"],
-                       config.entry["pcap_filename"])))
+        msg_obj = (
+            "Ignored packet #{} in {} because it utilizes "
+            "security services on the MAC layer"
+            "".format(config.entry["pkt_num"],
+                      config.entry["pcap_filename"])
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((config.DEBUG_MSG, msg_obj))
         config.entry["error_msg"] = (
             "Ignored MAC command with enabled MAC-layer security"
         )
@@ -402,11 +407,29 @@ def mac_command(pkt, msg_queue):
 
     # Command Payload field (variable)
     if config.entry["mac_cmd_id"].startswith("0x01:"):
-        mac_assocreq(pkt)
+        if pkt.haslayer(Dot15d4CmdAssocReq):
+            mac_assocreq(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no MAC Association Request fields"
+            )
+            return
     elif config.entry["mac_cmd_id"].startswith("0x02:"):
-        mac_assocrsp(pkt)
+        if pkt.haslayer(Dot15d4CmdAssocResp):
+            mac_assocrsp(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no MAC Association Response fields"
+            )
+            return
     elif config.entry["mac_cmd_id"].startswith("0x03:"):
-        mac_disassoc(pkt)
+        if pkt.haslayer(Dot15d4CmdDisassociation):
+            mac_disassoc(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no MAC Disassociation Notification fields"
+            )
+            return
     elif config.entry["mac_cmd_id"].startswith("0x04:"):
         # MAC Data Request commands do not contain any other fields
         if len(bytes(pkt[Dot15d4Cmd].payload)) != 0:
@@ -429,9 +452,21 @@ def mac_command(pkt, msg_queue):
             config.entry["error_msg"] = "PE231: Unexpected payload"
             return
     elif config.entry["mac_cmd_id"].startswith("0x08:"):
-        mac_realign(pkt)
+        if pkt.haslayer(Dot15d4CmdCoordRealign):
+            mac_realign(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no MAC Coordinator Realignment fields"
+            )
+            return
     elif config.entry["mac_cmd_id"].startswith("0x09:"):
-        mac_gtsreq(pkt)
+        if pkt.haslayer(Dot15d4CmdGTSReq):
+            mac_gtsreq(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no MAC GTS Request fields"
+            )
+            return
     else:
         config.entry["error_msg"] = "Invalid MAC command"
         return
@@ -507,12 +542,16 @@ def mac_beacon(pkt, msg_queue):
 
     # GTS List field (variable)
     if config.entry["mac_beacon_gtsnum"] > 0:
-        msg_queue.put(
-            (config.DEBUG_MSG,
-             "Packet #{} in {} contains a GTS List field "
-             "which could not be processed"
-             "".format(config.entry["pkt_num"],
-                       config.entry["pcap_filename"])))
+        msg_obj = (
+            "Packet #{} in {} contains a GTS List field "
+            "which could not be processed"
+            "".format(config.entry["pkt_num"],
+                      config.entry["pcap_filename"])
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((config.DEBUG_MSG, msg_obj))
         config.entry["error_msg"] = "Could not process the GTS List"
         return
 
@@ -526,12 +565,12 @@ def mac_beacon(pkt, msg_queue):
     if config.entry["mac_beacon_nsap"] > 0:
         config.entry["mac_beacon_shortaddresses"] = (
             ",".join("0x{:04x}".format(addr)
-                for addr in pkt[Dot15d4Beacon].pa_short_addresses)
+                     for addr in pkt[Dot15d4Beacon].pa_short_addresses)
         )
     if config.entry["mac_beacon_neap"] > 0:
         config.entry["mac_beacon_extendedaddresses"] = (
             ",".join(format(addr, "016x")
-                for addr in pkt[Dot15d4Beacon].pa_long_addresses)
+                     for addr in pkt[Dot15d4Beacon].pa_long_addresses)
         )
 
     # Beacon Payload field (variable)
@@ -610,14 +649,18 @@ def mac_fields(pkt, msg_queue):
 
     comp_fcs = struct.unpack("<H", pkt.compute_fcs(bytes(pkt)[:-2]))[0]
     if pkt[Dot15d4FCS].fcs != comp_fcs:
-        msg_queue.put(
-            (config.DEBUG_MSG,
-             "The received FCS (0x{:04x}), for packet #{} in {}, "
-             "does not match the computed FCS (0x{:04x})"
-             "".format(pkt[Dot15d4FCS].fcs,
-                       config.entry["pkt_num"],
-                       config.entry["pcap_filename"],
-                       comp_fcs)))
+        msg_obj = (
+            "The received FCS (0x{:04x}), for packet #{} in {}, "
+            "does not match the computed FCS (0x{:04x})"
+            "".format(pkt[Dot15d4FCS].fcs,
+                      config.entry["pkt_num"],
+                      config.entry["pcap_filename"],
+                      comp_fcs)
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((config.DEBUG_MSG, msg_obj))
         config.entry["error_msg"] = (
             "PE202: Incorrect frame check sequence (FCS)"
         )
@@ -691,12 +734,16 @@ def mac_fields(pkt, msg_queue):
         # Auxiliary Security Header field (0/5/6/10/14 bytes)
         if pkt.haslayer(Dot15d4AuxSecurityHeader):
             # Zigbee does not utilize any security services on the MAC layer
-            msg_queue.put(
-                (config.DEBUG_MSG,
-                 "The packet #{} in {} is utilizing "
-                 "security services on the MAC layer"
-                 "".format(config.entry["pkt_num"],
-                           config.entry["pcap_filename"])))
+            msg_obj = (
+                "The packet #{} in {} is utilizing "
+                "security services on the MAC layer"
+                "".format(config.entry["pkt_num"],
+                          config.entry["pcap_filename"])
+            )
+            if msg_queue is None:
+                logging.debug(msg_obj)
+            else:
+                msg_queue.put((config.DEBUG_MSG, msg_obj))
             config.entry["error_msg"] = (
                 "Ignored the MAC Auxiliary Security Header"
             )

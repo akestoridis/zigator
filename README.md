@@ -20,19 +20,19 @@ The users of this tool are responsible for making sure that they are compliant w
 ## Installation
 
 You can install Zigator using pip for Python 3 as follows:
-```
+```console
 $ git clone https://github.com/akestoridis/zigator.git
 $ cd zigator/
 $ pip3 install .
 ```
 
 The following command should display the version of Zigator that you installed:
-```
+```console
 $ zigator -v
 ```
 
 If you get an error message that the `zigator` command was not found, make sure that your system's PATH environment variable includes the directory of the installed executable. For example, if it was installed in `~/.local/bin`, add the following line at the end of your `~/.bashrc` file:
-```
+```bash
 export PATH=$PATH:~/.local/bin
 ```
 
@@ -53,11 +53,12 @@ Zigator enables its users to do the following:
 * Train decision tree classifiers from a database of Zigbee packets
 * Inject forged packets over UDP and SLL
 * Launch selective jamming and spoofing attacks with an ATUSB
+* Deploy stand-alone WIDS sensors
 
 
 ## Getting Started
 
-If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee‑smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
+If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee-smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
 After submitting the [CRAWDAD registration form](https://crawdad.org/registration-form.html), you will receive a username that will allow you to download the following zip files:
 
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth3-room.zip
@@ -70,20 +71,21 @@ After submitting the [CRAWDAD registration form](https://crawdad.org/registratio
 * https://crawdad.org/download/cmu/zigbee-smarthome/sth2-trios.zip
 
 Each of these zip files contains a pcap file of captured Zigbee packets and a text file that provides a description of the experimental setup and the encryption keys that were used. You can then view a synopsis of all the commands that Zigator supports in order to analyze them:
-```
+```console
 $ zigator -h
 ```
 
 
-## Publication
+## Publications
 
-Zigator was used in the following publication:
+Zigator was used in the following publications:
 
-* D.-G. Akestoridis, M. Harishankar, M. Weber, and P. Tague, "Zigator: Analyzing the security of Zigbee-enabled smart homes," in _Proceedings of the 13th ACM Conference on Security and Privacy in Wireless and Mobile Networks (WiSec)_, 2020, pp. 77--88. DOI: [10.1145/3395351.3399363](https://doi.org/10.1145/3395351.3399363).
+* D.-G. Akestoridis and P. Tague, “HiveGuard: A network security monitoring architecture for Zigbee networks,” to appear in Proc. IEEE CNS’21.
+* D.-G. Akestoridis, M. Harishankar, M. Weber, and P. Tague, “Zigator: Analyzing the security of Zigbee-enabled smart homes,” in *Proc. ACM WiSec’20*, 2020, pp. 77–88, doi: [10.1145/3395351.3399363](https://doi.org/10.1145/3395351.3399363).
 
 
 ## License
 
-Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 
 This project is licensed under the terms of the GNU General Public License version 2 only (GPL-2.0-only).

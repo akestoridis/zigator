@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -32,8 +32,8 @@ def pcap_file(filepath, msg_queue):
     init_network_keys = copy.deepcopy(config.network_keys)
     init_link_keys = copy.deepcopy(config.link_keys)
     init_networks = copy.deepcopy(config.networks)
-    init_devices = copy.deepcopy(config.devices)
-    init_addresses = copy.deepcopy(config.addresses)
+    init_short_addresses = copy.deepcopy(config.short_addresses)
+    init_extended_addresses = copy.deepcopy(config.extended_addresses)
     init_pairs = copy.deepcopy(config.pairs)
 
     # Reset all data entries in the dictionary
@@ -94,14 +94,14 @@ def pcap_file(filepath, msg_queue):
         msg_queue.put(
             (config.NETWORKS_MSG,
              copy.deepcopy(config.networks)))
-    if config.devices != init_devices:
+    if config.short_addresses != init_short_addresses:
         msg_queue.put(
-            (config.DEVICES_MSG,
-             copy.deepcopy(config.devices)))
-    if config.addresses != init_addresses:
+            (config.SHORT_ADDRESSES_MSG,
+             copy.deepcopy(config.short_addresses)))
+    if config.extended_addresses != init_extended_addresses:
         msg_queue.put(
-            (config.ADDRESSES_MSG,
-             copy.deepcopy(config.addresses)))
+            (config.EXTENDED_ADDRESSES_MSG,
+             copy.deepcopy(config.extended_addresses)))
     if config.pairs != init_pairs:
         msg_queue.put(
             (config.PAIRS_MSG,

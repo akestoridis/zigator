@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -108,7 +108,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
             logging.info("Parsed {} out of the {} pcap files"
                          "".format(pcap_counter, len(filepaths)))
         elif msg_type is config.PKT_MSG:
-            config.db.insert_pkt(msg_obj)
+            config.db.insert("packets", msg_obj)
         elif msg_type is config.NETWORK_KEYS_MSG:
             for key_name in msg_obj.keys():
                 if key_name not in config.network_keys.keys():
@@ -122,38 +122,39 @@ def main(pcap_dirpath, db_filepath, num_workers):
                         config.link_keys[key_name] = msg_obj[key_name]
                         new_link_keys += 1
         elif msg_type is config.NETWORKS_MSG:
-            for epid in msg_obj.keys():
-                if epid not in config.networks.keys():
-                    config.networks[epid] = msg_obj[epid]
-                else:
-                    config.networks[epid].update(msg_obj[epid])
-        elif msg_type is config.DEVICES_MSG:
+            for panid in msg_obj.keys():
+                config.update_networks(
+                    panid,
+                    msg_obj[panid]["epidset"],
+                    msg_obj[panid]["earliest"],
+                    msg_obj[panid]["latest"])
+        elif msg_type is config.SHORT_ADDRESSES_MSG:
+            for (panid, shortaddr) in msg_obj.keys():
+                config.update_short_addresses(
+                    panid,
+                    shortaddr,
+                    msg_obj[(panid, shortaddr)]["altset"],
+                    msg_obj[(panid, shortaddr)]["macset"],
+                    msg_obj[(panid, shortaddr)]["nwkset"],
+                    msg_obj[(panid, shortaddr)]["earliest"],
+                    msg_obj[(panid, shortaddr)]["latest"])
+        elif msg_type is config.EXTENDED_ADDRESSES_MSG:
             for extendedaddr in msg_obj.keys():
-                config.update_devices(
+                config.update_extended_addresses(
                     extendedaddr,
-                    msg_obj[extendedaddr]["macdevtype"],
-                    msg_obj[extendedaddr]["nwkdevtype"])
-        elif msg_type is config.ADDRESSES_MSG:
-            for (shortaddr, panid) in msg_obj.keys():
-                if (shortaddr, panid) not in config.addresses.keys():
-                    config.addresses[(shortaddr, panid)] = (
-                        msg_obj[(shortaddr, panid)]
-                    )
-                elif (config.addresses[(shortaddr, panid)]
-                      != msg_obj[(shortaddr, panid)]):
-                    config.addresses[(shortaddr, panid)] = "Conflicting Data"
+                    msg_obj[extendedaddr]["altset"],
+                    msg_obj[extendedaddr]["macset"],
+                    msg_obj[extendedaddr]["nwkset"],
+                    msg_obj[extendedaddr]["earliest"],
+                    msg_obj[extendedaddr]["latest"])
         elif msg_type is config.PAIRS_MSG:
-            for (srcaddr, dstaddr, panid) in msg_obj.keys():
+            for (panid, srcaddr, dstaddr) in msg_obj.keys():
                 config.update_pairs(
+                    panid,
                     srcaddr,
                     dstaddr,
-                    panid,
-                    msg_obj[(srcaddr, dstaddr, panid)]["first"])
-                config.update_pairs(
-                    srcaddr,
-                    dstaddr,
-                    panid,
-                    msg_obj[(srcaddr, dstaddr, panid)]["last"])
+                    msg_obj[(panid, srcaddr, dstaddr)]["earliest"],
+                    msg_obj[(panid, srcaddr, dstaddr)]["latest"])
         else:
             raise ValueError("Unknown message type \"{}\"".format(msg_type))
 
@@ -170,52 +171,55 @@ def main(pcap_dirpath, db_filepath, num_workers):
     # Commit the received data to the database
     config.db.commit()
 
-    # Log a summary of sniffed keys and derived information
-    logging.info("Sniffed {} previously unknown network keys"
+    # Log a summary of new keys and derived information
+    logging.info("Discovered {} previously unknown network keys"
                  "".format(new_network_keys))
-    logging.info("Sniffed {} previously unknown link keys"
+    logging.info("Discovered {} previously unknown link keys"
                  "".format(new_link_keys))
-    logging.info("Discovered the EPID of {} networks"
-                 "".format(len(config.networks)))
-    logging.info("Discovered the extended address of {} devices"
-                 "".format(len(config.devices)))
-    logging.info("Discovered the short-to-extended address mapping of "
-                 "{} devices".format(len(config.addresses)))
-    logging.info("Discovered {} flows of MAC Data packets"
-                 "".format(len(config.pairs)))
+    logging.info("Discovered {} pairs of network identifiers"
+                 "".format(len(config.networks.keys())))
+    logging.info("Discovered {} PAN ID and short address pairs"
+                 "".format(len(config.short_addresses.keys())))
+    logging.info("Discovered {} extended addresses"
+                 "".format(len(config.extended_addresses.keys())))
+    logging.info("Discovered {} source-destination pairs of MAC Data packets"
+                 "".format(len(config.pairs.keys())))
+
+    # Update the packets table using the derived information
+    logging.info("Updating the derived entries of parsed packets...")
+    config.update_derived_entries()
+    logging.info("Finished updating the derived entries of parsed packets")
 
     # Store the derived information into the database
     config.db.store_networks(config.networks)
-    config.db.store_devices(config.devices)
-    config.db.store_addresses(config.addresses)
+    config.db.store_short_addresses(config.short_addresses)
+    config.db.store_extended_addresses(config.extended_addresses)
     config.db.store_pairs(config.pairs)
     config.db.commit()
 
-    # Update the packets table using the derived information
-    logging.info("Updating the database...")
-    config.db.update_packets()
-    config.db.commit()
-    logging.info("Finished updating the database")
-
     # Log a summary of the generated warnings
-    warnings = config.db.fetch_values(["warning_msg"], None, True)
+    warnings = config.db.fetch_values("packets", ["warning_msg"], None, True)
     warnings.sort(key=config.custom_sorter)
     for warning in warnings:
         message = warning[0]
         if message is None:
             continue
-        frequency = config.db.matching_frequency([("warning_msg", message)])
+        frequency = config.db.matching_frequency(
+            "packets",
+            [("warning_msg", message)])
         logging.warning("Generated {} \"{}\" parsing warnings"
                         "".format(frequency, message))
 
     # Log a summary of the generated errors
-    errors = config.db.fetch_values(["error_msg"], None, True)
+    errors = config.db.fetch_values("packets", ["error_msg"], None, True)
     errors.sort(key=config.custom_sorter)
     for error in errors:
         message = error[0]
         if message is None:
             continue
-        frequency = config.db.matching_frequency([("error_msg", message)])
+        frequency = config.db.matching_frequency(
+            "packets",
+            [("error_msg", message)])
         logging.warning("Generated {} \"{}\" parsing errors"
                         "".format(frequency, message))
 

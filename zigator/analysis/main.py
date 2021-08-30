@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -17,6 +17,8 @@
 import logging
 import os
 
+from .battery_percentages import battery_percentages
+from .battery_statuses import battery_statuses
 from .distinct_matches import distinct_matches
 from .field_values import field_values
 from .form_frequencies import form_frequencies
@@ -67,5 +69,11 @@ def main(db_filepath, out_dirpath, num_workers):
         db_filepath,
         os.path.join(out_dirpath, "selected-frequencies"),
         num_workers)
+    battery_percentages(
+        db_filepath,
+        os.path.join(out_dirpath, "battery-percentages"))
+    battery_statuses(
+        db_filepath,
+        os.path.join(out_dirpath, "battery-statuses"))
     logging.info("Finished the analysis of the \"{}\" database"
                  "".format(db_filepath))
