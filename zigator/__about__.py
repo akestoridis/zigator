@@ -44,14 +44,14 @@ __classifiers__ = [
     "Topic :: Security",
 ]
 __install_requires__ = [
-    "CherryPy>=18.6.0, <19",
-    "graphviz>=0.16, <1",
-    "numpy>=1.19.4, <2",
+    "CherryPy>=18.6.1, <19",
+    "graphviz>=0.17, <1",
+    "numpy>=1.21.2, <2",
     "psutil>=5.8.0, <6",
     "pycrc>=0.9.2, <1",
-    "pycryptodomex>=3.9.9, <4",
+    "pycryptodomex>=3.10.1, <4",
     "scapy @ git+https://github.com/secdev/scapy@6ad83c513648fc1b4199a4b2d7b74b8a8c2ae0ce#egg=scapy",
-    "scikit-learn>=0.24.0, <1",
+    "scikit-learn>=0.24.2, <1",
 ]
 __python_requires__ = ">=3.7, <4"
 __entry_points__ = {
