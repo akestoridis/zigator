@@ -24,8 +24,8 @@ from scapy.all import Dot15d4FCS
 from scapy.all import sniff
 from scapy.all import wrpcap
 
-from . import detector
-from . import extractor
+from . import collection
+from . import detection
 from . import server
 from .. import config
 from ..parsing.derive_info import derive_info
@@ -73,15 +73,15 @@ def archive_file(pcap_filename):
 
 
 def detect_events():
-    detector.panid_conflict(PANID, EPID)
-    detector.unsecured_rejoinreq(PANID)
-    detector.key_leakage(PANID, LINK_KEY_NAMES)
-    detector.low_battery(PANID)
+    detection.panid_conflict(PANID, EPID)
+    detection.unsecured_rejoinreq(PANID)
+    detection.key_leakage(PANID, LINK_KEY_NAMES)
+    detection.low_battery(PANID)
 
 
-def extract_data():
-    extractor.basic_information()
-    extractor.battery_percentage()
+def collect_data():
+    collection.basic_information()
+    collection.battery_percentage()
 
 
 def packet_handler(pkt):
@@ -115,7 +115,7 @@ def packet_handler(pkt):
     if config.entry["error_msg"] is None:
         derive_info()
 
-    extract_data()
+    collect_data()
     detect_events()
     config.db.commit()
 
@@ -172,7 +172,7 @@ def main(sensor_id, panid, epid, db_filepath, output_directory, ifname,
         # Make sure that the output directory exists
         os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
 
-        # Initialize the database that will store the extracted data
+        # Initialize the database that will store data and events
         config.db.connect(db_filepath)
         config.db.create_table("basic_information")
         config.db.create_table("battery_percentages")
