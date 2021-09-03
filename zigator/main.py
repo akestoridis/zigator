@@ -20,7 +20,6 @@ from . import config
 from . import analysis
 from . import atusb
 from . import injection
-from . import monitoring
 from . import parsing
 from . import training
 from . import visualization
@@ -97,9 +96,6 @@ def main(argv):
     elif args.SUBCOMMAND == "atusb":
         atusb.main(
             args.REPO_DIRECTORY)
-    elif args.SUBCOMMAND == "monitor":
-        monitoring.main(
-            args.PCAP_FILEPATH)
     elif args.SUBCOMMAND == "wids":
         wids.main(
             args.SENSOR_ID,

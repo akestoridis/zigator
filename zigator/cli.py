@@ -648,16 +648,6 @@ atusb_parser.add_argument(
     action="store",
     help="directory of the repository with the modified ATUSB firmware")
 
-monitor_parser = zigator_subparsers.add_parser(
-    "monitor",
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    help="monitor packets from a pcap file continuously")
-monitor_parser.add_argument(
-    "PCAP_FILEPATH",
-    type=str,
-    action="store",
-    help="path of the pcap file")
-
 wids_parser = zigator_subparsers.add_parser(
     "wids",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
