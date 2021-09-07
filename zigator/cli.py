@@ -705,6 +705,18 @@ wids_parser.add_argument(
     nargs="*",
     default=[])
 wids_parser.add_argument(
+    "--table_thres",
+    type=int,
+    action="store",
+    help="the number of rows that will trigger table reduction",
+    default=argparse.SUPPRESS)
+wids_parser.add_argument(
+    "--table_reduct",
+    type=int,
+    action="store",
+    help="the number of rows that will be deleted whenever triggered",
+    default=argparse.SUPPRESS)
+wids_parser.add_argument(
     "--ipaddr",
     type=str,
     action="store",

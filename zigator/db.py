@@ -436,6 +436,41 @@ def create_table(tablename):
     cursor.execute(table_creation_command)
 
 
+def create_count_trigger(tablename, table_thres, table_reduct):
+    # Make sure that the table name is valid
+    valid_tablenames = {
+        "basic_information",
+        "battery_percentages",
+        "events",
+    }
+    if tablename not in valid_tablenames:
+        raise ValueError("Invalid table name \"{}\"".format(tablename))
+
+    # Derive the trigger name
+    triggername = tablename + "_count"
+
+    # Drop the trigger if it already exists
+    cursor.execute("DROP TRIGGER IF EXISTS {}".format(triggername))
+
+    # Create the trigger only if the table threshold and the table reduction
+    # are positive integers
+    if (
+        type(table_thres) is int
+        and type(table_reduct) is int
+        and table_thres > 0
+        and table_reduct > 0
+    ):
+        cursor.execute(
+            "CREATE TRIGGER {} ".format(triggername)
+            + "AFTER INSERT ON {} WHEN ".format(tablename)
+            + "(SELECT COUNT(*) FROM {})={} ".format(tablename, table_thres)
+            + "BEGIN DELETE FROM {} ".format(tablename)
+            + "WHERE pkt_time IN "
+            + "(SELECT pkt_time FROM {} ".format(tablename)
+            + "ORDER BY pkt_time LIMIT {}); END".format(table_reduct)
+        )
+
+
 def insert(tablename, row_data):
     # Use the variables of the corresponding table
     if tablename == "packets":

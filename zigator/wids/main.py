@@ -120,8 +120,21 @@ def packet_handler(pkt):
     config.db.commit()
 
 
-def main(sensor_id, panid, epid, db_filepath, output_directory, ifname,
-         pcap_period, num_zip_files, link_key_names, ipaddr, portnum):
+def main(
+    sensor_id,
+    panid,
+    epid,
+    db_filepath,
+    output_directory,
+    ifname,
+    pcap_period,
+    num_zip_files,
+    link_key_names,
+    table_thres,
+    table_reduct,
+    ipaddr,
+    portnum,
+):
     """Operate as a WIDS sensor."""
     global SENSOR_ID
     global PANID
@@ -152,6 +165,8 @@ def main(sensor_id, panid, epid, db_filepath, output_directory, ifname,
         logging.info("Maximum pcap file duration: {} s".format(PCAP_PERIOD))
         logging.info("Maximum number of zip files: {}".format(NUM_ZIP_FILES))
         logging.info("Link key names: {}".format(LINK_KEY_NAMES))
+        logging.info("Table threshold: {} rows".format(table_thres))
+        logging.info("Table reduction: {} rows".format(table_reduct))
         logging.info("IP address: {}".format(ipaddr))
         logging.info("Port number: {}".format(portnum))
 
@@ -177,6 +192,21 @@ def main(sensor_id, panid, epid, db_filepath, output_directory, ifname,
         config.db.create_table("basic_information")
         config.db.create_table("battery_percentages")
         config.db.create_table("events")
+        config.db.create_count_trigger(
+            "basic_information",
+            table_thres,
+            table_reduct,
+        )
+        config.db.create_count_trigger(
+            "battery_percentages",
+            table_thres,
+            table_reduct,
+        )
+        config.db.create_count_trigger(
+            "events",
+            table_thres,
+            table_reduct,
+        )
         config.db.commit()
 
         # Start a web server if the required parameters were provided
