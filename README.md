@@ -1,3 +1,5 @@
+<img src="zigator-header.png">
+
 # zigator
 
 Zigator: Security analysis tool for Zigbee networks
