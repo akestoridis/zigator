@@ -81,6 +81,9 @@ def make():
               "network",
         "11": "Jam only 12-byte MAC commands of a specified network that "
               "request a MAC acknowledgment",
+        "12": "Jam only 12-byte MAC commands of a specified network that "
+              "request a MAC acknowledgment and then spoof a MAC "
+              "acknowledgment followed by a 127-byte NWK Data packet",
     }
     print("Enter the ID of an available attack:")
     for key in sorted(menu.keys()):
@@ -97,7 +100,7 @@ def make():
             break
 
     panid = None
-    if attackid in {"02", "03", "04", "05", "10", "11"}:
+    if attackid in {"02", "03", "04", "05", "10", "11", "12"}:
         while True:
             print("Enter the PAN ID as four hexadecimal digits:")
             panid = input("0x")
@@ -111,6 +114,76 @@ def make():
             epid = input("0x")
             if len(epid) == 16 and all(d in string.hexdigits for d in epid):
                 break
+
+    shortdstaddr = None
+    if attackid in {"12"}:
+        while True:
+            print(
+                "Enter the short destination address as four hexadecimal "
+                + "digits:",
+            )
+            shortdstaddr = input("0x")
+            if (
+                len(shortdstaddr) == 4
+                and all(d in string.hexdigits for d in shortdstaddr)
+            ):
+                break
+
+    shortsrcaddr = None
+    if attackid in {"12"}:
+        while True:
+            print(
+                "Enter the short source address as four hexadecimal digits:",
+            )
+            shortsrcaddr = input("0x")
+            if (
+                len(shortsrcaddr) == 4
+                and all(d in string.hexdigits for d in shortsrcaddr)
+            ):
+                break
+
+    framecounter = None
+    if attackid in {"12"}:
+        while True:
+            print(
+                "Enter the value of the 32-bit frame counter in decimal "
+                + "notation:",
+            )
+            framecounter = input("")
+            if (
+                all(d in string.digits for d in framecounter)
+                and int(framecounter, 10) < 4294967296
+            ):
+                break
+
+    extendedsrcaddr = None
+    if attackid in {"12"}:
+        while True:
+            print(
+                "Enter the extended source address as sixteen hexadecimal "
+                + "digits:",
+            )
+            extendedsrcaddr = input("0x")
+            if (
+                len(extendedsrcaddr) == 16
+                and all(d in string.hexdigits for d in extendedsrcaddr)
+            ):
+                break
+
+    keyseqnum = None
+    if attackid in {"12"}:
+        while True:
+            print(
+                "Enter the value of the 8-bit key sequence number in decimal "
+                + "notation:",
+            )
+            keyseqnum = input("")
+            if (
+                all(d in string.digits for d in keyseqnum)
+                and int(keyseqnum, 10) < 256
+            ):
+                break
+
 
     try:
         args = [
@@ -138,6 +211,16 @@ def make():
             args.append("PANID=0x{}".format(panid))
         if epid is not None:
             args.append("EPID=0x{}".format(epid))
+        if shortdstaddr is not None:
+            args.append("SHORTDSTADDR=0x{}".format(shortdstaddr))
+        if shortsrcaddr is not None:
+            args.append("SHORTSRCADDR=0x{}".format(shortsrcaddr))
+        if framecounter is not None:
+            args.append("FRAMECOUNTER={}".format(framecounter))
+        if extendedsrcaddr is not None:
+            args.append("EXTENDEDSRCADDR=0x{}".format(extendedsrcaddr))
+        if keyseqnum is not None:
+            args.append("KEYSEQNUM={}".format(keyseqnum))
         cp = subprocess.run(args)
         if cp.returncode != 0:
             logging.error("Failed at compiling the firmware image and "
