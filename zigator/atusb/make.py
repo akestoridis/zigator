@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -79,6 +79,8 @@ def make():
         "10": "Jam only Network Update commands and spoof a MAC "
               "acknowledgment for each 12-byte Data Request of a specified "
               "network",
+        "11": "Jam only 12-byte MAC commands of a specified network that "
+              "request a MAC acknowledgment",
     }
     print("Enter the ID of an available attack:")
     for key in sorted(menu.keys()):
@@ -95,7 +97,7 @@ def make():
             break
 
     panid = None
-    if attackid in {"02", "03", "04", "05", "10"}:
+    if attackid in {"02", "03", "04", "05", "10", "11"}:
         while True:
             print("Enter the PAN ID as four hexadecimal digits:")
             panid = input("0x")
