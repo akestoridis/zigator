@@ -84,6 +84,13 @@ def make():
         "12": "Jam only 12-byte MAC commands of a specified network that "
               "request a MAC acknowledgment and then spoof a MAC "
               "acknowledgment followed by a 127-byte NWK Data packet",
+        "13": "Jam only certain 12-byte MAC commands of a specified network "
+              "that request a MAC acknowledgment and then spoof a MAC "
+              "acknowledgment followed by a 127-byte NWK Data packet, "
+              "according to specified active and idle time intervals, with "
+              "the active period restarting whenever a period of inactivity "
+              "is observed and the idle period restarting whenever certain "
+              "packet types are observed",
     }
     print("Enter the ID of an available attack:")
     for key in sorted(menu.keys()):
@@ -100,7 +107,7 @@ def make():
             break
 
     panid = None
-    if attackid in {"02", "03", "04", "05", "10", "11", "12"}:
+    if attackid in {"02", "03", "04", "05", "10", "11", "12", "13"}:
         while True:
             print("Enter the PAN ID as four hexadecimal digits:")
             panid = input("0x")
@@ -116,7 +123,7 @@ def make():
                 break
 
     shortdstaddr = None
-    if attackid in {"12"}:
+    if attackid in {"12", "13"}:
         while True:
             print(
                 "Enter the short destination address as four hexadecimal "
@@ -130,7 +137,7 @@ def make():
                 break
 
     shortsrcaddr = None
-    if attackid in {"12"}:
+    if attackid in {"12", "13"}:
         while True:
             print(
                 "Enter the short source address as four hexadecimal digits:",
@@ -143,7 +150,7 @@ def make():
                 break
 
     framecounter = None
-    if attackid in {"12"}:
+    if attackid in {"12", "13"}:
         while True:
             print(
                 "Enter the value of the 32-bit frame counter in decimal "
@@ -157,7 +164,7 @@ def make():
                 break
 
     extendedsrcaddr = None
-    if attackid in {"12"}:
+    if attackid in {"12", "13"}:
         while True:
             print(
                 "Enter the extended source address as sixteen hexadecimal "
@@ -171,7 +178,7 @@ def make():
                 break
 
     keyseqnum = None
-    if attackid in {"12"}:
+    if attackid in {"12", "13"}:
         while True:
             print(
                 "Enter the value of the 8-bit key sequence number in decimal "
@@ -184,6 +191,33 @@ def make():
             ):
                 break
 
+    activesec = None
+    if attackid in {"13"}:
+        while True:
+            print(
+                "Enter the number of seconds for each active period in "
+                + "decimal notation:",
+            )
+            activesec = input("")
+            if (
+                all(d in string.digits for d in activesec)
+                and int(activesec, 10) < 4294967296
+            ):
+                break
+
+    idlesec = None
+    if attackid in {"13"}:
+        while True:
+            print(
+                "Enter the number of seconds for each idle period in decimal "
+                + "notation:",
+            )
+            idlesec = input("")
+            if (
+                all(d in string.digits for d in idlesec)
+                and int(idlesec, 10) < 4294967296
+            ):
+                break
 
     try:
         args = [
@@ -221,6 +255,10 @@ def make():
             args.append("EXTENDEDSRCADDR=0x{}".format(extendedsrcaddr))
         if keyseqnum is not None:
             args.append("KEYSEQNUM={}".format(keyseqnum))
+        if activesec is not None:
+            args.append("ACTIVESEC={}".format(activesec))
+        if idlesec is not None:
+            args.append("IDLESEC={}".format(idlesec))
         cp = subprocess.run(args)
         if cp.returncode != 0:
             logging.error("Failed at compiling the firmware image and "
