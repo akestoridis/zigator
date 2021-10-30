@@ -705,6 +705,18 @@ wids_parser.add_argument(
     nargs="*",
     default=[])
 wids_parser.add_argument(
+    "--max_uncommitted_entries",
+    type=int,
+    action="store",
+    help="the maximum number of uncommitted entries",
+    default=128)
+wids_parser.add_argument(
+    "--batch_delay",
+    type=float,
+    action="store",
+    help="the number of seconds between the processing of two packet batches",
+    default=5.0)
+wids_parser.add_argument(
     "--table_thres",
     type=int,
     action="store",

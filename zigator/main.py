@@ -107,6 +107,8 @@ def main(argv):
             args.pcap_period,
             args.num_zip_files,
             args.link_key_names,
+            args.max_uncommitted_entries,
+            args.batch_delay,
             None if not hasattr(args, "table_thres") else args.table_thres,
             None if not hasattr(args, "table_reduct") else args.table_reduct,
             None if not hasattr(args, "ipaddr") else args.ipaddr,
