@@ -15,11 +15,15 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import multiprocessing as mp
 import os
+import signal
 import threading
 import zipfile
 from collections import deque
+from copy import deepcopy
 from glob import glob
+from queue import Empty
 from time import sleep
 
 from scapy.all import (
@@ -44,115 +48,9 @@ OUTPUT_DIRECTORY = None
 PCAP_PERIOD = 0.0
 NUM_ZIP_FILES = 0
 LINK_KEY_NAMES = []
-ANS = None
-PKT_DEQUE = deque()
-
-
-def check_zip_files():
-    if NUM_ZIP_FILES > 0:
-        filepaths = glob(
-            os.path.join(OUTPUT_DIRECTORY, "*.{}.pcap.zip".format(SENSOR_ID)),
-        )
-        zip_files = [os.path.basename(filepath) for filepath in filepaths]
-        excess_zip_files = len(zip_files) + 1 - NUM_ZIP_FILES
-        if excess_zip_files > 0:
-            zip_files.sort()
-            for i in range(excess_zip_files):
-                os.remove(os.path.join(OUTPUT_DIRECTORY, zip_files[i]))
-
-
-def archive_file(pcap_filename):
-    try:
-        check_zip_files()
-        pcap_filepath = os.path.join(OUTPUT_DIRECTORY, pcap_filename)
-        if os.path.isfile(pcap_filepath):
-            with zipfile.ZipFile(
-                pcap_filepath + ".zip",
-                mode="w",
-                compression=zipfile.ZIP_DEFLATED,
-            ) as zf:
-                zf.write(pcap_filepath, arcname=pcap_filename)
-            os.remove(pcap_filepath)
-            logging.info("Archived the \"{}\" file".format(pcap_filename))
-    except Exception:
-        logging.error(
-            "An exception was raised while trying to archive the "
-            + "\"{}\" file".format(pcap_filename),
-        )
-
-
-def detect_events():
-    detection.panid_conflict(PANID, EPID)
-    detection.unsecured_rejoinreq(PANID)
-    detection.key_leakage(PANID, LINK_KEY_NAMES)
-    detection.low_battery(PANID)
-
-
-def collect_data():
-    collection.basic_information()
-    collection.battery_percentage()
-
-
-def packet_handler(pkt):
-    tmp_time = pkt.time
-    pkt = Dot15d4FCS(bytes(pkt))
-    pkt.time = tmp_time
-    PKT_DEQUE.append(pkt)
-
-
-def worker(db_filepath, max_uncommitted_entries, batch_delay):
-    start_time = 0.0
-    pkt_num = 0
-    num_uncommitted_entries = 0
-    config.db.connect(db_filepath)
-    while True:
-        if len(PKT_DEQUE) > 0:
-            pkt = PKT_DEQUE.popleft()
-            if pkt is None:
-                if num_uncommitted_entries > 0:
-                    config.db.commit()
-                config.db.disconnect()
-                break
-
-            if float(pkt.time) - start_time > PCAP_PERIOD:
-                archive_thread = threading.Thread(
-                    target=archive_file,
-                    args=("{:.6f}.{}.pcap".format(start_time, SENSOR_ID),),
-                )
-                archive_thread.start()
-                start_time = float(pkt.time)
-                pkt_num = 0
-
-            pcap_filepath = os.path.join(
-                OUTPUT_DIRECTORY,
-                "{:.6f}.{}.pcap".format(start_time, SENSOR_ID),
-            )
-            wrpcap(pcap_filepath, pkt, append=True)
-
-            pkt_num += 1
-            config.reset_entries()
-            head, tail = os.path.split(os.path.abspath(pcap_filepath))
-            config.entry["pcap_directory"] = head
-            config.entry["pcap_filename"] = tail
-            config.entry["pkt_num"] = pkt_num
-            config.entry["pkt_time"] = float(pkt.time)
-            phy_fields(pkt, None)
-            if config.entry["error_msg"] is None:
-                derive_info()
-
-            collect_data()
-            detect_events()
-            if num_uncommitted_entries >= max_uncommitted_entries:
-                config.db.commit()
-                num_uncommitted_entries = 0
-            else:
-                num_uncommitted_entries += 1
-        else:
-            if num_uncommitted_entries > 0:
-                config.db.commit()
-                num_uncommitted_entries = 0
-            if batch_delay > 0.0:
-                sleep(batch_delay)
+HELPER_DEQUE = deque()
+START_TIME = 0.0
+PKT_NUM = 0
 
 
 def main(
@@ -180,11 +78,11 @@ def main(
     global PCAP_PERIOD
     global NUM_ZIP_FILES
     global LINK_KEY_NAMES
-    global ANS
 
     try:
-        # Indicate that the worker thread has not started yet
-        worker_thread = None
+        # Initialize the local variables
+        helper_thread = None
+        answer = None
 
         # Update some of the global variables
         SENSOR_ID = sensor_id
@@ -224,8 +122,10 @@ def main(
         print("# (e.g., it should already be tuned to the appropriate     #")
         print("# channel).                                                #")
         print("############################################################")
-        ANS = input("Do you want to start the WIDS sensor operation? [y/N] ")
-        if ANS != "y":
+        answer = input(
+            "Do you want to start the WIDS sensor operation? [y/N] ",
+        )
+        if answer != "y":
             logging.info("Canceling the WIDS sensor operation...")
             return
 
@@ -255,22 +155,20 @@ def main(
         config.db.commit()
         config.db.disconnect()
 
-        # Start a web server if the required parameters were provided
-        if ipaddr is not None and portnum is not None:
-            server.start(
+        # Start the helper thread
+        helper_thread = threading.Thread(
+            target=helper,
+            args=(
                 sensor_id,
-                output_directory,
                 db_filepath,
+                output_directory,
+                max_uncommitted_entries,
+                batch_delay,
                 ipaddr,
                 portnum,
-            )
-
-        # Start the worker thread
-        worker_thread = threading.Thread(
-            target=worker,
-            args=(db_filepath, max_uncommitted_entries, batch_delay),
+            ),
         )
-        worker_thread.start()
+        helper_thread.start()
 
         # Process captured packets until the interrupt key is hit
         logging.info(
@@ -281,14 +179,380 @@ def main(
         logging.info("Stopped operating as a WIDS sensor")
     finally:
         # Check whether clean-up actions should be executed
-        if ANS == "y":
-            # Stop the web server if it had started
-            if ipaddr is not None and portnum is not None:
-                server.stop()
+        if answer == "y" and helper_thread is not None:
+            logging.info("Stopping the helper thread...")
+            HELPER_DEQUE.append((config.RETURN_MSG, None))
+            helper_thread.join()
+            logging.info("Stopped the helper thread")
 
-            # Stop the worker thread if it had started
-            if worker_thread is not None:
-                logging.info("Stopping the worker thread...")
-                PKT_DEQUE.append(None)
-                worker_thread.join()
-                logging.info("Stopped the worker thread")
+
+def packet_handler(pkt):
+    global START_TIME
+    global PKT_NUM
+
+    tmp_time = pkt.time
+    pkt = Dot15d4FCS(bytes(pkt))
+    pkt.time = tmp_time
+
+    if float(pkt.time) - START_TIME > PCAP_PERIOD:
+        HELPER_DEQUE.append(
+            (config.PCAP_MSG, "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID)),
+        )
+        START_TIME = float(pkt.time)
+        PKT_NUM = 0
+
+    PKT_NUM += 1
+    HELPER_DEQUE.append(
+        (
+            config.PKT_MSG,
+            (
+                pkt,
+                os.path.join(
+                    OUTPUT_DIRECTORY,
+                    "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID),
+                ),
+                PKT_NUM,
+            ),
+        ),
+    )
+
+
+def helper(
+    sensor_id,
+    db_filepath,
+    output_directory,
+    max_uncommitted_entries,
+    batch_delay,
+    ipaddr,
+    portnum,
+):
+    writing_queue = mp.Queue()
+    preparsing_queue = mp.Queue()
+    postparsing_queue = mp.Queue()
+
+    writing_process = mp.Process(target=writer, args=(writing_queue,))
+    parsing_process = mp.Process(
+        target=parser,
+        args=(preparsing_queue, postparsing_queue),
+    )
+    gathering_process = mp.Process(
+        target=gatherer,
+        args=(
+            sensor_id,
+            db_filepath,
+            output_directory,
+            max_uncommitted_entries,
+            batch_delay,
+            ipaddr,
+            portnum,
+            preparsing_queue,
+            postparsing_queue,
+        ),
+    )
+
+    writing_process.start()
+    parsing_process.start()
+    gathering_process.start()
+
+    while True:
+        if len(HELPER_DEQUE) > 0:
+            msg_type, msg_obj = HELPER_DEQUE.popleft()
+            if msg_type == config.PKT_MSG:
+                writing_queue.put((msg_type, msg_obj))
+                preparsing_queue.put((msg_type, msg_obj))
+            elif msg_type == config.PCAP_MSG:
+                writing_queue.put((msg_type, msg_obj))
+            elif msg_type == config.RETURN_MSG:
+                writing_queue.put((msg_type, msg_obj))
+                preparsing_queue.put((msg_type, msg_obj))
+                break
+            else:
+                logging.warning(
+                    "Ignored unexpected message type \"{}\"".format(msg_type),
+                )
+        elif batch_delay > 0.0:
+            sleep(batch_delay)
+
+    logging.info("Waiting for the writing process to terminate...")
+    writing_process.join()
+
+    logging.info("Waiting for the parsing process to terminate...")
+    parsing_process.join()
+
+    logging.info("Waiting for the gathering process to terminate...")
+    gathering_process.join()
+
+    if not writing_queue.empty():
+        raise ValueError("Expected the writing queue to be empty")
+
+    if not preparsing_queue.empty():
+        raise ValueError("Expected the preparsing queue to be empty")
+
+    if not postparsing_queue.empty():
+        raise ValueError("Expected the postparsing queue to be empty")
+
+
+def writer(writing_queue):
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    while True:
+        msg_type, msg_obj = writing_queue.get()
+        if msg_type == config.PKT_MSG:
+            wrpcap(msg_obj[1], msg_obj[0], append=True)
+        elif msg_type == config.PCAP_MSG:
+            compress_file(msg_obj)
+        elif msg_type == config.RETURN_MSG:
+            break
+        else:
+            logging.warning(
+                "Ignored unexpected message type \"{}\"".format(msg_type),
+            )
+
+
+def compress_file(pcap_filename):
+    try:
+        check_zip_files()
+        pcap_filepath = os.path.join(OUTPUT_DIRECTORY, pcap_filename)
+        if os.path.isfile(pcap_filepath):
+            with zipfile.ZipFile(
+                pcap_filepath + ".zip",
+                mode="w",
+                compression=zipfile.ZIP_DEFLATED,
+            ) as zf:
+                zf.write(pcap_filepath, arcname=pcap_filename)
+            os.remove(pcap_filepath)
+            logging.info("Compressed the \"{}\" file".format(pcap_filename))
+    except Exception:
+        logging.error(
+            "An exception was raised while trying to compress the "
+            + "\"{}\" file".format(pcap_filename),
+        )
+
+
+def check_zip_files():
+    if NUM_ZIP_FILES > 0:
+        filepaths = glob(
+            os.path.join(OUTPUT_DIRECTORY, "*.{}.pcap.zip".format(SENSOR_ID)),
+        )
+        zip_files = [os.path.basename(filepath) for filepath in filepaths]
+        excess_zip_files = len(zip_files) + 1 - NUM_ZIP_FILES
+        if excess_zip_files > 0:
+            zip_files.sort()
+            for i in range(excess_zip_files):
+                os.remove(os.path.join(OUTPUT_DIRECTORY, zip_files[i]))
+
+
+def parser(preparsing_queue, postparsing_queue):
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    prev_network_keys = deepcopy(config.network_keys)
+    prev_link_keys = deepcopy(config.link_keys)
+    prev_networks = deepcopy(config.networks)
+    prev_short_addresses = deepcopy(config.short_addresses)
+    prev_extended_addresses = deepcopy(config.extended_addresses)
+    prev_pairs = deepcopy(config.pairs)
+
+    while True:
+        msg_type, msg_obj = preparsing_queue.get()
+        if msg_type == config.PKT_MSG:
+            pkt, pcap_filepath, pkt_num = msg_obj
+
+            config.reset_entries()
+            head, tail = os.path.split(os.path.abspath(pcap_filepath))
+            config.entry["pcap_directory"] = head
+            config.entry["pcap_filename"] = tail
+            config.entry["pkt_num"] = pkt_num
+            config.entry["pkt_time"] = float(pkt.time)
+            phy_fields(pkt, None)
+            if config.entry["error_msg"] is None:
+                derive_info()
+
+            postparsing_queue.put((config.PKT_MSG, deepcopy(config.entry)))
+            if config.network_keys != prev_network_keys:
+                new_network_keys = {}
+                for key_name in config.network_keys.keys():
+                    if key_name not in prev_network_keys.keys():
+                        key_bytes = config.network_keys[key_name]
+                        prev_network_keys[key_name] = key_bytes
+                        new_network_keys[key_name] = key_bytes
+                if len(new_network_keys.keys()) > 0:
+                    postparsing_queue.put(
+                        (config.NETWORK_KEYS_MSG, deepcopy(new_network_keys)),
+                    )
+            if config.link_keys != prev_link_keys:
+                new_link_keys = {}
+                for key_name in config.link_keys.keys():
+                    if key_name not in prev_link_keys.keys():
+                        key_bytes = config.link_keys[key_name]
+                        prev_link_keys[key_name] = key_bytes
+                        new_link_keys[key_name] = key_bytes
+                if len(new_link_keys.keys()) > 0:
+                    postparsing_queue.put(
+                        (config.LINK_KEYS_MSG, deepcopy(new_link_keys)),
+                    )
+            if config.networks != prev_networks:
+                prev_networks = deepcopy(config.networks)
+                postparsing_queue.put(
+                    (config.NETWORKS_MSG, deepcopy(prev_networks)),
+                )
+            if config.short_addresses != prev_short_addresses:
+                prev_short_addresses = deepcopy(config.short_addresses)
+                postparsing_queue.put(
+                    (
+                        config.SHORT_ADDRESSES_MSG,
+                        deepcopy(prev_short_addresses),
+                    ),
+                )
+            if config.extended_addresses != prev_extended_addresses:
+                prev_extended_addresses = deepcopy(config.extended_addresses)
+                postparsing_queue.put(
+                    (
+                        config.EXTENDED_ADDRESSES_MSG,
+                        deepcopy(prev_extended_addresses),
+                    ),
+                )
+            if config.pairs != prev_pairs:
+                prev_pairs = deepcopy(config.pairs)
+                postparsing_queue.put(
+                    (config.PAIRS_MSG, deepcopy(prev_pairs)),
+                )
+        elif msg_type == config.NETWORK_KEYS_MSG:
+            for key_name in msg_obj.keys():
+                return_msg = config.add_new_key(
+                    msg_obj[key_name],
+                    "network",
+                    key_name,
+                )
+                if return_msg is not None:
+                    logging.warning(return_msg)
+            prev_network_keys = deepcopy(config.network_keys)
+        elif msg_type == config.LINK_KEYS_MSG:
+            for key_name in msg_obj.keys():
+                return_msg = config.add_new_key(
+                    msg_obj[key_name],
+                    "link",
+                    key_name,
+                )
+                if return_msg is not None:
+                    logging.warning(return_msg)
+            prev_link_keys = deepcopy(config.link_keys)
+        elif msg_type == config.RETURN_MSG:
+            postparsing_queue.put((msg_type, msg_obj))
+            break
+        else:
+            logging.warning(
+                "Ignored unexpected message type \"{}\"".format(msg_type),
+            )
+
+
+def gatherer(
+    sensor_id,
+    db_filepath,
+    output_directory,
+    max_uncommitted_entries,
+    batch_delay,
+    ipaddr,
+    portnum,
+    preparsing_queue,
+    postparsing_queue,
+):
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    network_keys_lock = threading.Lock()
+    link_keys_lock = threading.Lock()
+    networks_lock = threading.Lock()
+    short_addresses_lock = threading.Lock()
+    extended_addresses_lock = threading.Lock()
+    pairs_lock = threading.Lock()
+
+    if ipaddr is not None and portnum is not None:
+        server.start(
+            sensor_id,
+            output_directory,
+            db_filepath,
+            ipaddr,
+            portnum,
+            network_keys_lock,
+            link_keys_lock,
+            networks_lock,
+            short_addresses_lock,
+            extended_addresses_lock,
+            pairs_lock,
+            preparsing_queue,
+        )
+
+    num_uncommitted_entries = 0
+    config.db.connect(db_filepath)
+    while True:
+        try:
+            msg_type, msg_obj = postparsing_queue.get(timeout=batch_delay)
+            if msg_type == config.PKT_MSG:
+                config.entry = msg_obj
+                collect_data()
+                detect_events(link_keys_lock)
+                if num_uncommitted_entries >= max_uncommitted_entries:
+                    config.db.commit()
+                    num_uncommitted_entries = 0
+                else:
+                    num_uncommitted_entries += 1
+            elif msg_type == config.NETWORK_KEYS_MSG:
+                with network_keys_lock:
+                    for key_name in msg_obj.keys():
+                        return_msg = config.add_new_key(
+                            msg_obj[key_name],
+                            "network",
+                            key_name,
+                        )
+                        if return_msg is not None:
+                            logging.warning(return_msg)
+            elif msg_type == config.LINK_KEYS_MSG:
+                with link_keys_lock:
+                    for key_name in msg_obj.keys():
+                        return_msg = config.add_new_key(
+                            msg_obj[key_name],
+                            "link",
+                            key_name,
+                        )
+                        if return_msg is not None:
+                            logging.warning(return_msg)
+            elif msg_type == config.NETWORKS_MSG:
+                with networks_lock:
+                    config.networks = msg_obj
+            elif msg_type == config.SHORT_ADDRESSES_MSG:
+                with short_addresses_lock:
+                    config.short_addresses = msg_obj
+            elif msg_type == config.EXTENDED_ADDRESSES_MSG:
+                with extended_addresses_lock:
+                    config.extended_addresses = msg_obj
+            elif msg_type == config.PAIRS_MSG:
+                with pairs_lock:
+                    config.pairs = msg_obj
+            elif msg_type == config.RETURN_MSG:
+                if num_uncommitted_entries > 0:
+                    config.db.commit()
+                    num_uncommitted_entries = 0
+                config.db.disconnect()
+                break
+            else:
+                logging.warning(
+                    "Ignored unexpected message type \"{}\"".format(msg_type),
+                )
+        except Empty:
+            if num_uncommitted_entries > 0:
+                config.db.commit()
+                num_uncommitted_entries = 0
+
+    if ipaddr is not None and portnum is not None:
+        server.stop()
+
+
+def collect_data():
+    collection.basic_information()
+    collection.battery_percentage()
+
+
+def detect_events(link_keys_lock):
+    detection.panid_conflict(PANID, EPID)
+    detection.unsecured_rejoinreq(PANID)
+    detection.key_leakage(PANID, LINK_KEY_NAMES, link_keys_lock)
+    detection.low_battery(PANID)

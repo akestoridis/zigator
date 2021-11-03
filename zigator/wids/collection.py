@@ -35,27 +35,34 @@ def basic_information():
 
 
 def battery_percentage():
-    if (config.entry["error_msg"] is None
-            and (config.entry["der_same_macnwksrc"]
-                 == "Same MAC/NWK Src: True")
-            and (config.entry["aps_frametype"]
-                 == "0b00: APS Data")
-            and (config.entry["aps_profile_id"]
-                 == "0x0104: Zigbee Home Automation (ZHA)")
-            and (config.entry["aps_cluster_id"]
-                 == "0x0001: Power Configuration")):
+    if (
+        config.entry["error_msg"] is None
+        and config.entry["der_same_macnwksrc"] == "Same MAC/NWK Src: True"
+        and config.entry["aps_frametype"] == "0b00: APS Data"
+        and (
+            config.entry["aps_profile_id"]
+            == "0x0104: Zigbee Home Automation (ZHA)"
+        )
+        and config.entry["aps_cluster_id"] == "0x0001: Power Configuration"
+    ):
         if config.entry["zcl_cmd_id"] == "0x01: Read Attributes Response":
             identifiers = config.entry[
-                "zcl_readattributesresponse_identifiers"].split(",")
+                "zcl_readattributesresponse_identifiers"
+            ].split(",")
             statuses = config.entry[
-                "zcl_readattributesresponse_statuses"].split(",")
+                "zcl_readattributesresponse_statuses"
+            ].split(",")
             datatypes = config.entry[
-                "zcl_readattributesresponse_datatypes"].split(",")
+                "zcl_readattributesresponse_datatypes"
+            ].split(",")
             values = config.entry[
-                "zcl_readattributesresponse_values"].split(",")
-            if (len(identifiers) != len(statuses)
-                    or len(identifiers) != len(datatypes)
-                    or len(identifiers) != len(values)):
+                "zcl_readattributesresponse_values"
+            ].split(",")
+            if (
+                len(identifiers) != len(statuses)
+                or len(identifiers) != len(datatypes)
+                or len(identifiers) != len(values)
+            ):
                 return
             row_data = {
                 "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
@@ -63,21 +70,28 @@ def battery_percentage():
                 "srcshortaddr": config.entry["der_mac_srcshortaddr"],
             }
             for i in range(len(identifiers)):
-                if (identifiers[i] == "0x0021"
-                        and statuses[i] == "0x00: SUCCESS"
-                        and datatypes[i] == "0x20: Unsigned 8-bit integer"):
+                if (
+                    identifiers[i] == "0x0021"
+                    and statuses[i] == "0x00: SUCCESS"
+                    and datatypes[i] == "0x20: Unsigned 8-bit integer"
+                ):
                     row_data["percentage"] = int(values[i], 16) / 2.0
                     config.db.insert("battery_percentages", row_data)
                     return
         elif config.entry["zcl_cmd_id"] == "0x0a: Report Attributes":
             identifiers = config.entry[
-                "zcl_reportattributes_identifiers"].split(",")
+                "zcl_reportattributes_identifiers"
+            ].split(",")
             datatypes = config.entry[
-                "zcl_reportattributes_datatypes"].split(",")
+                "zcl_reportattributes_datatypes"
+            ].split(",")
             data = config.entry[
-                "zcl_reportattributes_data"].split(",")
-            if (len(identifiers) != len(datatypes)
-                    or len(identifiers) != len(data)):
+                "zcl_reportattributes_data"
+            ].split(",")
+            if (
+                len(identifiers) != len(datatypes)
+                or len(identifiers) != len(data)
+            ):
                 return
             row_data = {
                 "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
@@ -85,8 +99,10 @@ def battery_percentage():
                 "srcshortaddr": config.entry["der_mac_srcshortaddr"],
             }
             for i in range(len(identifiers)):
-                if (identifiers[i] == "0x0021"
-                        and datatypes[i] == "0x20: Unsigned 8-bit integer"):
+                if (
+                    identifiers[i] == "0x0021"
+                    and datatypes[i] == "0x20: Unsigned 8-bit integer"
+                ):
                     row_data["percentage"] = int(data[i], 16) / 2.0
                     config.db.insert("battery_percentages", row_data)
                     return
