@@ -45,8 +45,8 @@ SENSOR_ID = None
 PANID = None
 EPID = None
 OUTPUT_DIRECTORY = None
-PCAP_PERIOD = 0.0
-NUM_ZIP_FILES = 0
+MAX_PCAP_DURATION = 0.0
+MAX_ZIP_FILES = 0
 LINK_KEY_NAMES = []
 HELPER_DEQUE = deque()
 START_TIME = 0.0
@@ -60,8 +60,8 @@ def main(
     db_filepath,
     output_directory,
     ifname,
-    pcap_period,
-    num_zip_files,
+    max_pcap_duration,
+    max_zip_files,
     link_key_names,
     max_uncommitted_entries,
     batch_delay,
@@ -75,8 +75,8 @@ def main(
     global PANID
     global EPID
     global OUTPUT_DIRECTORY
-    global PCAP_PERIOD
-    global NUM_ZIP_FILES
+    global MAX_PCAP_DURATION
+    global MAX_ZIP_FILES
     global LINK_KEY_NAMES
 
     try:
@@ -89,8 +89,8 @@ def main(
         PANID = "0x{:04x}".format(int(panid, 16))
         EPID = format(int(epid, 16), "016x")
         OUTPUT_DIRECTORY = output_directory
-        PCAP_PERIOD = pcap_period
-        NUM_ZIP_FILES = num_zip_files
+        MAX_PCAP_DURATION = max_pcap_duration
+        MAX_ZIP_FILES = max_zip_files
         LINK_KEY_NAMES = link_key_names
 
         # Log the configuration for the WIDS sensor operation
@@ -100,8 +100,10 @@ def main(
         logging.info("Database filepath: {}".format(db_filepath))
         logging.info("Output directory: {}".format(OUTPUT_DIRECTORY))
         logging.info("Interface name: {}".format(ifname))
-        logging.info("Maximum pcap file duration: {} s".format(PCAP_PERIOD))
-        logging.info("Maximum number of zip files: {}".format(NUM_ZIP_FILES))
+        logging.info(
+            "Maximum pcap file duration: {} s".format(MAX_PCAP_DURATION),
+        )
+        logging.info("Maximum number of zip files: {}".format(MAX_ZIP_FILES))
         logging.info("Link key names: {}".format(LINK_KEY_NAMES))
         logging.info(
             "Maximum number of uncommitted entries: "
@@ -194,7 +196,7 @@ def packet_handler(pkt):
     pkt = Dot15d4FCS(bytes(pkt))
     pkt.time = tmp_time
 
-    if float(pkt.time) - START_TIME > PCAP_PERIOD:
+    if float(pkt.time) - START_TIME > MAX_PCAP_DURATION:
         HELPER_DEQUE.append(
             (config.PCAP_MSG, "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID)),
         )
@@ -330,12 +332,12 @@ def compress_file(pcap_filename):
 
 
 def check_zip_files():
-    if NUM_ZIP_FILES > 0:
+    if MAX_ZIP_FILES > 0:
         filepaths = glob(
             os.path.join(OUTPUT_DIRECTORY, "*.{}.pcap.zip".format(SENSOR_ID)),
         )
         zip_files = [os.path.basename(filepath) for filepath in filepaths]
-        excess_zip_files = len(zip_files) + 1 - NUM_ZIP_FILES
+        excess_zip_files = len(zip_files) + 1 - MAX_ZIP_FILES
         if excess_zip_files > 0:
             zip_files.sort()
             for i in range(excess_zip_files):

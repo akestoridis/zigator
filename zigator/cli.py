@@ -686,16 +686,16 @@ wids_parser.add_argument(
     help="the name of the IEEE 802.15.4 interface",
     default="wpan0")
 wids_parser.add_argument(
-    "--pcap_period",
+    "--max_pcap_duration",
     type=float,
     action="store",
     help="the maximum number of seconds of traffic for each pcap file",
     default=3600.0)
 wids_parser.add_argument(
-    "--num_zip_files",
+    "--max_zip_files",
     type=int,
     action="store",
-    help="the maximum positive number of concurrently stored zip files",
+    help="the maximum number of concurrently stored zip files",
     default=16)
 wids_parser.add_argument(
     "--link_key_names",
@@ -709,13 +709,13 @@ wids_parser.add_argument(
     type=int,
     action="store",
     help="the maximum number of uncommitted entries",
-    default=128)
+    default=3000)
 wids_parser.add_argument(
     "--batch_delay",
     type=float,
     action="store",
     help="the number of seconds between the processing of two packet batches",
-    default=5.0)
+    default=0.1)
 wids_parser.add_argument(
     "--table_thres",
     type=int,
