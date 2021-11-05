@@ -931,7 +931,7 @@ def add_config_entry(entry_type, entry_value, entry_name):
 
     # Save the provided configuration entry
     config_entries[entry_name] = entry_bytes
-    with open(config_filepath, "a") as fp:
+    with open(config_filepath, mode="a", encoding="utf-8") as fp:
         fp.write("{}\t{}\n".format(config_entries[entry_name].hex(),
                                    entry_name))
     logging.info("Saved the {} {} in the \"{}\" configuration file"
@@ -966,7 +966,7 @@ def rm_config_entry(entry_type, entry_name):
 
     # Update the corresponding configuration file
     del config_entries[entry_name]
-    with open(config_filepath, "w") as fp:
+    with open(config_filepath, mode="w", encoding="utf-8") as fp:
         for tmp_name in config_entries.keys():
             if not tmp_name.startswith("_"):
                 fp.write("{}\t{}\n".format(config_entries[tmp_name].hex(),

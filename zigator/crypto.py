@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -39,9 +39,11 @@ def zigbee_mmo_hash(message):
 
     # Sanity check
     if len(padded_message) % ZIGBEE_BLOCK_SIZE != 0:
-        raise ValueError("The length of the padded message ({}) is "
-                         "not a multiple of the block size ({})"
-                         "".format(len(padded_message), ZIGBEE_BLOCK_SIZE))
+        raise ValueError(
+            "The length of the padded message "
+            + "({}) is not a multiple of ".format(len(padded_message))
+            + "the block size ({})".format(ZIGBEE_BLOCK_SIZE),
+        )
 
     # Compute the digest of the message
     plaintext = bytearray()
@@ -75,9 +77,10 @@ def zigbee_hmac(message, key):
 
     # Sanity check
     if len(key) != ZIGBEE_BLOCK_SIZE:
-        raise ValueError("The length of the key ({}) is "
-                         "not equal to the block size ({})"
-                         "".format(len(key), ZIGBEE_BLOCK_SIZE))
+        raise ValueError(
+            "The length of the key ({}) ".format(len(key))
+            + "is not equal to the block size ({})".format(ZIGBEE_BLOCK_SIZE),
+        )
 
     # Compute the inner and outer keys
     inner_key = bytearray(key)
@@ -89,8 +92,15 @@ def zigbee_hmac(message, key):
     return zigbee_mmo_hash(outer_key + zigbee_mmo_hash(inner_key + message))
 
 
-def zigbee_enc_mic(key, source_addr, frame_counter, sec_control, header,
-                   key_seqnum, dec_payload):
+def zigbee_enc_mic(
+    key,
+    source_addr,
+    frame_counter,
+    sec_control,
+    header,
+    key_seqnum,
+    dec_payload,
+):
     # The fields of the nonce are in little-endian byte order
     le_srcaddr = source_addr.to_bytes(8, byteorder="little")
     le_framecounter = frame_counter.to_bytes(4, byteorder="little")
@@ -125,8 +135,16 @@ def zigbee_enc_mic(key, source_addr, frame_counter, sec_control, header,
     return enc_payload, mic
 
 
-def zigbee_dec_ver(key, source_addr, frame_counter, sec_control, header,
-                   key_seqnum, enc_payload, mic):
+def zigbee_dec_ver(
+    key,
+    source_addr,
+    frame_counter,
+    sec_control,
+    header,
+    key_seqnum,
+    enc_payload,
+    mic,
+):
     # The fields of the nonce are in little-endian byte order
     le_srcaddr = source_addr.to_bytes(8, byteorder="little")
     le_framecounter = frame_counter.to_bytes(4, byteorder="little")
@@ -141,8 +159,10 @@ def zigbee_dec_ver(key, source_addr, frame_counter, sec_control, header,
 
     # Sanity check
     if len(mic) != 4:
-        raise ValueError("Expected a 32-bit message integrity code, "
-                         "not a {}-bit one".format(8*len(mic)))
+        raise ValueError(
+            "Expected a 32-bit message integrity code, "
+            + "not a {}-bit one".format(8*len(mic)),
+        )
 
     # Construct the nonce
     nonce = bytearray(le_srcaddr)

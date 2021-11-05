@@ -14,16 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from . import cli
-from . import config
-
-from . import analysis
-from . import atusb
-from . import injection
-from . import parsing
-from . import training
-from . import visualization
-from . import wids
+from . import (
+    analysis,
+    atusb,
+    cli,
+    config,
+    injection,
+    parsing,
+    training,
+    visualization,
+    wids,
+)
 
 
 def main(argv):
@@ -64,38 +65,36 @@ def main(argv):
         config.add_config_entry(
             args.ENTRY_TYPE,
             args.ENTRY_VALUE,
-            args.ENTRY_NAME)
+            args.ENTRY_NAME,
+        )
     elif args.SUBCOMMAND == "rm-config-entry":
-        config.rm_config_entry(
-            args.ENTRY_TYPE,
-            args.ENTRY_NAME)
+        config.rm_config_entry(args.ENTRY_TYPE, args.ENTRY_NAME)
     elif args.SUBCOMMAND == "parse":
         parsing.main(
             args.PCAP_DIRECTORY,
             args.DATABASE_FILEPATH,
-            None if not hasattr(args, "num_workers") else args.num_workers)
+            None if not hasattr(args, "num_workers") else args.num_workers,
+        )
     elif args.SUBCOMMAND == "analyze":
         analysis.main(
             args.DATABASE_FILEPATH,
             args.OUTPUT_DIRECTORY,
-            None if not hasattr(args, "num_workers") else args.num_workers)
+            None if not hasattr(args, "num_workers") else args.num_workers,
+        )
     elif args.SUBCOMMAND == "visualize":
-        visualization.main(
-            args.DATABASE_FILEPATH,
-            args.OUTPUT_DIRECTORY)
+        visualization.main(args.DATABASE_FILEPATH, args.OUTPUT_DIRECTORY)
     elif args.SUBCOMMAND == "train":
         training.main(
             "enc-nwk-cmd",
             args.DATABASE_FILEPATH,
             args.OUTPUT_DIRECTORY,
             None if not hasattr(args, "seed") else args.seed,
-            args.restricted)
+            args.restricted,
+        )
     elif args.SUBCOMMAND == "inject":
-        injection.main(
-            args)
+        injection.main(args)
     elif args.SUBCOMMAND == "atusb":
-        atusb.main(
-            args.REPO_DIRECTORY)
+        atusb.main(args.REPO_DIRECTORY)
     elif args.SUBCOMMAND == "wids":
         wids.main(
             args.SENSOR_ID,
@@ -112,6 +111,7 @@ def main(argv):
             None if not hasattr(args, "table_thres") else args.table_thres,
             None if not hasattr(args, "table_reduct") else args.table_reduct,
             None if not hasattr(args, "ipaddr") else args.ipaddr,
-            None if not hasattr(args, "portnum") else args.portnum)
+            None if not hasattr(args, "portnum") else args.portnum,
+        )
     else:
         raise ValueError("Unknown subcommand \"{}\"".format(args.SUBCOMMAND))

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -29,7 +29,7 @@ from . import crypto
 
 
 def write_tsv(results, out_filepath):
-    fp = open(out_filepath, "w")
+    fp = open(out_filepath, mode="w", encoding="utf-8")
     for row in results:
         for i in range(len(row)):
             if i == 0:
@@ -53,7 +53,7 @@ def load_enc_keys(filepath, optional=False):
 
     # Read the provided file line by line
     loaded_keys = {}
-    with open(filepath, "r") as fp:
+    with open(filepath, mode="r", encoding="utf-8") as fp:
         rows = csv.reader(fp, delimiter="\t")
         for i, row in enumerate(rows, start=1):
             # Sanity check
@@ -115,7 +115,7 @@ def load_install_codes(filepath, optional=False):
     # Read the provided file line by line
     loaded_codes = {}
     derived_keys = {}
-    with open(filepath, "r") as fp:
+    with open(filepath, mode="r", encoding="utf-8") as fp:
         rows = csv.reader(fp, delimiter="\t")
         for i, row in enumerate(rows, start=1):
             # Sanity check

@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Metadata for the zigator package
+Metadata for the ``zigator`` package.
 """
 
 __title__ = "zigator"
@@ -55,7 +55,5 @@ __install_requires__ = [
 ]
 __python_requires__ = ">=3.7, <4"
 __entry_points__ = {
-    "console_scripts": [
-        "zigator=zigator.entry_point:entry_point"
-    ]
+    "console_scripts": ["zigator=zigator.entry_point:entry_point"],
 }

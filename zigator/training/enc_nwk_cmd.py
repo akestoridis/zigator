@@ -34,8 +34,10 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     """Train a classifier to distinguish encrypted NWK commands."""
     # Sanity check
     if not os.path.isfile(db_filepath):
-        raise ValueError("The provided database file \"{}\" "
-                         "does not exist".format(db_filepath))
+        raise ValueError(
+            "The provided database file \"{}\" ".format(db_filepath)
+            + "does not exist",
+        )
 
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
@@ -109,13 +111,20 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         "packets",
         columns,
         conditions,
-        False)
-    logging.info("Fetched {} raw samples of encrypted NWK commands"
-                 "".format(len(raw_samples)))
+        False,
+    )
+    logging.info(
+        "Fetched {} ".format(len(raw_samples))
+        + "raw samples of encrypted NWK commands",
+    )
 
     # Write the raw samples in a file
     if single_cmd is None:
-        fp = open(os.path.join(out_dirpath, "raw-samples.tsv"), "w")
+        fp = open(
+            os.path.join(out_dirpath, "raw-samples.tsv"),
+            mode="w",
+            encoding="utf-8",
+        )
         fp.write("#{}\n".format("\t".join(columns)))
         for raw_sample in raw_samples:
             fp.write("{}\n".format("\t".join([str(x) for x in raw_sample])))
@@ -142,8 +151,10 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         raise ValueError("Unknown NWK command \"{}\"".format(single_cmd))
     else:
         class_names = ["Other NWK Command", single_cmd]
-    logging.info("The classifier will be trained to distinguish "
-                 "{} NWK commands".format(len(class_names)))
+    logging.info(
+        "The classifier will be trained to distinguish "
+        + "{} NWK commands".format(len(class_names)),
+    )
 
     # Define the features that the classifier will use
     if restricted:
@@ -207,8 +218,10 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             ("der_nwk_dsttype", "CATEGORICAL"),
             ("der_nwk_srctype", "CATEGORICAL"),
         ]
-    logging.info("The classifier will use {} unencoded features"
-                 "".format(len(feature_definitions)))
+    logging.info(
+        "The classifier will use {} ".format(len(feature_definitions))
+        + "unencoded features",
+    )
 
     # Process the raw samples
     numerical_table = []
@@ -225,8 +238,9 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
 
             # Sanity check
             if feature_name not in columns:
-                raise ValueError("Unknown feature name \"{}\""
-                                 "".format(feature_name))
+                raise ValueError(
+                    "Unknown feature name \"{}\"".format(feature_name),
+                )
 
             # Extract the value of the feature
             value = raw_sample[columns.index(feature_name)]
@@ -275,16 +289,18 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             elif feature_type == "CATEGORICAL":
                 categorical_row.append(value)
             else:
-                raise ValueError("Unknown feature type \"{}\""
-                                 "".format(feature_type))
+                raise ValueError(
+                    "Unknown feature type \"{}\"".format(feature_type),
+                )
         numerical_table.append(numerical_row)
         categorical_table.append(categorical_row)
 
         # Generate the labels of the dataset
         label = nwk_commands.get(raw_sample[-1], None)
         if label is None:
-            raise ValueError("Unknown NWK command \"{}\""
-                             "".format(raw_sample[-1]))
+            raise ValueError(
+                "Unknown NWK command \"{}\"".format(raw_sample[-1]),
+            )
         elif single_cmd is not None:
             if label == nwk_commands.get(single_cmd, None):
                 dataset_labels.append(1)
@@ -301,16 +317,23 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     # Generate the table and the features of the dataset
     dataset_table = np.concatenate(
         (np.array(numerical_table), np.array(encoded_table)),
-        axis=1)
+        axis=1,
+    )
     dataset_features = (
         [fd[0] for fd in feature_definitions if fd[1] == "NUMERICAL"]
         + encoded_features
     )
-    logging.info("The classifier will use {} encoded features"
-                 "".format(len(dataset_features)))
+    logging.info(
+        "The classifier will use {} ".format(len(dataset_features))
+        + "encoded features",
+    )
 
     # Write the features of the dataset in a file
-    with open(os.path.join(out_dirpath, "dataset-features.tsv"), "w") as fp:
+    with open(
+        os.path.join(out_dirpath, "dataset-features.tsv"),
+        mode="w",
+        encoding="utf-8",
+    ) as fp:
         fp.write("\n".join(dataset_features))
 
     # Compute some statistics about the unique samples of the dataset
@@ -330,15 +353,19 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             # Update the counters of each NWK command
             for cmd_id in nwk_commands.values():
                 if cmd_frequency[cmd_id] > 0:
-                    cmd_counters[cmd_id].append((unique_sample.tolist(),
-                                                 cmd_frequency[cmd_id]))
+                    cmd_counters[cmd_id].append(
+                        (unique_sample.tolist(), cmd_frequency[cmd_id]),
+                    )
 
             # Check whether this sample applies to multiple NWK commands
-            matching_cmds = [cmd_name for cmd_name in class_names
-                             if cmd_frequency[nwk_commands[cmd_name]] > 0]
+            matching_cmds = [
+                cmd_name for cmd_name in class_names
+                if cmd_frequency[nwk_commands[cmd_name]] > 0
+            ]
             if len(matching_cmds) > 1:
-                overlapping.append((matching_cmds,
-                                    unique_sample.tolist()))
+                overlapping.append(
+                    (matching_cmds, unique_sample.tolist()),
+                )
         cmd_filepaths = {
             "0x01: NWK Route Request": (
                 os.path.join(out_dirpath, "unique-routerequest-samples.tsv")
@@ -378,32 +405,52 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             ),
         }
         for cmd_name in class_names:
-            with open(cmd_filepaths[cmd_name], "w") as fp:
+            with open(
+                cmd_filepaths[cmd_name],
+                mode="w",
+                encoding="utf-8",
+            ) as fp:
                 for cmd_counter in cmd_counters[nwk_commands[cmd_name]]:
-                    fp.write("{}\t{}\n"
-                             "".format(cmd_counter[0], cmd_counter[1]))
-        fp = open(os.path.join(out_dirpath, "overlapping-samples.tsv"), "w")
+                    fp.write(
+                        "{}\t{}\n".format(cmd_counter[0], cmd_counter[1]),
+                    )
+        fp = open(
+            os.path.join(out_dirpath, "overlapping-samples.tsv"),
+            mode="w",
+            encoding="utf-8",
+        )
         for overlap in overlapping:
             fp.write("{}\t{}\n".format(overlap[0], overlap[1]))
         fp.close()
-        fp = open(os.path.join(out_dirpath, "num-unique-samples.tsv"), "w")
+        fp = open(
+            os.path.join(out_dirpath, "num-unique-samples.tsv"),
+            mode="w",
+            encoding="utf-8",
+        )
         for cmd_name in class_names:
-            fp.write("{}\t{}\n"
-                     "".format(cmd_name,
-                               len(cmd_counters[nwk_commands[cmd_name]])))
+            fp.write(
+                "{}\t{}\n".format(
+                    cmd_name,
+                    len(cmd_counters[nwk_commands[cmd_name]]),
+                ),
+            )
         fp.close()
 
     # Split the dataset into a training set and a testing set
     training_table, testing_table, training_labels, testing_labels = (
-        train_test_split(dataset_table,
-                         dataset_labels,
-                         test_size=0.2,
-                         random_state=seed,
-                         shuffle=True)
+        train_test_split(
+            dataset_table,
+            dataset_labels,
+            test_size=0.2,
+            random_state=seed,
+            shuffle=True,
+        )
     )
-    logging.info("Split the dataset into {} training samples "
-                 "and {} testing samples"
-                 "".format(len(training_labels), len(testing_labels)))
+    logging.info(
+        "Split the dataset into {} ".format(len(training_labels))
+        + "training samples and {} ".format(len(testing_labels))
+        + "testing samples",
+    )
 
     # Compute some statistics about the training and testing sets
     if single_cmd is None:
@@ -413,15 +460,31 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             training_breakdown[training_label] += 1
         for testing_label in testing_labels:
             testing_breakdown[testing_label] += 1
-        fp = open(os.path.join(out_dirpath, "training-breakdown.tsv"), "w")
+        fp = open(
+            os.path.join(out_dirpath, "training-breakdown.tsv"),
+            mode="w",
+            encoding="utf-8",
+        )
         for cmd_name in class_names:
-            fp.write("{}\t{}\n".format(
-                cmd_name, training_breakdown[nwk_commands[cmd_name]]))
+            fp.write(
+                "{}\t{}\n".format(
+                    cmd_name,
+                    training_breakdown[nwk_commands[cmd_name]],
+                ),
+            )
         fp.close()
-        fp = open(os.path.join(out_dirpath, "testing-breakdown.tsv"), "w")
+        fp = open(
+            os.path.join(out_dirpath, "testing-breakdown.tsv"),
+            mode="w",
+            encoding="utf-8",
+        )
         for cmd_name in class_names:
-            fp.write("{}\t{}\n".format(
-                cmd_name, testing_breakdown[nwk_commands[cmd_name]]))
+            fp.write(
+                "{}\t{}\n".format(
+                    cmd_name,
+                    testing_breakdown[nwk_commands[cmd_name]],
+                ),
+            )
 
     # Perform k-fold cross validation
     k = 5
@@ -429,18 +492,25 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         "criterion": ["entropy", "gini"],
         "max_depth": [None, 8, 7, 6, 5, 4, 3, 2, 1],
     }
-    logging.info("Tuning {} parameters using {}-fold cross validation..."
-                 "".format(len(parameters.keys()), k))
+    logging.info(
+        "Tuning {} ".format(len(parameters.keys()))
+        + "parameters using {}-fold cross validation...".format(k)
+    )
     gscv = GridSearchCV(DecisionTreeClassifier(), parameters, cv=k)
     gscv.fit(training_table, training_labels)
 
     # Log the best score and parameters
-    logging.info("Highest mean cross-validated score: {}"
-                 "".format(gscv.best_score_))
+    logging.info(
+        "Highest mean cross-validated score: {}".format(gscv.best_score_),
+    )
     logging.info("Best set of parameters: {}".format(gscv.best_params_))
 
     # Write more detailed results in a file
-    with open(os.path.join(out_dirpath, "cv-results.txt"), "w") as fp:
+    with open(
+        os.path.join(out_dirpath, "cv-results.txt"),
+        mode="w",
+        encoding="utf-8",
+    ) as fp:
         fp.write("cv_results_ = {\n")
         for key in sorted(gscv.cv_results_.keys()):
             fp.write("    '{}': {},\n".format(key, gscv.cv_results_[key]))
@@ -460,29 +530,48 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     graph.render(os.path.join(out_dirpath, "enc-nwk-cmd-tree"))
 
     # Export the tree in textual format as well
-    with open(os.path.join(out_dirpath, "enc-nwk-cmd-tree.txt"), "w") as fp:
+    with open(
+        os.path.join(out_dirpath, "enc-nwk-cmd-tree.txt"),
+        mode="w",
+        encoding="utf-8",
+    ) as fp:
         fp.write(export_text(clf, feature_names=dataset_features))
 
     # Use the trained model to predict the class of the testing samples
     predictions = clf.predict(testing_table)
 
     # Write the results of classification metrics in a file
-    fp = open(os.path.join(out_dirpath, "classification-report.txt"), "w")
-    fp.write(metrics.classification_report(
-        testing_labels, predictions, target_names=class_names, digits=3))
+    fp = open(
+        os.path.join(out_dirpath, "classification-report.txt"),
+        mode="w",
+        encoding="utf-8",
+    )
+    fp.write(
+        metrics.classification_report(
+            testing_labels,
+            predictions,
+            target_names=class_names,
+            digits=3,
+        ),
+    )
     fp.close()
 
     # Write the confusion matrix in a file
     confusion_matrix = metrics.confusion_matrix(testing_labels, predictions)
-    np.savetxt(os.path.join(out_dirpath, "confusion-matrix.tsv"),
-               confusion_matrix,
-               fmt="%u",
-               delimiter="\t",
-               header="\t".join(class_names))
+    np.savetxt(
+        os.path.join(out_dirpath, "confusion-matrix.tsv"),
+        confusion_matrix,
+        fmt="%u",
+        delimiter="\t",
+        header="\t".join(class_names),
+    )
 
     # Log the accuracy score
-    logging.info("Testing accuracy: {}".format(
-        metrics.accuracy_score(testing_labels, predictions)))
+    logging.info(
+        "Testing accuracy: {}".format(
+            metrics.accuracy_score(testing_labels, predictions),
+        ),
+    )
 
     # Disconnect from the provided database
     config.db.disconnect()

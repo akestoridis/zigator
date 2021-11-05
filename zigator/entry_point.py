@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -17,6 +17,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+
 import zigator
 
 

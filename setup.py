@@ -1,4 +1,6 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+#!/usr/bin/env python3
+
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -15,55 +17,74 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Setup script for the zigator package
+Setup script for the ``zigator`` package.
 """
 
 import importlib
 import os
-import setuptools
 import sys
 
+import setuptools
 
-top_dirpath = os.path.dirname(os.path.abspath(__file__))
-pkg_dirpath = os.path.join(top_dirpath, "zigator")
 
-about = {}
-with open(os.path.join(pkg_dirpath, "__about__.py"), "r") as fp:
-    exec(fp.read(), about)
+def setup():
+    """
+    Customize the setup process of the ``zigator`` package.
+    """
+    top_dirpath = os.path.dirname(os.path.abspath(__file__))
+    pkg_dirpath = os.path.join(top_dirpath, "zigator")
 
-long_description = ""
-with open(os.path.join(top_dirpath, "README.md"), "r") as fp:
-    comment_counter = 0
-    for line in fp:
-        if line == "<!-- START OF BADGES -->\n":
-            comment_counter += 1
-        elif line == "<!-- END OF BADGES -->\n":
-            comment_counter -= 1
-        elif comment_counter == 0:
-            long_description += line
+    metadata = {}
+    with open(
+        os.path.join(pkg_dirpath, "_metadata.py"),
+        mode="r",
+        encoding="utf-8",
+    ) as fp:
+        exec(fp.read(), metadata)
 
-getversion_spec = importlib.util.spec_from_file_location(
-    "__getversion__", os.path.join(pkg_dirpath, "__getversion__.py"))
-getversion_module = importlib.util.module_from_spec(getversion_spec)
-sys.modules["__getversion__"] = getversion_module
-getversion_spec.loader.exec_module(getversion_module)
+    long_description = ""
+    with open(
+        os.path.join(top_dirpath, "README.md"),
+        mode="r",
+        encoding="utf-8",
+    ) as fp:
+        comment_counter = 0
+        for line in fp:
+            if line == "<!-- START OF BADGES -->\n":
+                comment_counter += 1
+            elif line == "<!-- END OF BADGES -->\n":
+                comment_counter -= 1
+            elif comment_counter == 0:
+                long_description += line
 
-setuptools.setup(
-    name=about["__title__"],
-    version=getversion_module.getversion(pkg_dirpath),
-    author=about["__author__"],
-    author_email=about["__author_email__"],
-    description=about["__description__"],
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    license=about["__license__"],
-    url=about["__url__"],
-    keywords=about["__keywords__"],
-    classifiers=about["__classifiers__"],
-    install_requires=about["__install_requires__"],
-    python_requires=about["__python_requires__"],
-    entry_points=about["__entry_points__"],
-    include_package_data=True,
-    zip_safe=False,
-    packages=setuptools.find_packages()
-)
+    version_spec = importlib.util.spec_from_file_location(
+        "_version",
+        os.path.join(pkg_dirpath, "_version.py"),
+    )
+    version_module = importlib.util.module_from_spec(version_spec)
+    sys.modules["_version"] = version_module
+    version_spec.loader.exec_module(version_module)
+
+    setuptools.setup(
+        name=metadata["__title__"],
+        version=version_module.get_version(pkg_dirpath),
+        author=metadata["__author__"],
+        author_email=metadata["__author_email__"],
+        description=metadata["__description__"],
+        long_description=long_description,
+        long_description_content_type="text/markdown",
+        license=metadata["__license__"],
+        url=metadata["__url__"],
+        keywords=metadata["__keywords__"],
+        classifiers=metadata["__classifiers__"],
+        install_requires=metadata["__install_requires__"],
+        python_requires=metadata["__python_requires__"],
+        entry_points=metadata["__entry_points__"],
+        include_package_data=True,
+        zip_safe=False,
+        packages=setuptools.find_packages(),
+    )
+
+
+if __name__ == "__main__":
+    setup()
