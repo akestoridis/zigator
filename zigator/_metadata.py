@@ -69,7 +69,7 @@ __install_requires__ = [
     "threadpoolctl==3.0.0",
     "zc.lockfile==2.0",
 ]
-__python_requires__ = ">=3.7, <4"
+__python_requires__ = ">=3.7, <3.10"
 __entry_points__ = {
     "console_scripts": ["zigator=zigator.entry_point:entry_point"],
 }
