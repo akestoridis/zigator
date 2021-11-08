@@ -44,14 +44,30 @@ __classifiers__ = [
     "Topic :: Security",
 ]
 __install_requires__ = [
-    "CherryPy>=18.6.1, <19",
-    "graphviz>=0.17, <1",
-    "numpy>=1.21.2, <2",
-    "psutil>=5.8.0, <6",
-    "pycrc>=0.9.2, <1",
-    "pycryptodomex>=3.10.1, <4",
+    # direct dependencies
+    "CherryPy==18.6.1",
+    "graphviz==0.17",
+    "numpy==1.20.2",
+    "psutil==5.8.0",
+    "pycrc==0.9.2",
+    "pycryptodomex==3.11.0",
     "scapy @ git+https://github.com/secdev/scapy@6ad83c513648fc1b4199a4b2d7b74b8a8c2ae0ce#egg=scapy",
-    "scikit-learn>=0.24.2, <1",
+    "scikit-learn==0.24.2",
+    # indirect dependencies
+    "cheroot==8.5.2",
+    "jaraco.classes==3.2.1",
+    "jaraco.collections==3.3.0",
+    "jaraco.functools==3.3.0",
+    "jaraco.text==3.5.0",
+    "joblib==1.0.1",
+    "more-itertools==8.8.0",
+    "portend==2.7.1",
+    "pytz==2021.1",
+    "scipy==1.6.3",
+    "six==1.16.0",
+    "tempora==4.1.1",
+    "threadpoolctl==2.0.0",
+    "zc.lockfile==2.0",
 ]
 __python_requires__ = ">=3.7, <4"
 __entry_points__ = {
