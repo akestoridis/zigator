@@ -1,1 +1,1 @@
-zigator/__getversion__.py export-subst
+zigator/_version.py export-subst
