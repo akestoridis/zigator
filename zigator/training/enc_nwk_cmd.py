@@ -312,7 +312,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     # Use one-hot encoding for the categorical features
     enc = OneHotEncoder(sparse=False)
     encoded_table = enc.fit_transform(categorical_table)
-    encoded_features = enc.get_feature_names().tolist()
+    encoded_features = enc.get_feature_names_out().tolist()
 
     # Generate the table and the features of the dataset
     dataset_table = np.concatenate(
