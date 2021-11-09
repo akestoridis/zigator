@@ -47,7 +47,7 @@ __install_requires__ = [
     # direct dependencies
     "CherryPy==18.6.1",
     "graphviz==0.17",
-    "numpy==1.21.3",
+    "numpy==1.21.4",
     "psutil==5.8.0",
     "pycrc==0.9.2",
     "pycryptodomex==3.11.0",
@@ -63,13 +63,13 @@ __install_requires__ = [
     "more-itertools==8.8.0",
     "portend==2.7.1",
     "pytz==2021.1",
-    "scipy==1.7.1",
+    "scipy==1.7.2",
     "six==1.16.0",
     "tempora==4.1.1",
     "threadpoolctl==3.0.0",
     "zc.lockfile==2.0",
 ]
-__python_requires__ = ">=3.7, <3.10"
+__python_requires__ = ">=3.7, <3.11"
 __entry_points__ = {
     "console_scripts": ["zigator=zigator.entry_point:entry_point"],
 }
