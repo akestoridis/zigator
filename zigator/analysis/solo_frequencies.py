@@ -21,7 +21,7 @@ import os
 from .. import config
 
 
-IGNORED_COLUMNS = set([
+IGNORED_COLUMNS = {
     "pkt_num",
     "pkt_time",
     "phy_payload",
@@ -39,10 +39,13 @@ IGNORED_COLUMNS = set([
     "aps_tunnel_counter",
     "zdp_seqnum",
     "zcl_seqnum",
-])
+}
 
-INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
-                     if column_name not in IGNORED_COLUMNS]
+INSPECTED_COLUMNS = [
+    column_name
+    for column_name in config.db.PKT_COLUMN_NAMES
+    if column_name not in IGNORED_COLUMNS
+]
 
 
 def worker(db_filepath, out_dirpath, task_index, task_lock):
@@ -64,7 +67,9 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             out_dirpath,
             "{}-{}-frequency.tsv".format(
                 str(global_index).zfill(3),
-                column_name))
+                column_name,
+            ),
+        )
 
         # Do not count entries with errors,
         # except when we want to count the errors themselves
@@ -75,7 +80,8 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
         results = config.db.grouped_count(
             "packets",
             [column_name],
-            count_errors)
+            count_errors,
+        )
 
         # Write the computed frequencies in the output file
         config.fs.write_tsv(results, out_filepath)
@@ -97,9 +103,13 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the frequency of values "
-                 "for {} columns using {} workers..."
-                 "".format(len(INSPECTED_COLUMNS), num_workers))
+    logging.info(
+        "Computing the frequency of values "
+        + "for {} columns using {} workers...".format(
+            len(INSPECTED_COLUMNS),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -108,8 +118,10 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

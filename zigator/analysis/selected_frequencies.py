@@ -217,9 +217,13 @@ def selected_frequencies(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the frequency of "
-                 "{} condition selections using {} workers..."
-                 "".format(len(CONDITION_SELECTIONS), num_workers))
+    logging.info(
+        "Computing the frequency of "
+        + "{} condition selections using {} workers...".format(
+            len(CONDITION_SELECTIONS),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -228,8 +232,10 @@ def selected_frequencies(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

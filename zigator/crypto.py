@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Cryptographic module for the zigator package
+Cryptographic module for the ``zigator`` package.
 """
 
 from Cryptodome.Cipher import AES

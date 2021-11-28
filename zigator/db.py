@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Database module for the zigator package
+Database module for the ``zigator`` package.
 """
 
 import sqlite3
@@ -339,26 +339,31 @@ EVENTS_COLUMN_NAMES = [column[0] for column in EVENTS_COLUMNS]
 
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
-ALLOWED_TYPES = set(["TEXT", "INTEGER", "REAL", "BLOB"])
-CONSTRAINED_PKT_COLUMNS = set([
+ALLOWED_TYPES = {
+    "TEXT",
+    "INTEGER",
+    "REAL",
+    "BLOB",
+}
+CONSTRAINED_PKT_COLUMNS = {
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
     "pkt_time",
-])
-CONSTRAINED_BASIC_INFO_COLUMNS = set([
+}
+CONSTRAINED_BASIC_INFO_COLUMNS = {
     "pkt_time",
-])
-CONSTRAINED_BTRY_PERC_COLUMNS = set([
+}
+CONSTRAINED_BTRY_PERC_COLUMNS = {
     "pkt_time",
     "srcpanid",
     "srcshortaddr",
     "percentage",
-])
-CONSTRAINED_EVENTS_COLUMNS = set([
+}
+CONSTRAINED_EVENTS_COLUMNS = {
     "pkt_time",
     "description",
-])
+}
 
 # Initialize global variables for interacting with the database
 connection = None
@@ -410,21 +415,25 @@ def create_table(tablename):
 
         for i in range(len(column_name)):
             if column_name[i] not in ALLOWED_CHARACTERS:
-                raise ValueError("The character \"{}\" in the name of the "
-                                 "column \"{}\" is not allowed"
-                                 "".format(column_name[i], column_name))
+                raise ValueError(
+                    "The character \"{}\" ".format(column_name[i])
+                    + "in the name of the column \"{}\" ".format(column_name)
+                    + "is not allowed",
+                )
 
         if column_name[0].isdigit():
-            raise ValueError("The name of the column \"{}\" is not allowed "
-                             "because it starts with a digit"
-                             "".format(column_name))
+            raise ValueError(
+                "The name of the column \"{}\" ".format(column_name)
+                + "is not allowed because it starts with a digit",
+            )
 
         table_creation_command += column_name
 
         if column_type not in ALLOWED_TYPES:
-            raise ValueError("The column type \"{}\" is not in the "
-                             "set of allowed column types {}"
-                             "".format(column_type, ALLOWED_TYPES))
+            raise ValueError(
+                "The column type \"{}\" is not in the ".format(column_type)
+                + "set of allowed column types {}".format(ALLOWED_TYPES),
+            )
 
         table_creation_command += " " + column_type
 
@@ -490,14 +499,20 @@ def insert(tablename, row_data):
 
     # Sanity check
     if len(row_data.keys()) != len(table_column_names):
-        raise ValueError("Unexpected number of data entries: {}"
-                         "".format(len(row_data.keys())))
+        raise ValueError(
+            "Unexpected number of data entries: {}".format(
+                len(row_data.keys()),
+            ),
+        )
 
     # Insert the provided data entries into the corresponding table
-    cursor.execute("INSERT INTO {} VALUES ({})"
-                   "".format(tablename, ", ".join("?"*len(table_columns))),
-                   tuple(row_data[column_name]
-                         for column_name in table_column_names))
+    cursor.execute(
+        "INSERT INTO {} VALUES ({})".format(
+            tablename,
+            ", ".join("?"*len(table_columns)),
+        ),
+        tuple([row_data[column_name] for column_name in table_column_names]),
+    )
 
 
 def commit():
@@ -647,18 +662,25 @@ def store_networks(networks):
     cursor.execute("DROP TABLE IF EXISTS networks")
 
     # Create the table
-    cursor.execute("CREATE TABLE networks(panid TEXT NOT NULL, "
-                   "epidset TEXT NOT NULL, earliest REAL, latest REAL)")
+    cursor.execute(
+        "CREATE TABLE networks("
+        + "panid TEXT NOT NULL, "
+        + "epidset TEXT NOT NULL, "
+        + "earliest REAL, "
+        + "latest REAL)",
+    )
 
     # Insert the data into the table
     for panid in networks.keys():
         cursor.execute(
             "INSERT INTO networks VALUES (?, ?, ?, ?)",
-            (panid,
-             ";".join(epid for epid in sorted(list(
-                      networks[panid]["epidset"]))),
-             networks[panid]["earliest"],
-             networks[panid]["latest"]))
+            (
+                panid,
+                ";".join(sorted(networks[panid]["epidset"])),
+                networks[panid]["earliest"],
+                networks[panid]["latest"],
+            ),
+        )
 
 
 def store_short_addresses(short_addresses):
@@ -666,25 +688,37 @@ def store_short_addresses(short_addresses):
     cursor.execute("DROP TABLE IF EXISTS short_addresses")
 
     # Create the table
-    cursor.execute("CREATE TABLE short_addresses(panid TEXT NOT NULL, "
-                   "shortaddr TEXT NOT NULL, altset TEXT NOT NULL, "
-                   "macset TEXT NOT NULL, nwkset TEXT NOT NULL, "
-                   "earliest REAL, latest REAL)")
+    cursor.execute(
+        "CREATE TABLE short_addresses("
+        + "panid TEXT NOT NULL, "
+        + "shortaddr TEXT NOT NULL, "
+        + "altset TEXT NOT NULL, "
+        + "macset TEXT NOT NULL, "
+        + "nwkset TEXT NOT NULL, "
+        + "earliest REAL, "
+        + "latest REAL)",
+    )
 
     # Insert the data into the table
     for (panid, shortaddr) in short_addresses.keys():
         cursor.execute(
             "INSERT INTO short_addresses VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (panid,
-             shortaddr,
-             ";".join(extendedaddr for extendedaddr in sorted(list(
-                      short_addresses[(panid, shortaddr)]["altset"]))),
-             ";".join(macdevtype for macdevtype in sorted(list(
-                      short_addresses[(panid, shortaddr)]["macset"]))),
-             ";".join(nwkdevtype for nwkdevtype in sorted(list(
-                      short_addresses[(panid, shortaddr)]["nwkset"]))),
-             short_addresses[(panid, shortaddr)]["earliest"],
-             short_addresses[(panid, shortaddr)]["latest"]))
+            (
+                panid,
+                shortaddr,
+                ";".join(
+                    sorted(short_addresses[(panid, shortaddr)]["altset"]),
+                ),
+                ";".join(
+                    sorted(short_addresses[(panid, shortaddr)]["macset"]),
+                ),
+                ";".join(
+                    sorted(short_addresses[(panid, shortaddr)]["nwkset"]),
+                ),
+                short_addresses[(panid, shortaddr)]["earliest"],
+                short_addresses[(panid, shortaddr)]["latest"],
+             ),
+        )
 
 
 def store_extended_addresses(extended_addresses):
@@ -692,24 +726,40 @@ def store_extended_addresses(extended_addresses):
     cursor.execute("DROP TABLE IF EXISTS extended_addresses")
 
     # Create the table
-    cursor.execute("CREATE TABLE extended_addresses("
-                   "extendedaddr TEXT NOT NULL, altset TEXT NOT NULL, "
-                   "macset TEXT NOT NULL, nwkset TEXT NOT NULL, "
-                   "earliest REAL, latest REAL)")
+    cursor.execute(
+        "CREATE TABLE extended_addresses("
+        + "extendedaddr TEXT NOT NULL, "
+        + "altset TEXT NOT NULL, "
+        + "macset TEXT NOT NULL, "
+        + "nwkset TEXT NOT NULL, "
+        + "earliest REAL, "
+        + "latest REAL)",
+    )
 
     # Insert the data into the table
     for extendedaddr in extended_addresses.keys():
         cursor.execute(
             "INSERT INTO extended_addresses VALUES (?, ?, ?, ?, ?, ?)",
-            (extendedaddr,
-             ";".join(str(localaddr) for localaddr in sorted(list(
-                      extended_addresses[extendedaddr]["altset"]))),
-             ";".join(macdevtype for macdevtype in sorted(list(
-                      extended_addresses[extendedaddr]["macset"]))),
-             ";".join(nwkdevtype for nwkdevtype in sorted(list(
-                      extended_addresses[extendedaddr]["nwkset"]))),
-             extended_addresses[extendedaddr]["earliest"],
-             extended_addresses[extendedaddr]["latest"]))
+            (
+                extendedaddr,
+                ";".join(
+                    [
+                        str(localaddr)
+                        for localaddr in sorted(
+                            extended_addresses[extendedaddr]["altset"],
+                        )
+                    ],
+                ),
+                ";".join(
+                    sorted(extended_addresses[extendedaddr]["macset"]),
+                ),
+                ";".join(
+                    sorted(extended_addresses[extendedaddr]["nwkset"]),
+                ),
+                extended_addresses[extendedaddr]["earliest"],
+                extended_addresses[extendedaddr]["latest"],
+            ),
+        )
 
 
 def store_pairs(pairs):
@@ -717,39 +767,52 @@ def store_pairs(pairs):
     cursor.execute("DROP TABLE IF EXISTS pairs")
 
     # Create the table
-    cursor.execute("CREATE TABLE pairs(panid TEXT NOT NULL, "
-                   "srcaddr TEXT NOT NULL, dstaddr TEXT NOT NULL, "
-                   "earliest REAL NOT NULL, latest REAL NOT NULL)")
+    cursor.execute(
+        "CREATE TABLE pairs("
+        + "panid TEXT NOT NULL, "
+        + "srcaddr TEXT NOT NULL, "
+        + "dstaddr TEXT NOT NULL, "
+        + "earliest REAL NOT NULL, "
+        + "latest REAL NOT NULL)",
+    )
 
     # Insert the data into the table
     for (panid, srcaddr, dstaddr) in pairs.keys():
-        cursor.execute("INSERT INTO pairs VALUES (?, ?, ?, ?, ?)",
-                       (panid,
-                        srcaddr,
-                        dstaddr,
-                        pairs[(panid, srcaddr, dstaddr)]["earliest"],
-                        pairs[(panid, srcaddr, dstaddr)]["latest"]))
+        cursor.execute(
+            "INSERT INTO pairs VALUES (?, ?, ?, ?, ?)",
+            (
+                panid,
+                srcaddr,
+                dstaddr,
+                pairs[(panid, srcaddr, dstaddr)]["earliest"],
+                pairs[(panid, srcaddr, dstaddr)]["latest"],
+            ),
+        )
 
 
 def get_nwkdevtype(panid, shortaddr, extendedaddr):
     nwkset = set()
 
     if panid is not None and shortaddr is not None:
-        cursor.execute("SELECT nwkset FROM short_addresses WHERE panid=? "
-                       "AND shortaddr=?", (panid, shortaddr))
+        cursor.execute(
+            "SELECT nwkset FROM short_addresses "
+            + "WHERE panid=? AND shortaddr=?",
+            (panid, shortaddr),
+        )
         results = cursor.fetchall()
-        if (len(results) > 1
-                or (len(results) == 1 and ";" in results[0][0])):
+        if len(results) > 1 or (len(results) == 1 and ";" in results[0][0]):
             return "Conflicting Data"
         elif len(results) == 1:
             nwkset.add(results[0][0])
 
     if extendedaddr is not None:
-        cursor.execute("SELECT nwkset FROM extended_addresses "
-                       "WHERE extendedaddr=?", (extendedaddr,))
+        cursor.execute(
+            "SELECT nwkset FROM extended_addresses "
+            + "WHERE extendedaddr=?",
+            (extendedaddr,),
+        )
         results = cursor.fetchall()
-        if (len(results) > 1
-                or (len(results) == 1 and ";" in results[0][0])):
+        if len(results) > 1 or (len(results) == 1 and ";" in results[0][0]):
             return "Conflicting Data"
         elif len(results) == 1:
             nwkset.add(results[0][0])
@@ -767,15 +830,18 @@ def update_packets(selected_columns, selected_values, conditions):
     if len(selected_columns) == 0:
         raise ValueError("At least one selected column is required")
     elif len(selected_columns) != len(selected_values):
-        raise ValueError("The number of selected columns does not match "
-                         "the number of selected values")
+        raise ValueError(
+            "The number of selected columns does not match "
+            + "the number of selected values",
+        )
     for column_name in selected_columns:
         if column_name not in PKT_COLUMN_NAMES:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
 
     # Update the packets table
-    set_statements = ["{} = ?".format(x) for x in selected_columns]
-    update_command = "UPDATE packets SET {}".format(", ".join(set_statements))
+    update_command = "UPDATE packets SET {}".format(
+        ", ".join(["{} = ?".format(x) for x in selected_columns]),
+    )
     expr_statements = []
     expr_values = list(selected_values)
     if conditions is not None:

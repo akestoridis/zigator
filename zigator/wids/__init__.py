@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Collection of WIDS modules for the zigator package
+Collection of WIDS modules for the ``zigator`` package.
 """
 
 from .main import main

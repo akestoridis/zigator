@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -25,9 +25,13 @@ def phy_fields(pkt, msg_queue):
     if pkt.haslayer(Dot15d4FCS):
         # Frame Length field (7 bits)
         config.entry["phy_length"] = len(pkt[Dot15d4FCS])
-        if (config.entry["phy_length"] > 127
-            or (config.entry["phy_length"] < 9
-                and config.entry["phy_length"] != 5)):
+        if (
+            config.entry["phy_length"] > 127
+            or (
+                config.entry["phy_length"] < 9
+                and config.entry["phy_length"] != 5
+            )
+        ):
             config.entry["error_msg"] = "PE101: Invalid packet length"
             return
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -25,14 +25,16 @@ def attack():
             "which",
             "iwpan",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
             logging.error("Failed at locating the iwpan command")
             return
         logging.debug("Successfully located the iwpan command")
     except Exception:
-        logging.error("An exception was raised while trying to locate "
-                      "the iwpan command")
+        logging.error(
+            "An exception was raised while trying to locate "
+            + "the iwpan command",
+        )
         return
 
     try:
@@ -40,14 +42,15 @@ def attack():
             "which",
             "ip",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
             logging.error("Failed at locating the ip command")
             return
         logging.debug("Successfully located the ip command")
     except Exception:
-        logging.error("An exception was raised while trying to locate "
-                      "the ip command")
+        logging.error(
+            "An exception was raised while trying to locate the ip command",
+        )
         return
 
     try:
@@ -55,27 +58,33 @@ def attack():
             "iwpan",
             "dev",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
             logging.error("Failed at listing all WPAN interfaces")
             return
-        interfaces = re.findall(r"phy\#[0-9]+\n\tInterface [a-zA-Z0-9]+\n",
-                                cp.stdout.decode())
+        interfaces = re.findall(
+            r"phy\#[0-9]+\n\tInterface [a-zA-Z0-9]+\n",
+            cp.stdout.decode(),
+        )
         if not interfaces:
             logging.error("Did not detect any WPAN interface")
             return
         menu = {}
         for i, interface in enumerate(interfaces, start=1):
-            match = re.search(r"phy\#([0-9]+)\n\tInterface ([a-zA-Z0-9]+)\n",
-                              interface)
+            match = re.search(
+                r"phy\#([0-9]+)\n\tInterface ([a-zA-Z0-9]+)\n",
+                interface,
+            )
             if not match:
                 logging.error("Failed at extracting the phyname and devname")
                 return
             menu[str(i)] = ("phy" + match.group(1), match.group(2))
         logging.debug("Successfully listed all WPAN interfaces")
     except Exception:
-        logging.error("An exception was raised while trying to list "
-                      "all WPAN interfaces")
+        logging.error(
+            "An exception was raised while trying to list "
+            + "all WPAN interfaces",
+        )
         return
 
     phyname = None
@@ -94,14 +103,20 @@ def attack():
     while True:
         iface = input("Enter a name for the new interface: ")
         if len(iface) < 1:
-            print("The name of the new interface must consist of "
-                  "at least 1 character")
+            print(
+                "The name of the new interface must consist of "
+                + "at least 1 character",
+            )
         elif len(iface) > 15:
-            print("The name of the new interface must consist of "
-                  "at most 15 characters")
+            print(
+                "The name of the new interface must consist of "
+                + "at most 15 characters",
+            )
         elif not re.search(r"^[a-zA-Z0-9]+$", iface):
-            print("The name of the new interface should consist of "
-                  "ASCII letters and numerical digits only")
+            print(
+                "The name of the new interface should consist of "
+                + "ASCII letters and numerical digits only",
+            )
         else:
             break
 
@@ -113,15 +128,18 @@ def attack():
             devname,
             "del",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
-            logging.error("Failed at deleting the {} interface"
-                          "".format(devname))
+            logging.error(
+                "Failed at deleting the {} interface".format(devname),
+            )
             return
         logging.info("Successfully deleted the {} interface".format(devname))
     except Exception:
-        logging.error("An exception was raised while trying to delete "
-                      "the {} interface".format(devname))
+        logging.error(
+            "An exception was raised while trying to delete "
+            + "the {} interface".format(devname),
+        )
         return
 
     try:
@@ -136,15 +154,16 @@ def attack():
             "type",
             "monitor",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
-            logging.error("Failed at creating the {} interface"
-                          "".format(iface))
+            logging.error("Failed at creating the {} interface".format(iface))
             return
         logging.info("Successfully created the {} interface".format(iface))
     except Exception:
-        logging.error("An exception was raised while trying to create "
-                      "the {} interface".format(iface))
+        logging.error(
+            "An exception was raised while trying to create "
+            + "the {} interface".format(iface),
+        )
         return
 
     channel_num = None
@@ -166,8 +185,11 @@ def attack():
         "25": "2.475 GHz",
         "26": "2.480 GHz",
     }
-    print("Enter the number of an available channel on page 0 for {}:"
-          "".format(phyname))
+    print(
+        "Enter the number of an available channel on page 0 for {}:".format(
+            phyname,
+        ),
+    )
     for key in sorted(menu.keys()):
         print("{}) {}".format(key, menu[key]))
     while True:
@@ -187,17 +209,22 @@ def attack():
             "0",
             channel_num,
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
-            logging.error("Failed at setting the channel of {} as number {} "
-                          "on page 0".format(phyname, channel_num))
+            logging.error(
+                "Failed at setting the channel of {} ".format(phyname)
+                + "as number {} on page 0".format(channel_num),
+            )
             return
-        logging.info("Successfully set the channel of {} as number {} "
-                     "on page 0".format(phyname, channel_num))
+        logging.info(
+            "Successfully set the channel of {} ".format(phyname)
+            + "as number {} on page 0".format(channel_num),
+        )
     except Exception:
-        logging.error("An exception was raised while trying to set "
-                      "the channel of {} as number {} on page 0"
-                      "".format(phyname, channel_num))
+        logging.error(
+            "An exception was raised while trying to set the channel of "
+            + "{} as number {} on page 0".format(phyname, channel_num),
+        )
         return
 
     print("############################################################")
@@ -228,14 +255,16 @@ def attack():
             iface,
             "up",
         ]
-        cp = subprocess.run(args, capture_output=True)
+        cp = subprocess.run(args, capture_output=True, check=False)
         if cp.returncode != 0:
             logging.error("Failed at enabling the {} interface".format(iface))
             return
         logging.info("Successfully enabled the {} interface".format(iface))
     except Exception:
-        logging.error("An exception was raised while trying to enable "
-                      "the {} interface".format(iface))
+        logging.error(
+            "An exception was raised while trying to enable "
+            + "the {} interface".format(iface),
+        )
         return
 
     menu = {
@@ -259,16 +288,28 @@ def attack():
                         iface,
                         "down",
                     ]
-                    cp = subprocess.run(args, capture_output=True)
+                    cp = subprocess.run(
+                        args,
+                        capture_output=True,
+                        check=False,
+                    )
                     if cp.returncode != 0:
-                        logging.error("Failed at disabling the {} interface"
-                                      "".format(iface))
+                        logging.error(
+                            "Failed at disabling the {} interface".format(
+                                iface,
+                            ),
+                        )
                     else:
-                        logging.info("Successfully disabled the {} interface"
-                                     "".format(iface))
+                        logging.info(
+                            "Successfully disabled the {} interface".format(
+                                iface,
+                            ),
+                        )
                 except Exception:
-                    logging.error("An exception was raised while trying to "
-                                  "disable the {} interface".format(iface))
+                    logging.error(
+                        "An exception was raised while trying to "
+                        + "disable the {} interface".format(iface),
+                    )
                 break
             elif option == "2":
                 try:
@@ -280,16 +321,28 @@ def attack():
                         iface,
                         "up",
                     ]
-                    cp = subprocess.run(args, capture_output=True)
+                    cp = subprocess.run(
+                        args,
+                        capture_output=True,
+                        check=False,
+                    )
                     if cp.returncode != 0:
-                        logging.error("Failed at enabling the {} interface"
-                                      "".format(iface))
+                        logging.error(
+                            "Failed at enabling the {} interface".format(
+                                iface,
+                            ),
+                        )
                     else:
-                        logging.info("Successfully enabled the {} interface"
-                                     "".format(iface))
+                        logging.info(
+                            "Successfully enabled the {} interface".format(
+                                iface,
+                            ),
+                        )
                 except Exception:
-                    logging.error("An exception was raised while trying to "
-                                  "enable the {} interface".format(iface))
+                    logging.error(
+                        "An exception was raised while trying to "
+                        + "enable the {} interface".format(iface),
+                    )
                 break
             elif option == "3":
                 try:
@@ -301,14 +354,26 @@ def attack():
                         iface,
                         "down",
                     ]
-                    cp = subprocess.run(args, capture_output=True)
+                    cp = subprocess.run(
+                        args,
+                        capture_output=True,
+                        check=False,
+                    )
                     if cp.returncode != 0:
-                        logging.error("Failed at disabling the {} interface"
-                                      "".format(iface))
+                        logging.error(
+                            "Failed at disabling the {} interface".format(
+                                iface,
+                            ),
+                        )
                     else:
-                        logging.info("Successfully disabled the {} interface"
-                                     "".format(iface))
+                        logging.info(
+                            "Successfully disabled the {} interface".format(
+                                iface,
+                            ),
+                        )
                 except Exception:
-                    logging.error("An exception was raised while trying to "
-                                  "disable the {} interface".format(iface))
+                    logging.error(
+                        "An exception was raised while trying to "
+                        + "disable the {} interface".format(iface),
+                    )
                 return

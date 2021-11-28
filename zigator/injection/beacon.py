@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,14 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Beacon
-from scapy.all import Dot15d4FCS
-from scapy.all import ZigBeeBeacon
+from scapy.all import (
+    Dot15d4Beacon,
+    Dot15d4FCS,
+    ZigBeeBeacon,
+)
 
 
-def beacon(mac_seqnum, mac_srcpanid, mac_srcshortaddr, mac_beacon_pancoord,
-           mac_beacon_assocpermit, nwk_beacon_devdepth, nwk_beacon_epid,
-           nwk_beacon_updateid):
+def beacon(
+    mac_seqnum,
+    mac_srcpanid,
+    mac_srcshortaddr,
+    mac_beacon_pancoord,
+    mac_beacon_assocpermit,
+    nwk_beacon_devdepth,
+    nwk_beacon_epid,
+    nwk_beacon_updateid,
+):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -51,7 +60,8 @@ def beacon(mac_seqnum, mac_srcpanid, mac_srcshortaddr, mac_beacon_pancoord,
             fcf_destaddrmode=0,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Beacon(
             src_panid=mac_srcpanid,
             src_addr=mac_srcshortaddr,
@@ -64,7 +74,8 @@ def beacon(mac_seqnum, mac_srcpanid, mac_srcshortaddr, mac_beacon_pancoord,
             gts_spec_desccount=0,
             gts_spec_permit=0,
             pa_num_short=0,
-            pa_num_long=0)
+            pa_num_long=0,
+        )
         / ZigBeeBeacon(
             proto_id=0,
             stack_profile=2,
@@ -74,7 +85,8 @@ def beacon(mac_seqnum, mac_srcpanid, mac_srcshortaddr, mac_beacon_pancoord,
             end_device_capacity=1,
             extended_pan_id=nwk_beacon_epid,
             tx_offset=16777215,
-            update_id=nwk_beacon_updateid)
+            update_id=nwk_beacon_updateid,
+        )
     )
 
     return forged_pkt

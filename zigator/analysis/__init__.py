@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Collection of analysis modules for the zigator package
+Collection of analysis modules for the ``zigator`` package.
 """
 
 from .main import main

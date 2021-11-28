@@ -14,8 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from .. import config
-from .. import crypto
+from .. import (
+    config,
+    crypto,
+)
 
 
 def panid_conflict(panid, epid):

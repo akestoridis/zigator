@@ -14,16 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import cherrypy
 import logging
 import os
-import psutil
 import sqlite3
 import string
 from copy import deepcopy
 from datetime import datetime
 from glob import glob
 from time import time
+
+import cherrypy
+import psutil
 
 from .. import config
 
@@ -176,9 +177,7 @@ class NetworksService(object):
         networks_list = []
         with NETWORKS_LOCK:
             for panid in config.networks.keys():
-                epidset_members = sorted(
-                    list(config.networks[panid]["epidset"]),
-                )
+                epidset_members = sorted(config.networks[panid]["epidset"])
                 earliest_timestamp = None
                 if config.networks[panid]["earliest"] is not None:
                     earliest_timestamp = "{:.6f}".format(
@@ -208,13 +207,13 @@ class ShortAddressesService(object):
         with SHORT_ADDRESSES_LOCK:
             for (panid, saddr) in config.short_addresses.keys():
                 altset_members = sorted(
-                    list(config.short_addresses[(panid, saddr)]["altset"]),
+                    config.short_addresses[(panid, saddr)]["altset"],
                 )
                 macset_members = sorted(
-                    list(config.short_addresses[(panid, saddr)]["macset"]),
+                    config.short_addresses[(panid, saddr)]["macset"],
                 )
                 nwkset_members = sorted(
-                    list(config.short_addresses[(panid, saddr)]["nwkset"]),
+                    config.short_addresses[(panid, saddr)]["nwkset"],
                 )
                 earliest_timestamp = None
                 if (
@@ -254,15 +253,16 @@ class ExtendedAddressesService(object):
         with EXTENDED_ADDRESSES_LOCK:
             for eaddr in config.extended_addresses.keys():
                 altset_members = [
-                    str(localaddr) for localaddr in sorted(
-                        list(config.extended_addresses[eaddr]["altset"]),
+                    str(localaddr)
+                    for localaddr in sorted(
+                        config.extended_addresses[eaddr]["altset"],
                     )
                 ]
                 macset_members = sorted(
-                    list(config.extended_addresses[eaddr]["macset"]),
+                    config.extended_addresses[eaddr]["macset"],
                 )
                 nwkset_members = sorted(
-                    list(config.extended_addresses[eaddr]["nwkset"]),
+                    config.extended_addresses[eaddr]["nwkset"],
                 )
                 earliest_timestamp = None
                 if config.extended_addresses[eaddr]["earliest"] is not None:

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,8 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import CookedLinux
-from scapy.all import Dot15d4FCS
+from scapy.all import (
+    CookedLinux,
+    Dot15d4FCS,
+)
 
 from .. import config
 from .phy_fields import phy_fields
@@ -26,17 +28,20 @@ SLL_PKT_TYPES = {
     1: "0x0001: The packet was broadcasted by another host",
     2: "0x0002: The packet was multicasted by another host",
     3: "0x0003: The packet was sent to another host by another host",
-    4: "0x0004: The packet was sent by us"
+    4: "0x0004: The packet was sent by us",
 }
 
 
 def sll_fields(pkt, msg_queue):
     """Parse SLL fields."""
     # Packet Type field (2 bytes)
-    if not config.set_entry(
+    if not (
+        config.set_entry(
             "sll_pkttype",
             pkt[CookedLinux].pkttype,
-            SLL_PKT_TYPES):
+            SLL_PKT_TYPES,
+        )
+    ):
         config.entry["error_msg"] = "PE003: Unknown SLL packet type"
         return
 

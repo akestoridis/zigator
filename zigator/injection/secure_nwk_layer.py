@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4FCS
-from scapy.all import ZigbeeNWK
-from scapy.all import ZigbeeSecurityHeader
+from scapy.all import (
+    Dot15d4FCS,
+    ZigbeeNWK,
+    ZigbeeSecurityHeader,
+)
 
 from .. import crypto
 
@@ -50,8 +52,14 @@ def secure_nwk_layer(pkt, key, extnonce, framecounter, srcaddr, keyseqnum):
 
     # Encrypt the NWK payload and authenticate the NWK header and NWK payload
     enc_payload, mic = crypto.zigbee_enc_mic(
-        key, srcaddr, framecounter, aux_bytearray[0],
-        header, keyseqnum, dec_payload)
+        key,
+        srcaddr,
+        framecounter,
+        aux_bytearray[0],
+        header,
+        keyseqnum,
+        dec_payload,
+    )
 
     # Update the NWK payload of the provided packet
     aux_bytearray += enc_payload + mic
@@ -59,6 +67,8 @@ def secure_nwk_layer(pkt, key, extnonce, framecounter, srcaddr, keyseqnum):
 
     # Update the Frame Check Sequence (FCS) field of the provided packet
     pkt[Dot15d4FCS].fcs = int.from_bytes(
-        pkt.compute_fcs(bytes(pkt)[:-2]), byteorder="little")
+        pkt.compute_fcs(bytes(pkt)[:-2]),
+        byteorder="little",
+    )
 
     return pkt

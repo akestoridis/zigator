@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -25,21 +25,30 @@ def main(db_filepath, out_dirpath):
     """Visualize traffic stored in a database file."""
     # Sanity check
     if not os.path.isfile(db_filepath):
-        raise ValueError("The provided database file \"{}\" "
-                         "does not exist".format(db_filepath))
+        raise ValueError(
+            "The provided database file \"{}\" does not exist".format(
+                db_filepath,
+            ),
+        )
 
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
 
     # Connect to the provided database
-    logging.info("Visualizing traffic stored in the \"{}\" database..."
-                 "".format(db_filepath))
+    logging.info(
+        "Visualizing traffic stored in the \"{}\" database...".format(
+            db_filepath,
+        ),
+    )
     config.db.connect(db_filepath)
 
     # Write the results of each visualization method in the output directory
     network_graphs(os.path.join(out_dirpath, "network-graphs"))
 
     # Disconnect from the provided database
-    logging.info("Finished the visualization of the \"{}\" database"
-                 "".format(db_filepath))
+    logging.info(
+        "Finished the visualization of the \"{}\" database".format(
+            db_filepath,
+        ),
+    )
     config.db.disconnect()

@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import glob
 import logging
 import multiprocessing as mp
 import os
+from glob import glob
 
 from .. import config
 from .pcap_file import pcap_file
@@ -41,8 +41,11 @@ def main(pcap_dirpath, db_filepath, num_workers):
     """Parse all pcap files in the provided directory."""
     # Sanity check
     if not os.path.isdir(pcap_dirpath):
-        raise ValueError("The provided directory \"{}\" "
-                         "does not exist".format(pcap_dirpath))
+        raise ValueError(
+            "The provided directory \"{}\" does not exist".format(
+                pcap_dirpath,
+            ),
+        )
 
     # Initialize the database that will store the parsed data
     config.db.connect(db_filepath)
@@ -50,12 +53,17 @@ def main(pcap_dirpath, db_filepath, num_workers):
     config.db.commit()
 
     # Get a sorted list of pcap filepaths
-    filepaths = glob.glob(
+    filepaths = glob(
         os.path.join(pcap_dirpath, "**", "*.[pP][cC][aA][pP]"),
-        recursive=True)
+        recursive=True,
+    )
     filepaths.sort()
-    logging.info("Detected {} pcap files in the \"{}\" directory"
-                 "".format(len(filepaths), pcap_dirpath))
+    logging.info(
+        "Detected {} pcap files in the \"{}\" directory".format(
+            len(filepaths),
+            pcap_dirpath,
+        ),
+    )
 
     # Determine the number of processes that will be used
     if num_workers is None:
@@ -65,8 +73,9 @@ def main(pcap_dirpath, db_filepath, num_workers):
             num_workers = mp.cpu_count() - 1
     if num_workers < 1:
         num_workers = 1
-    logging.info("The pcap files will be parsed by {} workers"
-                 "".format(num_workers))
+    logging.info(
+        "The pcap files will be parsed by {} workers".format(num_workers),
+    )
 
     # Create variables that will be shared by the processes
     msg_queue = mp.Queue()
@@ -76,8 +85,10 @@ def main(pcap_dirpath, db_filepath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(filepaths, msg_queue, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(filepaths, msg_queue, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 
@@ -91,8 +102,9 @@ def main(pcap_dirpath, db_filepath, num_workers):
         if msg_type is config.RETURN_MSG:
             num_terminated_processes += 1
             logging.debug(
-                "The process with ID {} has no more pcap files to parse"
-                "".format(msg_obj))
+                "The process with ID {} ".format(msg_obj)
+                + "has no more pcap files to parse",
+            )
         elif msg_type is config.DEBUG_MSG:
             logging.debug(msg_obj)
         elif msg_type is config.INFO_MSG:
@@ -105,8 +117,12 @@ def main(pcap_dirpath, db_filepath, num_workers):
             logging.critical(msg_obj)
         elif msg_type is config.PCAP_MSG:
             pcap_counter += 1
-            logging.info("Parsed {} out of the {} pcap files"
-                         "".format(pcap_counter, len(filepaths)))
+            logging.info(
+                "Parsed {} out of the {} pcap files".format(
+                    pcap_counter,
+                    len(filepaths),
+                ),
+            )
         elif msg_type is config.PKT_MSG:
             config.db.insert("packets", msg_obj)
         elif msg_type is config.NETWORK_KEYS_MSG:
@@ -127,7 +143,8 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     panid,
                     msg_obj[panid]["epidset"],
                     msg_obj[panid]["earliest"],
-                    msg_obj[panid]["latest"])
+                    msg_obj[panid]["latest"],
+                )
         elif msg_type is config.SHORT_ADDRESSES_MSG:
             for (panid, shortaddr) in msg_obj.keys():
                 config.update_short_addresses(
@@ -137,7 +154,8 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     msg_obj[(panid, shortaddr)]["macset"],
                     msg_obj[(panid, shortaddr)]["nwkset"],
                     msg_obj[(panid, shortaddr)]["earliest"],
-                    msg_obj[(panid, shortaddr)]["latest"])
+                    msg_obj[(panid, shortaddr)]["latest"],
+                )
         elif msg_type is config.EXTENDED_ADDRESSES_MSG:
             for extendedaddr in msg_obj.keys():
                 config.update_extended_addresses(
@@ -146,7 +164,8 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     msg_obj[extendedaddr]["macset"],
                     msg_obj[extendedaddr]["nwkset"],
                     msg_obj[extendedaddr]["earliest"],
-                    msg_obj[extendedaddr]["latest"])
+                    msg_obj[extendedaddr]["latest"],
+                )
         elif msg_type is config.PAIRS_MSG:
             for (panid, srcaddr, dstaddr) in msg_obj.keys():
                 config.update_pairs(
@@ -154,15 +173,15 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     srcaddr,
                     dstaddr,
                     msg_obj[(panid, srcaddr, dstaddr)]["earliest"],
-                    msg_obj[(panid, srcaddr, dstaddr)]["latest"])
+                    msg_obj[(panid, srcaddr, dstaddr)]["latest"],
+                )
         else:
             raise ValueError("Unknown message type \"{}\"".format(msg_type))
 
     # Make sure that all processes terminated
     for p in processes:
         p.join()
-    logging.info("All {} workers completed their tasks"
-                 "".format(num_workers))
+    logging.info("All {} workers completed their tasks".format(num_workers))
 
     # Make sure that the message queue is empty
     if not msg_queue.empty():
@@ -172,18 +191,34 @@ def main(pcap_dirpath, db_filepath, num_workers):
     config.db.commit()
 
     # Log a summary of new keys and derived information
-    logging.info("Discovered {} previously unknown network keys"
-                 "".format(new_network_keys))
-    logging.info("Discovered {} previously unknown link keys"
-                 "".format(new_link_keys))
-    logging.info("Discovered {} pairs of network identifiers"
-                 "".format(len(config.networks.keys())))
-    logging.info("Discovered {} PAN ID and short address pairs"
-                 "".format(len(config.short_addresses.keys())))
-    logging.info("Discovered {} extended addresses"
-                 "".format(len(config.extended_addresses.keys())))
-    logging.info("Discovered {} source-destination pairs of MAC Data packets"
-                 "".format(len(config.pairs.keys())))
+    logging.info(
+        "Discovered {} previously unknown network keys".format(
+            new_network_keys,
+        ),
+    )
+    logging.info(
+        "Discovered {} previously unknown link keys".format(new_link_keys),
+    )
+    logging.info(
+        "Discovered {} pairs of network identifiers".format(
+            len(config.networks.keys()),
+        ),
+    )
+    logging.info(
+        "Discovered {} PAN ID and short address pairs".format(
+            len(config.short_addresses.keys()),
+        ),
+    )
+    logging.info(
+        "Discovered {} extended addresses".format(
+            len(config.extended_addresses.keys()),
+        ),
+    )
+    logging.info(
+        "Discovered {} source-destination pairs of MAC Data packets".format(
+            len(config.pairs.keys()),
+        ),
+    )
 
     # Update the packets table using the derived information
     logging.info("Updating the derived entries of parsed packets...")
@@ -206,9 +241,11 @@ def main(pcap_dirpath, db_filepath, num_workers):
             continue
         frequency = config.db.matching_frequency(
             "packets",
-            [("warning_msg", message)])
-        logging.warning("Generated {} \"{}\" parsing warnings"
-                        "".format(frequency, message))
+            [("warning_msg", message)],
+        )
+        logging.warning(
+            "Generated {} \"{}\" parsing warnings".format(frequency, message),
+        )
 
     # Log a summary of the generated errors
     errors = config.db.fetch_values("packets", ["error_msg"], None, True)
@@ -219,9 +256,11 @@ def main(pcap_dirpath, db_filepath, num_workers):
             continue
         frequency = config.db.matching_frequency(
             "packets",
-            [("error_msg", message)])
-        logging.warning("Generated {} \"{}\" parsing errors"
-                        "".format(frequency, message))
+            [("error_msg", message)],
+        )
+        logging.warning(
+            "Generated {} \"{}\" parsing errors".format(frequency, message),
+        )
 
     # Disconnection from the database
     config.db.disconnect()

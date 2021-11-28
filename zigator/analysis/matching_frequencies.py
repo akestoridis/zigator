@@ -1277,7 +1277,8 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             "packets",
             var_columns,
             conditions,
-            True)
+            True,
+        )
         var_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each set of conditions
@@ -1309,9 +1310,13 @@ def matching_frequencies(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the matching frequency "
-                 "of {} conditions using {} workers..."
-                 "".format(len(CONDITION_MATCHES), num_workers))
+    logging.info(
+        "Computing the matching frequency "
+        + "of {} conditions using {} workers...".format(
+            len(CONDITION_MATCHES),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -1320,8 +1325,10 @@ def matching_frequencies(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

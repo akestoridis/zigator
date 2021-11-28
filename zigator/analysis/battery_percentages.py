@@ -53,7 +53,8 @@ def battery_percentages(db_filepath, out_dirpath):
             ("aps_cluster_id", "0x0001: Power Configuration"),
             ("zcl_cmd_id", "0x01: Read Attributes Response"),
         ],
-        False)
+        False,
+    )
     for fetched_tuple in fetched_tuples:
         pkt_time = fetched_tuple[0]
         identifiers = fetched_tuple[1].split(",")
@@ -61,15 +62,19 @@ def battery_percentages(db_filepath, out_dirpath):
         datatypes = fetched_tuple[3].split(",")
         values = fetched_tuple[4].split(",")
         srcextendedaddr = fetched_tuple[5]
-        if (len(identifiers) != len(statuses)
-                or len(identifiers) != len(datatypes)
-                or len(identifiers) != len(values)):
+        if (
+            len(identifiers) != len(statuses)
+            or len(identifiers) != len(datatypes)
+            or len(identifiers) != len(values)
+        ):
             logging.warning("Invalid ZCL Read Attributes Response entries")
             continue
         for i in range(len(identifiers)):
             if identifiers[i] == "0x0021":
-                if (statuses[i] == "0x00: SUCCESS"
-                        and datatypes[i] == "0x20: Unsigned 8-bit integer"):
+                if (
+                    statuses[i] == "0x00: SUCCESS"
+                    and datatypes[i] == "0x20: Unsigned 8-bit integer"
+                ):
                     percentage = "{:.1f}".format(int(values[i], 16) / 2.0)
                     measurement = (pkt_time, percentage)
                     if srcextendedaddr not in measurements.keys():
@@ -98,15 +103,18 @@ def battery_percentages(db_filepath, out_dirpath):
             ("aps_cluster_id", "0x0001: Power Configuration"),
             ("zcl_cmd_id", "0x0a: Report Attributes"),
         ],
-        False)
+        False,
+    )
     for fetched_tuple in fetched_tuples:
         pkt_time = fetched_tuple[0]
         identifiers = fetched_tuple[1].split(",")
         datatypes = fetched_tuple[2].split(",")
         data = fetched_tuple[3].split(",")
         srcextendedaddr = fetched_tuple[4]
-        if (len(identifiers) != len(datatypes)
-                or len(identifiers) != len(data)):
+        if (
+            len(identifiers) != len(datatypes)
+            or len(identifiers) != len(data)
+        ):
             logging.warning("Invalid ZCL Report Attributes entries")
             continue
         for i in range(len(identifiers)):
@@ -133,7 +141,11 @@ def battery_percentages(db_filepath, out_dirpath):
     for srcextendedaddr in measurements.keys():
         out_filepath = os.path.join(
             out_dirpath,
-            "battery-percentages-{}.tsv".format(srcextendedaddr))
+            "battery-percentages-{}.tsv".format(srcextendedaddr),
+        )
         config.fs.write_tsv(measurements[srcextendedaddr], out_filepath)
-    logging.info("Extracted battery percentage measurements of {} devices"
-                 "".format(len(measurements.keys())))
+    logging.info(
+        "Extracted battery percentage measurements of {} devices".format(
+            len(measurements.keys()),
+        ),
+    )

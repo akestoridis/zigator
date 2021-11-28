@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,8 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Cmd
-from scapy.all import Dot15d4FCS
+from scapy.all import (
+    Dot15d4Cmd,
+    Dot15d4FCS,
+)
 
 
 def beaconreq(mac_seqnum):
@@ -34,11 +36,13 @@ def beaconreq(mac_seqnum):
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=0,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Cmd(
             dest_panid=0xffff,
             dest_addr=0xffff,
-            cmd_id=7)
+            cmd_id=7,
+        )
     )
 
     return forged_pkt

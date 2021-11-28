@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Configuration module for the zigator package
+Configuration module for the ``zigator`` package.
 """
 
 import logging
@@ -71,9 +71,11 @@ def init(derived_version):
     version = derived_version
 
     # Configure the logging system
-    logging.basicConfig(format="[%(asctime)s %(levelname)s] %(message)s",
-                        datefmt="%Y-%m-%d %H:%M:%S",
-                        level=logging.INFO)
+    logging.basicConfig(
+        format="[%(asctime)s %(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.INFO,
+    )
 
     # Configure Scapy to assume that Zigbee is above the MAC layer
     conf.dot15d4_protocol = "zigbee"
@@ -103,44 +105,50 @@ def load_config_files():
     logging.debug("Loaded {} link keys".format(len(link_keys)))
 
     # Load install codes and derive link keys from them
-    install_codes, derived_keys = fs.load_install_codes(INSTALL_FILEPATH,
-                                                        optional=True)
+    install_codes, derived_keys = fs.load_install_codes(
+        INSTALL_FILEPATH,
+        optional=True,
+    )
     logging.debug("Loaded {} install codes".format(len(install_codes)))
 
     # Add link keys, derived from install codes, that are not already loaded
     added_keys = 0
     for key_name in derived_keys.keys():
         if derived_keys[key_name] in link_keys.values():
-            logging.debug("The derived link key {} was already loaded"
-                          "".format(derived_keys[key_name].hex()))
+            logging.debug(
+                "The derived link key {} was already loaded".format(
+                    derived_keys[key_name].hex(),
+                ),
+            )
         elif key_name in link_keys.keys():
-            logging.warning("The derived link key {} was not added because "
-                            "its name \"{}\" is also used by the link key {}"
-                            "".format(derived_keys[key_name].hex(),
-                                      key_name,
-                                      link_keys[key_name].hex()))
+            logging.warning(
+                "The derived link key "
+                + "{} was not added ".format(derived_keys[key_name].hex())
+                + "because its name \"{}\" ".format(key_name)
+                + "is also used by the link key "
+                + "{}".format(link_keys[key_name].hex()),
+            )
         else:
             link_keys[key_name] = derived_keys[key_name]
             added_keys += 1
-    logging.debug("Added {} link keys that were derived from install codes"
-                  "".format(added_keys))
+    logging.debug(
+        "Added {} link keys that were derived from install codes".format(
+            added_keys,
+        ),
+    )
 
 
-def reset_entries(keep=[]):
-    global entry
-
+def reset_entries(keep=None):
     # Reset all data entries in the dictionary except
     # the ones that were requested to maintain their values
     if keep is None:
-        keep = []
+        keep = set()
     for column_name in db.PKT_COLUMN_NAMES:
         if column_name not in keep:
             entry[column_name] = None
 
 
 def set_entry(pkt_column_name, value_index, known_values):
-    global entry
-
     # Set the corresponding data entry only if the provided value
     # is included in the provided list of known values
     if value_index in known_values.keys():
@@ -165,8 +173,6 @@ def custom_sorter(var_value):
 
 
 def update_networks(panid, epidset, earliest, latest):
-    global networks
-
     # Sanity checks
     if panid is None:
         raise ValueError("The PAN ID is required")
@@ -199,10 +205,15 @@ def update_networks(panid, epidset, earliest, latest):
         }
 
 
-def update_short_addresses(panid, shortaddr, altset, macset, nwkset, earliest,
-                           latest):
-    global short_addresses
-
+def update_short_addresses(
+    panid,
+    shortaddr,
+    altset,
+    macset,
+    nwkset,
+    earliest,
+    latest,
+):
     # Sanity checks
     if panid is None:
         raise ValueError("The PAN ID is required")
@@ -250,10 +261,14 @@ def update_short_addresses(panid, shortaddr, altset, macset, nwkset, earliest,
         }
 
 
-def update_extended_addresses(extendedaddr, altset, macset, nwkset, earliest,
-                              latest):
-    global extended_addresses
-
+def update_extended_addresses(
+    extendedaddr,
+    altset,
+    macset,
+    nwkset,
+    earliest,
+    latest,
+):
     # Sanity check
     if extendedaddr is None:
         raise ValueError("The extended address is required")
@@ -298,18 +313,24 @@ def update_alternative_addresses(panid, shortaddr, extendedaddr):
         update_short_addresses(
             panid,
             shortaddr,
-            set([extendedaddr]),
+            {
+                extendedaddr,
+            },
             set(),
             set(),
             None,
-            None)
+            None,
+        )
         update_extended_addresses(
             extendedaddr,
-            set([(panid, shortaddr)]),
+            {
+                (panid, shortaddr),
+            },
             set(),
             set(),
             None,
-            None)
+            None,
+        )
 
 
 def update_devtypes(panid, shortaddr, extendedaddr, macdevtype, nwkdevtype):
@@ -318,23 +339,23 @@ def update_devtypes(panid, shortaddr, extendedaddr, macdevtype, nwkdevtype):
             panid,
             shortaddr,
             set(),
-            set([macdevtype]) if macdevtype is not None else set(),
-            set([nwkdevtype]) if nwkdevtype is not None else set(),
+            {macdevtype} if macdevtype is not None else set(),
+            {nwkdevtype} if nwkdevtype is not None else set(),
             None,
-            None)
+            None,
+        )
     if extendedaddr is not None:
         update_extended_addresses(
             extendedaddr,
             set(),
-            set([macdevtype]) if macdevtype is not None else set(),
-            set([nwkdevtype]) if nwkdevtype is not None else set(),
+            {macdevtype} if macdevtype is not None else set(),
+            {nwkdevtype} if nwkdevtype is not None else set(),
             None,
-            None)
+            None,
+        )
 
 
 def update_pairs(panid, srcaddr, dstaddr, earliest, latest):
-    global pairs
-
     # Sanity checks
     if panid is None:
         raise ValueError("The PAN ID is required")
@@ -372,8 +393,10 @@ def update_pairs(panid, srcaddr, dstaddr, earliest, latest):
 
 def get_alternative_addresses(panid, shortaddr):
     if (panid, shortaddr) in short_addresses.keys():
-        return set([int(extendedaddr, 16) for extendedaddr
-                   in short_addresses[(panid, shortaddr)]["altset"]])
+        return {
+            int(extendedaddr, 16)
+            for extendedaddr in short_addresses[(panid, shortaddr)]["altset"]
+        }
     else:
         return set()
 
@@ -424,7 +447,8 @@ def update_derived_entries():
             ("!der_mac_dstshortaddr", "0xffff"),
             ("der_mac_dstextendedaddr", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr) in fetched_tuples:
         extendedaddr = get_extendedaddr(panid, shortaddr)
         if extendedaddr is not None:
@@ -440,7 +464,8 @@ def update_derived_entries():
                     ("der_mac_dstpanid", panid),
                     ("der_mac_dstshortaddr", shortaddr),
                     ("der_mac_dstextendedaddr", None),
-                ])
+                ],
+            )
 
     # Update previously unknown MAC Source extended addresses
     fetched_tuples = db.fetch_values(
@@ -455,7 +480,8 @@ def update_derived_entries():
             ("!der_mac_srcshortaddr", None),
             ("der_mac_srcextendedaddr", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr) in fetched_tuples:
         extendedaddr = get_extendedaddr(panid, shortaddr)
         if extendedaddr is not None:
@@ -471,7 +497,8 @@ def update_derived_entries():
                     ("der_mac_srcpanid", panid),
                     ("der_mac_srcshortaddr", shortaddr),
                     ("der_mac_srcextendedaddr", None),
-                ])
+                ],
+            )
 
     # Update previously unknown NWK Destination extended addresses
     fetched_tuples = db.fetch_values(
@@ -490,7 +517,8 @@ def update_derived_entries():
             ("!der_nwk_dstshortaddr", "0xfffb"),
             ("der_nwk_dstextendedaddr", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr) in fetched_tuples:
         extendedaddr = get_extendedaddr(panid, shortaddr)
         if extendedaddr is not None:
@@ -506,7 +534,8 @@ def update_derived_entries():
                     ("der_nwk_dstpanid", panid),
                     ("der_nwk_dstshortaddr", shortaddr),
                     ("der_nwk_dstextendedaddr", None),
-                ])
+                ],
+            )
 
     # Update previously unknown NWK Source extended addresses
     fetched_tuples = db.fetch_values(
@@ -521,7 +550,8 @@ def update_derived_entries():
             ("!der_nwk_srcshortaddr", None),
             ("der_nwk_srcextendedaddr", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr) in fetched_tuples:
         extendedaddr = get_extendedaddr(panid, shortaddr)
         if extendedaddr is not None:
@@ -537,7 +567,8 @@ def update_derived_entries():
                     ("der_nwk_srcpanid", panid),
                     ("der_nwk_srcshortaddr", shortaddr),
                     ("der_nwk_srcextendedaddr", None),
-                ])
+                ],
+            )
 
     # Update previously unknown MAC Destination types
     fetched_tuples = db.fetch_values(
@@ -551,7 +582,8 @@ def update_derived_entries():
             ("error_msg", None),
             ("der_mac_dsttype", "MAC Dst Type: None"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype is not None:
@@ -567,7 +599,8 @@ def update_derived_entries():
                     ("der_mac_dstpanid", panid),
                     ("der_mac_dstshortaddr", shortaddr),
                     ("der_mac_dstextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Update previously unknown MAC Source types
     fetched_tuples = db.fetch_values(
@@ -581,7 +614,8 @@ def update_derived_entries():
             ("error_msg", None),
             ("der_mac_srctype", "MAC Src Type: None"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype is not None:
@@ -597,7 +631,8 @@ def update_derived_entries():
                     ("der_mac_srcpanid", panid),
                     ("der_mac_srcshortaddr", shortaddr),
                     ("der_mac_srcextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Update previously unknown NWK Destination types
     fetched_tuples = db.fetch_values(
@@ -611,7 +646,8 @@ def update_derived_entries():
             ("error_msg", None),
             ("der_nwk_dsttype", "NWK Dst Type: None"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype is not None:
@@ -627,7 +663,8 @@ def update_derived_entries():
                     ("der_nwk_dstpanid", panid),
                     ("der_nwk_dstshortaddr", shortaddr),
                     ("der_nwk_dstextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Update previously unknown NWK Source types
     fetched_tuples = db.fetch_values(
@@ -641,7 +678,8 @@ def update_derived_entries():
             ("error_msg", None),
             ("der_nwk_srctype", "NWK Src Type: None"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype is not None:
@@ -657,7 +695,8 @@ def update_derived_entries():
                     ("der_nwk_srcpanid", panid),
                     ("der_nwk_srcshortaddr", shortaddr),
                     ("der_nwk_srcextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Check for conflicting extended addresses
     for (panid, shortaddr) in short_addresses.keys():
@@ -673,7 +712,8 @@ def update_derived_entries():
                     ("error_msg", None),
                     ("der_mac_dstpanid", panid),
                     ("der_mac_dstshortaddr", shortaddr),
-                ])
+                ],
+            )
             db.update_packets(
                 [
                     "der_mac_srcextendedaddr",
@@ -685,7 +725,8 @@ def update_derived_entries():
                     ("error_msg", None),
                     ("der_mac_srcpanid", panid),
                     ("der_mac_srcshortaddr", shortaddr),
-                ])
+                ],
+            )
             db.update_packets(
                 [
                     "der_nwk_dstextendedaddr",
@@ -697,7 +738,8 @@ def update_derived_entries():
                     ("error_msg", None),
                     ("der_nwk_dstpanid", panid),
                     ("der_nwk_dstshortaddr", shortaddr),
-                ])
+                ],
+            )
             db.update_packets(
                 [
                     "der_nwk_srcextendedaddr",
@@ -709,7 +751,8 @@ def update_derived_entries():
                     ("error_msg", None),
                     ("der_nwk_srcpanid", panid),
                     ("der_nwk_srcshortaddr", shortaddr),
-                ])
+                ],
+            )
 
     # Check for conflicting MAC Destination types
     fetched_tuples = db.fetch_values(
@@ -723,7 +766,8 @@ def update_derived_entries():
             ("error_msg", None),
             ("!der_mac_dstshortaddr", "0xffff"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype == "Conflicting Data":
@@ -739,7 +783,8 @@ def update_derived_entries():
                     ("der_mac_dstpanid", panid),
                     ("der_mac_dstshortaddr", shortaddr),
                     ("der_mac_dstextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Check for conflicting MAC Source types
     fetched_tuples = db.fetch_values(
@@ -752,7 +797,8 @@ def update_derived_entries():
         [
             ("error_msg", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype == "Conflicting Data":
@@ -768,7 +814,8 @@ def update_derived_entries():
                     ("der_mac_srcpanid", panid),
                     ("der_mac_srcshortaddr", shortaddr),
                     ("der_mac_srcextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Check for conflicting NWK Destination types
     fetched_tuples = db.fetch_values(
@@ -785,7 +832,8 @@ def update_derived_entries():
             ("!der_nwk_dstshortaddr", "0xfffc"),
             ("!der_nwk_dstshortaddr", "0xfffb"),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype == "Conflicting Data":
@@ -801,7 +849,8 @@ def update_derived_entries():
                     ("der_nwk_dstpanid", panid),
                     ("der_nwk_dstshortaddr", shortaddr),
                     ("der_nwk_dstextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
     # Check for conflicting NWK Source types
     fetched_tuples = db.fetch_values(
@@ -814,7 +863,8 @@ def update_derived_entries():
         [
             ("error_msg", None),
         ],
-        True)
+        True,
+    )
     for (panid, shortaddr, extendedaddr) in fetched_tuples:
         nwkdevtype = get_nwkdevtype(panid, shortaddr, extendedaddr)
         if nwkdevtype == "Conflicting Data":
@@ -830,13 +880,11 @@ def update_derived_entries():
                     ("der_nwk_srcpanid", panid),
                     ("der_nwk_srcshortaddr", shortaddr),
                     ("der_nwk_srcextendedaddr", extendedaddr),
-                ])
+                ],
+            )
 
 
 def add_new_key(key_bytes, key_type, key_name):
-    global network_keys
-    global link_keys
-
     # Distinguish network keys from link keys
     if key_type.lower() == "network":
         loaded_keys = network_keys
@@ -849,22 +897,18 @@ def add_new_key(key_bytes, key_type, key_name):
     if key_bytes not in loaded_keys.values():
         # Make sure that its name is unique before adding it
         if key_name in loaded_keys.keys():
-            return ("The key {} was not added because its "
-                    "name \"{}\" is also used by the {} key {}"
-                    "".format(key_bytes.hex(),
-                              key_name,
-                              key_type.lower(),
-                              loaded_keys[key_name].hex()))
+            return (
+                "The key {} was not added because ".format(key_bytes.hex())
+                + "its name \"{}\" is also used ".format(key_name)
+                + "by the {} key ".format(key_type.lower())
+                + "{}".format(loaded_keys[key_name].hex())
+            )
         else:
             loaded_keys[key_name] = key_bytes
     return None
 
 
 def add_config_entry(entry_type, entry_value, entry_name):
-    global network_keys
-    global link_keys
-    global install_codes
-
     # Make sure that the value does not include the hexadecimal prefix
     if entry_value.startswith("0x"):
         entry_value = entry_value[2:]
@@ -889,62 +933,72 @@ def add_config_entry(entry_type, entry_value, entry_name):
         raise ValueError("Unknown entry type \"{}\"".format(entry_type))
 
     # Sanity checks
-    if not (len(entry_value) == expected_length
-            and all(d in string.hexdigits for d in entry_value)):
-        raise ValueError("The value of the configuration entry "
-                         "should contain {} hexadecimal digits"
-                         "".format(expected_length))
+    if not (
+        len(entry_value) == expected_length
+        and all(d in string.hexdigits for d in entry_value)
+    ):
+        raise ValueError(
+            "The value of the configuration entry "
+            + "should contain {} hexadecimal digits".format(expected_length),
+        )
     elif entry_name in {None, ""}:
-        raise ValueError("A unique name is required for "
-                         "the configuration entry")
+        raise ValueError(
+            "A unique name is required for the configuration entry",
+        )
     elif entry_name.startswith("_"):
-        raise ValueError("The name of the configuration entry "
-                         "is not allowed to start with \"_\"")
+        raise ValueError(
+            "The name of the configuration entry "
+            + "is not allowed to start with \"_\"",
+        )
 
     # Convert the hexadecimal representation into a bytes object
     entry_bytes = bytes.fromhex(entry_value)
 
     # Sanity checks
     if entry_bytes in config_entries.values():
-        raise ValueError("The {} {} was already loaded"
-                         "".format(entry_type.replace("-", " "),
-                                   entry_bytes.hex()))
+        raise ValueError(
+            "The {} {} was already loaded".format(
+                entry_type.replace("-", " "),
+                entry_bytes.hex(),
+            ),
+        )
     elif entry_name in config_entries.keys():
-        raise ValueError("Could not add the {} {} because its "
-                         "name \"{}\" is already used by the {} {}"
-                         "".format(entry_type.replace("-", " "),
-                                   entry_bytes.hex(),
-                                   entry_name,
-                                   entry_type.replace("-", " "),
-                                   config_entries[entry_name].hex()))
+        raise ValueError(
+            "Could not add the {} ".format(entry_type.replace("-", " "))
+            + "{} because its name ".format(entry_bytes.hex())
+            + "\"{}\" is already used by the ".format(entry_name)
+            + "{} ".format(entry_type.replace("-", " "))
+            + "{}".format(config_entries[entry_name].hex()),
+        )
 
     # If the provided configuration entry is an install code, check its CRC
     if entry_type == "install-code":
         computed_crc, received_crc = fs.check_crc(entry_bytes)
         if computed_crc != received_crc:
-            raise ValueError("The CRC value of the install code {} "
-                             "is 0x{:04x}, which does not match the "
-                             "computed CRC value 0x{:04x}"
-                             "".format(entry_bytes.hex(),
-                                       received_crc,
-                                       computed_crc))
+            raise ValueError(
+                "The CRC value of the install code "
+                + "{} is ".format(entry_bytes.hex())
+                + "0x{:04x}, ".format(received_crc)
+                + "which does not match the computed CRC value "
+                + "0x{:04x}".format(computed_crc),
+            )
 
     # Save the provided configuration entry
     config_entries[entry_name] = entry_bytes
     with open(config_filepath, mode="a", encoding="utf-8") as fp:
-        fp.write("{}\t{}\n".format(config_entries[entry_name].hex(),
-                                   entry_name))
-    logging.info("Saved the {} {} in the \"{}\" configuration file"
-                 "".format(entry_type.replace("-", " "),
-                           entry_bytes.hex(),
-                           config_filepath))
+        fp.write(
+            "{}\t{}\n".format(config_entries[entry_name].hex(), entry_name),
+        )
+    logging.info(
+        "Saved the {} {} in the \"{}\" configuration file".format(
+            entry_type.replace("-", " "),
+            entry_bytes.hex(),
+            config_filepath,
+        ),
+    )
 
 
 def rm_config_entry(entry_type, entry_name):
-    global network_keys
-    global link_keys
-    global install_codes
-
     # Identify the type of the provided configuration entry
     if entry_type == "network-key":
         config_entries = network_keys
@@ -960,21 +1014,31 @@ def rm_config_entry(entry_type, entry_name):
 
     # Make sure that the provided name is used by a configuration entry
     if entry_name not in config_entries.keys():
-        raise ValueError("The name \"{}\" is not used by any {}"
-                         "".format(entry_name,
-                                   entry_type.replace("-", " ")))
+        raise ValueError(
+            "The name \"{}\" is not used by any {}".format(
+                entry_name,
+                entry_type.replace("-", " "),
+            ),
+        )
 
     # Update the corresponding configuration file
     del config_entries[entry_name]
     with open(config_filepath, mode="w", encoding="utf-8") as fp:
         for tmp_name in config_entries.keys():
             if not tmp_name.startswith("_"):
-                fp.write("{}\t{}\n".format(config_entries[tmp_name].hex(),
-                                           tmp_name))
-    logging.info("Removed the \"{}\" {} from the \"{}\" configuration file"
-                 "".format(entry_name,
-                           entry_type.replace("-", " "),
-                           config_filepath))
+                fp.write(
+                    "{}\t{}\n".format(
+                        config_entries[tmp_name].hex(),
+                        tmp_name,
+                    ),
+                )
+    logging.info(
+        "Removed the \"{}\" {} from the \"{}\" configuration file".format(
+            entry_name,
+            entry_type.replace("-", " "),
+            config_filepath,
+        ),
+    )
 
 
 def print_config():

@@ -15,7 +15,7 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Command-line interface for the zigator package
+Command-line interface for the ``zigator`` package.
 """
 
 import argparse

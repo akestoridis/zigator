@@ -21,7 +21,7 @@ import os
 from .. import config
 
 
-INCLUDED_COLUMNS = set([
+INCLUDED_COLUMNS = {
     "phy_length",
     "mac_framepending",
     "mac_ackreq",
@@ -36,10 +36,13 @@ INCLUDED_COLUMNS = set([
     "nwk_edinitiator",
     "nwk_radius",
     "nwk_aux_extnonce",
-])
+}
 
-INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
-                     if column_name in INCLUDED_COLUMNS]
+INSPECTED_COLUMNS = [
+    column_name
+    for column_name in config.db.PKT_COLUMN_NAMES
+    if column_name in INCLUDED_COLUMNS
+]
 
 PACKET_TYPES = [
     (
@@ -291,7 +294,8 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             "packets",
             INSPECTED_COLUMNS,
             conditions,
-            True)
+            True,
+        )
         form_values.sort(key=config.custom_sorter)
 
         # Compute the matching frequency for each form
@@ -323,9 +327,13 @@ def form_frequencies(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the frequency of forms "
-                 "for {} packet types using {} workers..."
-                 "".format(len(PACKET_TYPES), num_workers))
+    logging.info(
+        "Computing the frequency of forms "
+        + "for {} packet types using {} workers...".format(
+            len(PACKET_TYPES),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -334,8 +342,10 @@ def form_frequencies(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

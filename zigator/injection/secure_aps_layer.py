@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,17 +14,26 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4FCS
-from scapy.all import ZigbeeAppCommandPayload
-from scapy.all import ZigbeeAppDataPayload
-from scapy.all import ZigbeeNWK
-from scapy.all import ZigbeeSecurityHeader
+from scapy.all import (
+    Dot15d4FCS,
+    ZigbeeAppCommandPayload,
+    ZigbeeAppDataPayload,
+    ZigbeeNWK,
+    ZigbeeSecurityHeader,
+)
 
 from .. import crypto
 
 
-def secure_aps_layer(pkt, key, keytype, extnonce, framecounter, srcaddr,
-                     keyseqnum=None):
+def secure_aps_layer(
+    pkt,
+    key,
+    keytype,
+    extnonce,
+    framecounter,
+    srcaddr,
+    keyseqnum=None,
+):
     # Sanity checks
     if not pkt.haslayer(Dot15d4FCS):
         raise ValueError("The packet does not have IEEE 802.15.4 MAC fields")
@@ -34,17 +43,23 @@ def secure_aps_layer(pkt, key, keytype, extnonce, framecounter, srcaddr,
         raise ValueError("The packet does not have APS fields")
     elif pkt[ZigbeeAppDataPayload].frame_control.security:
         raise ValueError("The packet has already enabled APS security")
-    elif (pkt[ZigbeeAppDataPayload].aps_frametype == 1
-            and not pkt.haslayer(ZigbeeAppCommandPayload)):
+    elif (
+        pkt[ZigbeeAppDataPayload].aps_frametype == 1
+        and not pkt.haslayer(ZigbeeAppCommandPayload)
+    ):
         raise ValueError("The packet does not have APS Command fields")
-    elif (pkt[ZigbeeAppDataPayload].aps_frametype == 1
-            and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14
-            and pkt[ZigbeeAppCommandPayload].frame_control.security):
+    elif (
+        pkt[ZigbeeAppDataPayload].aps_frametype == 1
+        and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14
+        and pkt[ZigbeeAppCommandPayload].frame_control.security
+    ):
         raise ValueError("The packet has already enabled APS Tunnel security")
 
     # Separate the updated APS header and the decrypted APS payload
-    if (pkt[ZigbeeAppDataPayload].aps_frametype == 1
-            and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14):
+    if (
+        pkt[ZigbeeAppDataPayload].aps_frametype == 1
+        and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14
+    ):
         pkt[ZigbeeAppCommandPayload].frame_control.security = True
         tunneled_framecontrol = (
                 pkt[ZigbeeAppCommandPayload].aps_frametype
@@ -122,21 +137,33 @@ def secure_aps_layer(pkt, key, keytype, extnonce, framecounter, srcaddr,
 
     # Encrypt the APS payload and authenticate the APS header and APS payload
     enc_payload, mic = crypto.zigbee_enc_mic(
-        key, srcaddr, framecounter, aux_bytearray[0],
-        header, keyseqnum, dec_payload)
+        key,
+        srcaddr,
+        framecounter,
+        aux_bytearray[0],
+        header,
+        keyseqnum,
+        dec_payload,
+    )
 
     # Update the APS payload of the provided packet
     aux_bytearray += enc_payload + mic
-    if (pkt[ZigbeeAppDataPayload].aps_frametype == 1
-            and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14):
+    if (
+        pkt[ZigbeeAppDataPayload].aps_frametype == 1
+        and pkt[ZigbeeAppCommandPayload].cmd_identifier == 14
+    ):
         pkt[ZigbeeAppCommandPayload].payload = ZigbeeSecurityHeader(
-            bytes(aux_bytearray))
+            bytes(aux_bytearray),
+        )
     else:
         pkt[ZigbeeAppDataPayload].payload = ZigbeeSecurityHeader(
-            bytes(aux_bytearray))
+            bytes(aux_bytearray),
+        )
 
     # Update the Frame Check Sequence (FCS) field of the provided packet
     pkt[Dot15d4FCS].fcs = int.from_bytes(
-        pkt.compute_fcs(bytes(pkt)[:-2]), byteorder="little")
+        pkt.compute_fcs(bytes(pkt)[:-2]),
+        byteorder="little",
+    )
 
     return pkt

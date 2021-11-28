@@ -53,7 +53,8 @@ def battery_statuses(db_filepath, out_dirpath):
             ("aps_cluster_id", "0x0500: IAS Zone"),
             ("zcl_cmd_id", "0x01: Read Attributes Response"),
         ],
-        False)
+        False,
+    )
     for fetched_tuple in fetched_tuples:
         pkt_time = fetched_tuple[0]
         identifiers = fetched_tuple[1].split(",")
@@ -61,18 +62,23 @@ def battery_statuses(db_filepath, out_dirpath):
         datatypes = fetched_tuple[3].split(",")
         values = fetched_tuple[4].split(",")
         srcextendedaddr = fetched_tuple[5]
-        if (len(identifiers) != len(statuses)
-                or len(identifiers) != len(datatypes)
-                or len(identifiers) != len(values)):
+        if (
+            len(identifiers) != len(statuses)
+            or len(identifiers) != len(datatypes)
+            or len(identifiers) != len(values)
+        ):
             logging.warning("Invalid ZCL Read Attributes Response entries")
             continue
         for i in range(len(identifiers)):
             if identifiers[i] == "0x0002":
-                if (statuses[i] == "0x00: SUCCESS"
-                        and datatypes[i] == "0x19: 16-bit bitmap"):
+                if (
+                    statuses[i] == "0x00: SUCCESS"
+                    and datatypes[i] == "0x19: 16-bit bitmap"
+                ):
                     zone_status = int.from_bytes(
                         bytes.fromhex(values[i][2:]),
-                        byteorder="little")
+                        byteorder="little",
+                    )
                     battery_status = (zone_status >> 3) & 0b1
                     measurement = (pkt_time, battery_status)
                     if srcextendedaddr not in measurements.keys():
@@ -99,12 +105,14 @@ def battery_statuses(db_filepath, out_dirpath):
             ("aps_cluster_id", "0x0500: IAS Zone"),
             ("zcl_cmd_id", "0x00: Zone Status Change Notification"),
         ],
-        False)
+        False,
+    )
     for fetched_tuple in fetched_tuples:
         pkt_time = fetched_tuple[0]
         zone_status = int.from_bytes(
             bytes.fromhex(fetched_tuple[1][2:]),
-            byteorder="little")
+            byteorder="little",
+        )
         srcextendedaddr = fetched_tuple[2]
         battery_status = (zone_status >> 3) & 0b1
         measurement = (pkt_time, battery_status)
@@ -124,7 +132,11 @@ def battery_statuses(db_filepath, out_dirpath):
     for srcextendedaddr in measurements.keys():
         out_filepath = os.path.join(
             out_dirpath,
-            "battery-statuses-{}.tsv".format(srcextendedaddr))
+            "battery-statuses-{}.tsv".format(srcextendedaddr),
+        )
         config.fs.write_tsv(measurements[srcextendedaddr], out_filepath)
-    logging.info("Extracted battery status measurements of {} devices"
-                 "".format(len(measurements.keys())))
+    logging.info(
+        "Extracted battery status measurements of {} devices".format(
+            len(measurements.keys()),
+        ),
+    )

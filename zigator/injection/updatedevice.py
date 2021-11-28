@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,23 +14,41 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Data
-from scapy.all import Dot15d4FCS
-from scapy.all import ZigbeeAppCommandPayload
-from scapy.all import ZigbeeAppDataPayload
-from scapy.all import ZigbeeNWK
+from scapy.all import (
+    Dot15d4Data,
+    Dot15d4FCS,
+    ZigbeeAppCommandPayload,
+    ZigbeeAppDataPayload,
+    ZigbeeNWK,
+)
 
 from .secure_aps_layer import secure_aps_layer
 from .secure_nwk_layer import secure_nwk_layer
 
 
-def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
-                 nwk_dstshortaddr, nwk_srcshortaddr, nwk_radius, nwk_seqnum,
-                 aps_counter, aps_updatedevice_extendedaddr,
-                 aps_updatedevice_shortaddr, aps_updatedevice_status,
-                 nwk_aux_framecounter, nwk_aux_srcaddr, nwk_aux_keyseqnum,
-                 nwk_key, aps_security, aps_aux_extnonce,
-                 aps_aux_framecounter, aps_aux_srcaddr, aps_key):
+def updatedevice(
+    mac_seqnum,
+    mac_dstpanid,
+    mac_dstshortaddr,
+    mac_srcshortaddr,
+    nwk_dstshortaddr,
+    nwk_srcshortaddr,
+    nwk_radius,
+    nwk_seqnum,
+    aps_counter,
+    aps_updatedevice_extendedaddr,
+    aps_updatedevice_shortaddr,
+    aps_updatedevice_status,
+    nwk_aux_framecounter,
+    nwk_aux_srcaddr,
+    nwk_aux_keyseqnum,
+    nwk_key,
+    aps_security,
+    aps_aux_extnonce,
+    aps_aux_framecounter,
+    aps_aux_srcaddr,
+    aps_key,
+):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -50,11 +68,15 @@ def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
         raise ValueError("Invalid NWK sequence number")
     elif aps_counter < 0 or aps_counter > 255:
         raise ValueError("Invalid APS counter")
-    elif (aps_updatedevice_extendedaddr < 0
-            or aps_updatedevice_extendedaddr.bit_length() > 64):
+    elif (
+        aps_updatedevice_extendedaddr < 0
+        or aps_updatedevice_extendedaddr.bit_length() > 64
+    ):
         raise ValueError("Invalid extended Update-Device address")
-    elif (aps_updatedevice_shortaddr < 0
-            or aps_updatedevice_shortaddr.bit_length() > 16):
+    elif (
+        aps_updatedevice_shortaddr < 0
+        or aps_updatedevice_shortaddr.bit_length() > 16
+    ):
         raise ValueError("Invalid short Update-Device address")
     elif aps_updatedevice_status not in {0, 1, 2, 3}:
         raise ValueError("Invalid Update-Device status field value")
@@ -88,11 +110,13 @@ def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Data(
             dest_panid=mac_dstpanid,
             dest_addr=mac_dstshortaddr,
-            src_addr=mac_srcshortaddr)
+            src_addr=mac_srcshortaddr,
+        )
         / ZigbeeNWK(
             frametype=0,
             proto_version=2,
@@ -101,17 +125,20 @@ def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             destination=nwk_dstshortaddr,
             source=nwk_srcshortaddr,
             radius=nwk_radius,
-            seqnum=nwk_seqnum)
+            seqnum=nwk_seqnum,
+        )
         / ZigbeeAppDataPayload(
             aps_frametype=1,
             delivery_mode=0,
             frame_control=0b0000,
-            counter=aps_counter)
+            counter=aps_counter,
+        )
         / ZigbeeAppCommandPayload(
             cmd_identifier=6,
             address=aps_updatedevice_extendedaddr,
             short_address=aps_updatedevice_shortaddr,
-            status=aps_updatedevice_status)
+            status=aps_updatedevice_status,
+        )
     )
 
     # Check whether its APS layer should be secured or not
@@ -122,7 +149,8 @@ def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             0,
             aps_aux_extnonce,
             aps_aux_framecounter,
-            aps_aux_srcaddr)
+            aps_aux_srcaddr,
+        )
 
     # Secure its NWK layer
     forged_pkt = secure_nwk_layer(
@@ -131,6 +159,7 @@ def updatedevice(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
         True,
         nwk_aux_framecounter,
         nwk_aux_srcaddr,
-        nwk_aux_keyseqnum)
+        nwk_aux_keyseqnum,
+    )
 
     return forged_pkt

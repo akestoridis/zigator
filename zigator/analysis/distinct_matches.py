@@ -933,7 +933,8 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             "packets",
             var_columns,
             conditions,
-            True)
+            True,
+        )
         var_values.sort(key=config.custom_sorter)
 
         # Fetch the distinct values with the listed columns
@@ -941,17 +942,18 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             "packets",
             list(var_columns) + column_names,
             conditions,
-            True)
+            True,
+        )
 
         # Compute the distinct matches for each value
-        distinct_matches = [set() for _ in range(len(var_values))]
+        tmp_sets = [set() for _ in range(len(var_values))]
         for fetched_tuple in fetched_tuples:
             var_value = fetched_tuple[:len(var_columns)]
             mat_value = fetched_tuple[len(var_columns):]
-            distinct_matches[var_values.index(var_value)].add(mat_value)
+            tmp_sets[var_values.index(var_value)].add(mat_value)
         results = []
         for i in range(len(var_values)):
-            matches = list(distinct_matches[i])
+            matches = list(tmp_sets[i])
             matches.sort(key=config.custom_sorter)
             results.append((var_values[i], matches))
 
@@ -975,9 +977,13 @@ def distinct_matches(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the distinct matching values "
-                 "for {} conditions using {} workers..."
-                 "".format(len(COLUMN_MATCHES), num_workers))
+    logging.info(
+        "Computing the distinct matching values "
+        + "for {} conditions using {} workers...".format(
+            len(COLUMN_MATCHES),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -986,8 +992,10 @@ def distinct_matches(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

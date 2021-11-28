@@ -20,12 +20,16 @@ import os
 import graphviz
 import numpy as np
 from sklearn import metrics
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import (
+    GridSearchCV,
+    train_test_split,
+)
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.tree import export_graphviz
-from sklearn.tree import export_text
+from sklearn.tree import (
+    DecisionTreeClassifier,
+    export_graphviz,
+    export_text,
+)
 
 from .. import config
 
@@ -35,8 +39,9 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     # Sanity check
     if not os.path.isfile(db_filepath):
         raise ValueError(
-            "The provided database file \"{}\" ".format(db_filepath)
-            + "does not exist",
+            "The provided database file \"{}\" does not exist".format(
+                db_filepath,
+            ),
         )
 
     # Make sure that the output directory exists
@@ -114,8 +119,9 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         False,
     )
     logging.info(
-        "Fetched {} ".format(len(raw_samples))
-        + "raw samples of encrypted NWK commands",
+        "Fetched {} raw samples of encrypted NWK commands".format(
+            len(raw_samples),
+        ),
     )
 
     # Write the raw samples in a file
@@ -146,7 +152,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         "0x0c: NWK End Device Timeout Response": 12,
     }
     if single_cmd is None:
-        class_names = sorted(list(nwk_commands.keys()), key=nwk_commands.get)
+        class_names = sorted(nwk_commands.keys(), key=nwk_commands.get)
     elif single_cmd not in nwk_commands.keys():
         raise ValueError("Unknown NWK command \"{}\"".format(single_cmd))
     else:
@@ -219,8 +225,9 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
             ("der_nwk_srctype", "CATEGORICAL"),
         ]
     logging.info(
-        "The classifier will use {} ".format(len(feature_definitions))
-        + "unencoded features",
+        "The classifier will use {} unencoded features".format(
+            len(feature_definitions),
+        ),
     )
 
     # Process the raw samples
@@ -258,29 +265,45 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
                 raise ValueError("Missing the NWK source short address")
             elif feature_name == "nwk_aux_srcaddr" and value is None:
                 raise ValueError("Missing the NWKAUX source extended address")
-            elif (feature_name == "der_mac_dsttype"
-                    and value == "MAC Dst Type: None"):
+            elif (
+                feature_name == "der_mac_dsttype"
+                and value == "MAC Dst Type: None"
+            ):
                 raise ValueError("Unknown MAC destination type")
-            elif (feature_name == "der_mac_dsttype"
-                    and value == "MAC Dst Type: Conflicting Data"):
+            elif (
+                feature_name == "der_mac_dsttype"
+                and value == "MAC Dst Type: Conflicting Data"
+            ):
                 raise ValueError("Conflicting MAC destination type")
-            elif (feature_name == "der_mac_srctype"
-                    and value == "MAC Src Type: None"):
+            elif (
+                feature_name == "der_mac_srctype"
+                and value == "MAC Src Type: None"
+            ):
                 raise ValueError("Unknown MAC source type")
-            elif (feature_name == "der_mac_srctype"
-                    and value == "MAC Src Type: Conflicting Data"):
+            elif (
+                feature_name == "der_mac_srctype"
+                and value == "MAC Src Type: Conflicting Data"
+            ):
                 raise ValueError("Conflicting MAC source type")
-            elif (feature_name == "der_nwk_dsttype"
-                    and value == "NWK Dst Type: None"):
+            elif (
+                feature_name == "der_nwk_dsttype"
+                and value == "NWK Dst Type: None"
+            ):
                 raise ValueError("Unknown NWK destination type")
-            elif (feature_name == "der_nwk_dsttype"
-                    and value == "NWK Dst Type: Conflicting Data"):
+            elif (
+                feature_name == "der_nwk_dsttype"
+                and value == "NWK Dst Type: Conflicting Data"
+            ):
                 raise ValueError("Conflicting NWK destination type")
-            elif (feature_name == "der_nwk_srctype"
-                    and value == "NWK Src Type: None"):
+            elif (
+                feature_name == "der_nwk_srctype"
+                and value == "NWK Src Type: None"
+            ):
                 raise ValueError("Unknown NWK source type")
-            elif (feature_name == "der_nwk_srctype"
-                    and value == "NWK Src Type: Conflicting Data"):
+            elif (
+                feature_name == "der_nwk_srctype"
+                and value == "NWK Src Type: Conflicting Data"
+            ):
                 raise ValueError("Conflicting NWK source type")
 
             # Separate numerical features from categorical features
@@ -324,8 +347,9 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         + encoded_features
     )
     logging.info(
-        "The classifier will use {} ".format(len(dataset_features))
-        + "encoded features",
+        "The classifier will use {} encoded features".format(
+            len(dataset_features),
+        ),
     )
 
     # Write the features of the dataset in a file
@@ -359,7 +383,8 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
 
             # Check whether this sample applies to multiple NWK commands
             matching_cmds = [
-                cmd_name for cmd_name in class_names
+                cmd_name
+                for cmd_name in class_names
                 if cmd_frequency[nwk_commands[cmd_name]] > 0
             ]
             if len(matching_cmds) > 1:
@@ -520,12 +545,14 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
     clf = gscv.best_estimator_
 
     # Plot the tree of the trained model
-    dot_data = export_graphviz(clf,
-                               out_file=None,
-                               feature_names=dataset_features,
-                               class_names=class_names,
-                               rounded=True,
-                               filled=True)
+    dot_data = export_graphviz(
+        clf,
+        out_file=None,
+        feature_names=dataset_features,
+        class_names=class_names,
+        rounded=True,
+        filled=True,
+    )
     graph = graphviz.Source(dot_data)
     graph.render(os.path.join(out_dirpath, "enc-nwk-cmd-tree"))
 

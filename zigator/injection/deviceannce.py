@@ -14,19 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Data
-from scapy.all import Dot15d4FCS
-from scapy.all import ZDPDeviceAnnce
-from scapy.all import ZigbeeAppDataPayload
-from scapy.all import ZigbeeDeviceProfile
-from scapy.all import ZigbeeNWK
+from scapy.all import (
+    Dot15d4Data,
+    Dot15d4FCS,
+    ZDPDeviceAnnce,
+    ZigbeeAppDataPayload,
+    ZigbeeDeviceProfile,
+    ZigbeeNWK,
+)
 
 from .secure_nwk_layer import secure_nwk_layer
 
 
-def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
-                nwk_srcextendedaddr, aps_counter, zdp_seqnum,
-                nwk_aux_framecounter, nwk_aux_keyseqnum, nwk_key):
+def deviceannce(
+    mac_seqnum,
+    mac_dstpanid,
+    mac_srcshortaddr,
+    nwk_seqnum,
+    nwk_srcextendedaddr,
+    aps_counter,
+    zdp_seqnum,
+    nwk_aux_framecounter,
+    nwk_aux_keyseqnum,
+    nwk_key,
+):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -60,11 +71,13 @@ def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Data(
             dest_panid=mac_dstpanid,
             dest_addr=0xffff,
-            src_addr=mac_srcshortaddr)
+            src_addr=mac_srcshortaddr,
+        )
         / ZigbeeNWK(
             frametype=0,
             proto_version=2,
@@ -74,7 +87,8 @@ def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
             source=mac_srcshortaddr,
             radius=30,
             seqnum=nwk_seqnum,
-            ext_src=nwk_srcextendedaddr)
+            ext_src=nwk_srcextendedaddr,
+        )
         / ZigbeeAppDataPayload(
             aps_frametype=0,
             delivery_mode=2,
@@ -83,9 +97,11 @@ def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
             cluster=0x0013,
             profile=0x0000,
             src_endpoint=0,
-            counter=aps_counter)
+            counter=aps_counter,
+        )
         / ZigbeeDeviceProfile(
-            trans_seqnum=zdp_seqnum)
+            trans_seqnum=zdp_seqnum,
+        )
         / ZDPDeviceAnnce(
             nwk_addr=mac_srcshortaddr,
             ieee_addr=nwk_srcextendedaddr,
@@ -94,7 +110,8 @@ def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
             power_source=1,
             receiver_on_when_idle=1,
             security_capability=0,
-            allocate_address=1)
+            allocate_address=1,
+        )
     )
 
     # Secure its NWK layer
@@ -104,6 +121,7 @@ def deviceannce(mac_seqnum, mac_dstpanid, mac_srcshortaddr, nwk_seqnum,
         True,
         nwk_aux_framecounter,
         nwk_srcextendedaddr,
-        nwk_aux_keyseqnum)
+        nwk_aux_keyseqnum,
+    )
 
     return forged_pkt

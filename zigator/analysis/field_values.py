@@ -21,7 +21,7 @@ import os
 from .. import config
 
 
-IGNORED_COLUMNS = set([
+IGNORED_COLUMNS = {
     "pkt_num",
     "pkt_time",
     "phy_payload",
@@ -39,10 +39,13 @@ IGNORED_COLUMNS = set([
     "aps_tunnel_counter",
     "zdp_seqnum",
     "zcl_seqnum",
-])
+}
 
-INSPECTED_COLUMNS = [column_name for column_name in config.db.PKT_COLUMN_NAMES
-                     if column_name not in IGNORED_COLUMNS]
+INSPECTED_COLUMNS = [
+    column_name
+    for column_name in config.db.PKT_COLUMN_NAMES
+    if column_name not in IGNORED_COLUMNS
+]
 
 PACKET_TYPES = [
     (
@@ -335,16 +338,17 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
             "packets",
             INSPECTED_COLUMNS,
             conditions,
-            True)
+            True,
+        )
 
         # Compute the distinct values of each column
-        distinct_values = [set() for _ in range(len(INSPECTED_COLUMNS))]
+        tmp_sets = [set() for _ in range(len(INSPECTED_COLUMNS))]
         for fetched_tuple in fetched_tuples:
             for i in range(len(INSPECTED_COLUMNS)):
-                distinct_values[i].add((fetched_tuple[i],))
+                tmp_sets[i].add((fetched_tuple[i],))
         results = []
         for i in range(len(INSPECTED_COLUMNS)):
-            var_values = list(distinct_values[i])
+            var_values = list(tmp_sets[i])
             var_values.sort(key=config.custom_sorter)
             var_values = [var_value[0] for var_value in var_values]
             results.append((INSPECTED_COLUMNS[i], var_values))
@@ -369,9 +373,13 @@ def field_values(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the distinct field values "
-                 "of {} packet types using {} workers..."
-                 "".format(len(PACKET_TYPES), num_workers))
+    logging.info(
+        "Computing the distinct field values "
+        + "of {} packet types using {} workers...".format(
+            len(PACKET_TYPES),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -380,8 +388,10 @@ def field_values(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

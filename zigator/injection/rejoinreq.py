@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -14,18 +14,31 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Data
-from scapy.all import Dot15d4FCS
-from scapy.all import ZigbeeNWK
-from scapy.all import ZigbeeNWKCommandPayload
+from scapy.all import (
+    Dot15d4Data,
+    Dot15d4FCS,
+    ZigbeeNWK,
+    ZigbeeNWKCommandPayload,
+)
 
 from .secure_nwk_layer import secure_nwk_layer
 
 
-def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
-              nwk_seqnum, nwk_srcextendedaddr, nwk_rejoinreq_devtype,
-              nwk_rejoinreq_powsrc, nwk_rejoinreq_rxidle, nwk_security,
-              nwk_aux_framecounter, nwk_aux_keyseqnum, nwk_key):
+def rejoinreq(
+    mac_seqnum,
+    mac_dstpanid,
+    mac_dstshortaddr,
+    mac_srcshortaddr,
+    nwk_seqnum,
+    nwk_srcextendedaddr,
+    nwk_rejoinreq_devtype,
+    nwk_rejoinreq_powsrc,
+    nwk_rejoinreq_rxidle,
+    nwk_security,
+    nwk_aux_framecounter,
+    nwk_aux_keyseqnum,
+    nwk_key,
+):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -44,8 +57,9 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
     elif nwk_rejoinreq_powsrc not in {0, 1}:
         raise ValueError("Invalid Power Source rejoin request field value")
     elif nwk_rejoinreq_rxidle not in {0, 1}:
-        raise ValueError("Invalid Receiver On When Idle "
-                         "rejoin request field value")
+        raise ValueError(
+            "Invalid Receiver On When Idle rejoin request field value",
+        )
     elif nwk_security not in {0, 1}:
         raise ValueError("Invalid NWK security field value")
     elif nwk_aux_framecounter < 0 or nwk_aux_framecounter.bit_length() > 32:
@@ -66,11 +80,13 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Data(
             dest_panid=mac_dstpanid,
             dest_addr=mac_dstshortaddr,
-            src_addr=mac_srcshortaddr)
+            src_addr=mac_srcshortaddr,
+        )
         / ZigbeeNWK(
             frametype=1,
             proto_version=2,
@@ -80,7 +96,8 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             source=mac_srcshortaddr,
             radius=1,
             seqnum=nwk_seqnum,
-            ext_src=nwk_srcextendedaddr)
+            ext_src=nwk_srcextendedaddr,
+        )
         / ZigbeeNWKCommandPayload(
             cmd_identifier=6,
             alternate_pan_coordinator=0,
@@ -88,7 +105,8 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             power_source=nwk_rejoinreq_powsrc,
             receiver_on_when_idle=nwk_rejoinreq_rxidle,
             security_capability=0,
-            allocate_address=1)
+            allocate_address=1,
+        )
     )
 
     # Check whether its NWK layer should be secured or not
@@ -99,6 +117,7 @@ def rejoinreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, mac_srcshortaddr,
             True,
             nwk_aux_framecounter,
             nwk_srcextendedaddr,
-            nwk_aux_keyseqnum)
+            nwk_aux_keyseqnum,
+        )
 
     return forged_pkt

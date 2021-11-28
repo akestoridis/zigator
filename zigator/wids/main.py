@@ -106,8 +106,9 @@ def main(
         logging.info("Maximum number of zip files: {}".format(MAX_ZIP_FILES))
         logging.info("Link key names: {}".format(LINK_KEY_NAMES))
         logging.info(
-            "Maximum number of uncommitted entries: "
-            + "{}".format(max_uncommitted_entries),
+            "Maximum number of uncommitted entries: {}".format(
+                max_uncommitted_entries,
+            ),
         )
         logging.info("Batch delay: {} s".format(batch_delay))
         logging.info("Table threshold: {} rows".format(table_thres))

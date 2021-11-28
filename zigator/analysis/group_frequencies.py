@@ -94,7 +94,8 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
         results = config.db.grouped_count(
             "packets",
             column_names,
-            count_errors)
+            count_errors,
+        )
 
         # Write the computed frequencies in the output file
         config.fs.write_tsv(results, out_filepath)
@@ -116,9 +117,13 @@ def group_frequencies(db_filepath, out_dirpath, num_workers):
             num_workers = mp.cpu_count()
     if num_workers < 1:
         num_workers = 1
-    logging.info("Computing the frequency of values "
-                 "for {} column groups using {} workers..."
-                 "".format(len(COLUMN_GROUPS), num_workers))
+    logging.info(
+        "Computing the frequency of values "
+        + "for {} column groups using {} workers...".format(
+            len(COLUMN_GROUPS),
+            num_workers,
+        ),
+    )
 
     # Create variables that will be shared by the processes
     task_index = mp.Value("L", 0, lock=False)
@@ -127,8 +132,10 @@ def group_frequencies(db_filepath, out_dirpath, num_workers):
     # Start the processes
     processes = []
     for _ in range(num_workers):
-        p = mp.Process(target=worker,
-                       args=(db_filepath, out_dirpath, task_index, task_lock))
+        p = mp.Process(
+            target=worker,
+            args=(db_filepath, out_dirpath, task_index, task_lock),
+        )
         p.start()
         processes.append(p)
 

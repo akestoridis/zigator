@@ -14,19 +14,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-from scapy.all import Dot15d4Data
-from scapy.all import Dot15d4FCS
-from scapy.all import ZDPActiveEPReq
-from scapy.all import ZigbeeAppDataPayload
-from scapy.all import ZigbeeDeviceProfile
-from scapy.all import ZigbeeNWK
+from scapy.all import (
+    Dot15d4Data,
+    Dot15d4FCS,
+    ZDPActiveEPReq,
+    ZigbeeAppDataPayload,
+    ZigbeeDeviceProfile,
+    ZigbeeNWK,
+)
 
 from .secure_nwk_layer import secure_nwk_layer
 
 
-def activeepreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, nwk_seqnum,
-                aps_counter, zdp_seqnum, nwk_aux_framecounter,
-                nwk_aux_srcaddr, nwk_aux_keyseqnum, nwk_key):
+def activeepreq(
+    mac_seqnum,
+    mac_dstpanid,
+    mac_dstshortaddr,
+    nwk_seqnum,
+    aps_counter,
+    zdp_seqnum,
+    nwk_aux_framecounter,
+    nwk_aux_srcaddr,
+    nwk_aux_keyseqnum,
+    nwk_key,
+):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
@@ -60,11 +71,13 @@ def activeepreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, nwk_seqnum,
             fcf_destaddrmode=2,
             fcf_framever=0,
             fcf_srcaddrmode=2,
-            seqnum=mac_seqnum)
+            seqnum=mac_seqnum,
+        )
         / Dot15d4Data(
             dest_panid=mac_dstpanid,
             dest_addr=mac_dstshortaddr,
-            src_addr=0x0000)
+            src_addr=0x0000,
+        )
         / ZigbeeNWK(
             frametype=0,
             proto_version=2,
@@ -73,7 +86,8 @@ def activeepreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, nwk_seqnum,
             destination=mac_dstshortaddr,
             source=0x0000,
             radius=30,
-            seqnum=nwk_seqnum)
+            seqnum=nwk_seqnum,
+        )
         / ZigbeeAppDataPayload(
             aps_frametype=0,
             delivery_mode=0,
@@ -82,11 +96,14 @@ def activeepreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, nwk_seqnum,
             cluster=0x0005,
             profile=0x0000,
             src_endpoint=0,
-            counter=aps_counter)
+            counter=aps_counter,
+        )
         / ZigbeeDeviceProfile(
-            trans_seqnum=zdp_seqnum)
+            trans_seqnum=zdp_seqnum,
+        )
         / ZDPActiveEPReq(
-            nwk_addr=mac_dstshortaddr)
+            nwk_addr=mac_dstshortaddr,
+        )
     )
 
     # Secure its NWK layer
@@ -96,6 +113,7 @@ def activeepreq(mac_seqnum, mac_dstpanid, mac_dstshortaddr, nwk_seqnum,
         True,
         nwk_aux_framecounter,
         nwk_aux_srcaddr,
-        nwk_aux_keyseqnum)
+        nwk_aux_keyseqnum,
+    )
 
     return forged_pkt

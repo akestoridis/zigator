@@ -54,8 +54,7 @@ def main(args):
         if len(args.phy_payload) < 2 or len(args.phy_payload) > 254:
             raise ValueError("Invalid PHY-layer payload length")
         # Forge the packet
-        forged_pkt = Dot15d4FCS(
-            bytes.fromhex(args.phy_payload))
+        forged_pkt = Dot15d4FCS(bytes.fromhex(args.phy_payload))
     elif args.PKT_TYPE == "beacon":
         # Print a disclaimer
         print("############################################################")
@@ -84,7 +83,8 @@ def main(args):
             args.mac_beacon_assocpermit,
             args.nwk_beacon_devdepth,
             int(args.nwk_beacon_epid, 16),
-            args.nwk_beacon_updateid)
+            args.nwk_beacon_updateid,
+        )
     elif args.PKT_TYPE == "beaconreq":
         # Print a disclaimer
         print("############################################################")
@@ -105,8 +105,7 @@ def main(args):
             logging.info("Canceling the injection of a forged packet...")
             return
         # Forge the packet
-        forged_pkt = beaconreq(
-            args.mac_seqnum)
+        forged_pkt = beaconreq(args.mac_seqnum)
     elif args.PKT_TYPE == "orphannotif":
         # Print a disclaimer
         print("############################################################")
@@ -129,7 +128,8 @@ def main(args):
         # Forge the packet
         forged_pkt = orphannotif(
             args.mac_seqnum,
-            int(args.mac_srcextendedaddr, 16))
+            int(args.mac_srcextendedaddr, 16),
+        )
     elif args.PKT_TYPE == "rejoinreq":
         # Print a disclaimer
         print("############################################################")
@@ -165,7 +165,8 @@ def main(args):
             args.nwk_security,
             args.nwk_aux_framecounter,
             args.nwk_aux_keyseqnum,
-            bytes.fromhex(args.nwk_key))
+            bytes.fromhex(args.nwk_key),
+        )
     elif args.PKT_TYPE == "updatedevice":
         # Print a disclaimer
         print("############################################################")
@@ -207,7 +208,8 @@ def main(args):
             bool(args.aps_aux_extnonce),
             args.aps_aux_framecounter,
             int(args.aps_aux_srcaddr, 16),
-            bytes.fromhex(args.aps_key))
+            bytes.fromhex(args.aps_key),
+        )
     elif args.PKT_TYPE == "deviceannce":
         # Print a disclaimer
         print("############################################################")
@@ -238,7 +240,8 @@ def main(args):
             args.zdp_seqnum,
             args.nwk_aux_framecounter,
             args.nwk_aux_keyseqnum,
-            bytes.fromhex(args.nwk_key))
+            bytes.fromhex(args.nwk_key),
+        )
     elif args.PKT_TYPE == "activeepreq":
         # Print a disclaimer
         print("############################################################")
@@ -269,7 +272,8 @@ def main(args):
             args.nwk_aux_framecounter,
             int(args.nwk_aux_srcaddr, 16),
             args.nwk_aux_keyseqnum,
-            bytes.fromhex(args.nwk_key))
+            bytes.fromhex(args.nwk_key),
+        )
     else:
         raise ValueError("Unknown packet type \"{}\"".format(args.PKT_TYPE))
     logging.info("Forged packet: {}".format(bytes(forged_pkt).hex()))
@@ -295,7 +299,9 @@ def main(args):
             return
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as skt:
             num_bytes_sent = skt.sendto(
-                bytes(forged_pkt), (args.ipaddr, args.portnum))
+                bytes(forged_pkt),
+                (args.ipaddr, args.portnum),
+            )
             logging.info("Forwarded {} bytes over UDP".format(num_bytes_sent))
     elif args.FW_PROTOCOL == "sll":
         logging.info("Interface name: {}".format(args.ifname))
@@ -310,12 +316,15 @@ def main(args):
         if answer != "y":
             logging.info("Canceling the forwarding of the forged packet...")
             return
-        with socket.socket(socket.AF_PACKET,
-                           socket.SOCK_RAW,
-                           socket.htons(0x00f6)) as skt:
+        with socket.socket(
+            socket.AF_PACKET,
+            socket.SOCK_RAW,
+            socket.htons(0x00f6),
+        ) as skt:
             skt.bind((args.ifname, 0))
             num_bytes_sent = skt.send(bytes(forged_pkt)[:-2])
             logging.info("Forwarded {} bytes over SLL".format(num_bytes_sent))
     else:
-        raise ValueError("Unknown forwarding protocol \"{}\""
-                         "".format(args.FW_PROTOCOL))
+        raise ValueError(
+            "Unknown forwarding protocol \"{}\"".format(args.FW_PROTOCOL),
+        )

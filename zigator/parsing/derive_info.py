@@ -21,30 +21,34 @@ def extract_network_identifiers():
     if config.entry["mac_frametype"].startswith("0b000:"):
         config.update_networks(
             config.entry["mac_srcpanid"],
-            set([config.entry["nwk_beacon_epid"]]),
+            {
+                config.entry["nwk_beacon_epid"],
+            },
             config.entry["pkt_time"],
-            config.entry["pkt_time"])
+            config.entry["pkt_time"],
+        )
     else:
         if config.entry["mac_dstpanid"] is not None:
             config.update_networks(
                 config.entry["mac_dstpanid"],
                 set(),
                 None,
-                None)
-
+                None,
+            )
         if config.entry["mac_srcpanid"] is not None:
             config.update_networks(
                 config.entry["mac_srcpanid"],
                 set(),
                 None,
-                None)
-
+                None,
+            )
         if config.entry["mac_realign_panid"] is not None:
             config.update_networks(
                 config.entry["mac_realign_panid"],
                 set(),
                 None,
-                None)
+                None,
+            )
 
 
 def extract_short_addresses():
@@ -56,8 +60,8 @@ def extract_short_addresses():
             set(),
             set(),
             None,
-            None)
-
+            None,
+        )
     if config.entry["mac_srcaddrmode"].startswith("0b10:"):
         if config.entry["mac_panidcomp"].startswith("0b0:"):
             config.update_short_addresses(
@@ -67,7 +71,8 @@ def extract_short_addresses():
                 set(),
                 set(),
                 config.entry["pkt_time"],
-                config.entry["pkt_time"])
+                config.entry["pkt_time"],
+            )
         else:
             config.update_short_addresses(
                 config.entry["mac_dstpanid"],
@@ -76,8 +81,8 @@ def extract_short_addresses():
                 set(),
                 set(),
                 config.entry["pkt_time"],
-                config.entry["pkt_time"])
-
+                config.entry["pkt_time"],
+            )
     if config.entry["mac_frametype"].startswith("0b011:"):
         if config.entry["mac_cmd_id"].startswith("0x02:"):
             if config.entry["mac_assocrsp_status"].startswith("0x00:"):
@@ -88,7 +93,8 @@ def extract_short_addresses():
                     set(),
                     set(),
                     None,
-                    None)
+                    None,
+                )
         elif config.entry["mac_cmd_id"].startswith("0x08:"):
             config.update_short_addresses(
                 config.entry["mac_realign_panid"],
@@ -97,8 +103,8 @@ def extract_short_addresses():
                 set(),
                 set(),
                 None,
-                None)
-
+                None,
+            )
             config.update_short_addresses(
                 config.entry["mac_realign_panid"],
                 config.entry["mac_realign_shortaddr"],
@@ -106,10 +112,12 @@ def extract_short_addresses():
                 set(),
                 set(),
                 None,
-                None)
-
-    if (config.entry["mac_frametype"].startswith("0b001:")
-            and config.entry["mac_panidcomp"].startswith("0b1:")):
+                None,
+            )
+    if (
+        config.entry["mac_frametype"].startswith("0b001:")
+        and config.entry["mac_panidcomp"].startswith("0b1:")
+    ):
         config.update_short_addresses(
             config.entry["mac_dstpanid"],
             config.entry["nwk_dstshortaddr"],
@@ -117,8 +125,8 @@ def extract_short_addresses():
             set(),
             set(),
             None,
-            None)
-
+            None,
+        )
         config.update_short_addresses(
             config.entry["mac_dstpanid"],
             config.entry["nwk_srcshortaddr"],
@@ -126,7 +134,8 @@ def extract_short_addresses():
             set(),
             set(),
             None,
-            None)
+            None,
+        )
 
 
 def extract_extended_addresses():
@@ -137,8 +146,8 @@ def extract_extended_addresses():
             set(),
             set(),
             None,
-            None)
-
+            None,
+        )
     if config.entry["mac_srcextendedaddr"] is not None:
         config.update_extended_addresses(
             config.entry["mac_srcextendedaddr"],
@@ -146,8 +155,8 @@ def extract_extended_addresses():
             set(),
             set(),
             config.entry["pkt_time"],
-            config.entry["pkt_time"])
-
+            config.entry["pkt_time"],
+        )
     if config.entry["nwk_dstextendedaddr"] is not None:
         config.update_extended_addresses(
             config.entry["nwk_dstextendedaddr"],
@@ -155,8 +164,8 @@ def extract_extended_addresses():
             set(),
             set(),
             None,
-            None)
-
+            None,
+        )
     if config.entry["nwk_srcextendedaddr"] is not None:
         config.update_extended_addresses(
             config.entry["nwk_srcextendedaddr"],
@@ -164,8 +173,8 @@ def extract_extended_addresses():
             set(),
             set(),
             None,
-            None)
-
+            None,
+        )
     if config.entry["nwk_aux_srcaddr"] is not None:
         config.update_extended_addresses(
             config.entry["nwk_aux_srcaddr"],
@@ -173,17 +182,20 @@ def extract_extended_addresses():
             set(),
             set(),
             None,
-            None)
-
-    if (config.entry["aps_aux_srcaddr"] is not None
-            and config.entry["nwk_security"].startswith("0b0:")):
+            None,
+        )
+    if (
+        config.entry["aps_aux_srcaddr"] is not None
+        and config.entry["nwk_security"].startswith("0b0:")
+    ):
         config.update_extended_addresses(
             config.entry["aps_aux_srcaddr"],
             set(),
             set(),
             set(),
             None,
-            None)
+            None,
+        )
 
 
 def map_addresses():
@@ -196,13 +208,15 @@ def map_addresses():
         config.update_alternative_addresses(
             config.entry["mac_dstpanid"],
             config.entry["nwk_srcshortaddr"],
-            config.entry["nwk_srcextendedaddr"])
+            config.entry["nwk_srcextendedaddr"],
+        )
 
         # Map the short address of the destination to its extended address
         config.update_alternative_addresses(
             config.entry["mac_dstpanid"],
             config.entry["nwk_dstshortaddr"],
-            config.entry["nwk_dstextendedaddr"])
+            config.entry["nwk_dstextendedaddr"],
+        )
 
         # All the packets that are secured on the NWK layer include
         # the extended address of the transmitter in the auxiliary header
@@ -210,7 +224,8 @@ def map_addresses():
             config.update_alternative_addresses(
                 config.entry["mac_dstpanid"],
                 config.entry["mac_srcshortaddr"],
-                config.entry["nwk_aux_srcaddr"])
+                config.entry["nwk_aux_srcaddr"],
+            )
     elif config.entry["mac_frametype"].startswith("0b011:"):
         if config.entry["mac_cmd_id"].startswith("0x02:"):
             if not config.entry["mac_assocrsp_status"].startswith("0x00:"):
@@ -221,19 +236,22 @@ def map_addresses():
             config.update_alternative_addresses(
                 config.entry["mac_dstpanid"],
                 config.entry["mac_assocrsp_shortaddr"],
-                config.entry["mac_dstextendedaddr"])
+                config.entry["mac_dstextendedaddr"],
+            )
         elif config.entry["mac_cmd_id"].startswith("0x08:"):
             # Map the short address of the transmitter to its extended address
             config.update_alternative_addresses(
                 config.entry["mac_realign_panid"],
                 config.entry["mac_realign_coordaddr"],
-                config.entry["mac_srcextendedaddr"])
+                config.entry["mac_srcextendedaddr"],
+            )
 
             # Map the short address of the receiver to its extended address
             config.update_alternative_addresses(
                 config.entry["mac_realign_panid"],
                 config.entry["mac_realign_shortaddr"],
-                config.entry["mac_dstextendedaddr"])
+                config.entry["mac_dstextendedaddr"],
+            )
 
 
 def extract_pairs():
@@ -261,39 +279,51 @@ def extract_pairs():
 
 def compare_short_addresses():
     # Check whether the MAC and NWK Destination is the same or not
-    if (config.entry["mac_frametype"].startswith("0b001:")
-            and config.entry["mac_panidcomp"].startswith("0b1:")
-            and config.entry["mac_dstaddrmode"].startswith("0b10:")
-            and config.entry["nwk_dstshortaddr"] is not None):
+    if (
+        config.entry["mac_frametype"].startswith("0b001:")
+        and config.entry["mac_panidcomp"].startswith("0b1:")
+        and config.entry["mac_dstaddrmode"].startswith("0b10:")
+        and config.entry["nwk_dstshortaddr"] is not None
+    ):
         config.entry["der_same_macnwkdst"] = "Same MAC/NWK Dst: {}".format(
             config.entry["mac_dstshortaddr"]
-            == config.entry["nwk_dstshortaddr"])
+            == config.entry["nwk_dstshortaddr"],
+        )
 
     # Check whether the MAC and NWK Source is the same or not
-    if (config.entry["mac_frametype"].startswith("0b001:")
-            and config.entry["mac_panidcomp"].startswith("0b1:")
-            and config.entry["mac_srcaddrmode"].startswith("0b10:")
-            and config.entry["nwk_srcshortaddr"] is not None):
+    if (
+        config.entry["mac_frametype"].startswith("0b001:")
+        and config.entry["mac_panidcomp"].startswith("0b1:")
+        and config.entry["mac_srcaddrmode"].startswith("0b10:")
+        and config.entry["nwk_srcshortaddr"] is not None
+    ):
         config.entry["der_same_macnwksrc"] = "Same MAC/NWK Src: {}".format(
             config.entry["mac_srcshortaddr"]
-            == config.entry["nwk_srcshortaddr"])
+            == config.entry["nwk_srcshortaddr"],
+        )
 
 
 def derive_transmission_type():
     # Check whether this is a single-hop or a multi-hop transmission
-    if (config.entry["mac_frametype"].startswith("0b010:")
-            or config.entry["mac_frametype"].startswith("0b000:")
-            or config.entry["mac_frametype"].startswith("0b011:")):
+    if (
+        config.entry["mac_frametype"].startswith("0b010:")
+        or config.entry["mac_frametype"].startswith("0b000:")
+        or config.entry["mac_frametype"].startswith("0b011:")
+    ):
         config.entry["der_tx_type"] = "Single-Hop Transmission"
     elif config.entry["nwk_radius"] is not None:
         if config.entry["nwk_radius"] > 1:
             config.entry["der_tx_type"] = "Multi-Hop Transmission"
         elif config.entry["nwk_radius"] == 1:
-            if (config.entry["der_same_macnwksrc"]
-                    == "Same MAC/NWK Src: True"):
+            if (
+                config.entry["der_same_macnwksrc"]
+                == "Same MAC/NWK Src: True"
+            ):
                 config.entry["der_tx_type"] = "Single-Hop Transmission"
-            elif (config.entry["der_same_macnwksrc"]
-                    == "Same MAC/NWK Src: False"):
+            elif (
+                config.entry["der_same_macnwksrc"]
+                == "Same MAC/NWK Src: False"
+            ):
                 config.entry["der_tx_type"] = "Multi-Hop Transmission"
 
 
@@ -309,12 +339,16 @@ def derive_logical_device_types():
             extendedaddr = config.entry["mac_srcextendedaddr"]
         macdevtype = "Full-Function Device"
         nwkdevtype = None
-        if ((config.entry["nwk_beacon_devdepth"] == 0)
-                and config.entry["mac_beacon_pancoord"].startswith("0b1:")):
+        if (
+            config.entry["nwk_beacon_devdepth"] == 0
+            and config.entry["mac_beacon_pancoord"].startswith("0b1:")
+        ):
             # Zigbee Coordinators are always PAN Coordinators with zero depth
             nwkdevtype = "Zigbee Coordinator"
-        elif ((config.entry["nwk_beacon_devdepth"] > 0)
-                and config.entry["mac_beacon_pancoord"].startswith("0b0:")):
+        elif (
+            config.entry["nwk_beacon_devdepth"] > 0
+            and config.entry["mac_beacon_pancoord"].startswith("0b0:")
+        ):
             # Zigbee Routers transmit beacons with depth greater than zero
             nwkdevtype = "Zigbee Router"
         # Update the stored device types
@@ -323,7 +357,8 @@ def derive_logical_device_types():
             shortaddr,
             extendedaddr,
             macdevtype,
-            nwkdevtype)
+            nwkdevtype,
+        )
     elif config.entry["mac_frametype"].startswith("0b011:"):
         if config.entry["mac_cmd_id"].startswith("0x01:"):
             # The receivers of Association Requests are always FFDs
@@ -347,7 +382,8 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
 
             # The transmitters of Association Requests always include
             # their extended address as well as their MAC device type
@@ -362,7 +398,7 @@ def derive_logical_device_types():
                 nwkdevtype = "Zigbee Router"
             elif config.entry["mac_assocreq_devtype"].startswith("0b0:"):
                 # All RFDs are Zigbee End Devices
-                macdevtype == "Reduced-Function Device"
+                macdevtype = "Reduced-Function Device"
                 nwkdevtype = "Zigbee End Device"
             # Update the stored device types
             config.update_devtypes(
@@ -370,7 +406,8 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
         elif config.entry["mac_cmd_id"].startswith("0x02:"):
             # The transmitters of Association Responses are always FFDs
             panid = config.entry["mac_dstpanid"]
@@ -393,7 +430,8 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
         elif config.entry["mac_cmd_id"].startswith("0x04:"):
             # The receivers of Data Requests are always FFDs
             panid = config.entry["mac_dstpanid"]
@@ -416,7 +454,8 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
 
             # Only RFDs use their short addresses to transmit Data Requests
             if config.entry["mac_srcaddrmode"].startswith("0b10:"):
@@ -434,7 +473,8 @@ def derive_logical_device_types():
                     shortaddr,
                     extendedaddr,
                     macdevtype,
-                    nwkdevtype)
+                    nwkdevtype,
+                )
         elif config.entry["mac_cmd_id"].startswith("0x08:"):
             # The transmitter of the Coordinator Realignment is always an FFD
             panid = config.entry["mac_realign_panid"]
@@ -453,7 +493,8 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
 
             # The receiver of the Coordinator Realignment is always an RFD
             panid = config.entry["mac_realign_panid"]
@@ -467,12 +508,17 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
-    elif (config.entry["mac_frametype"].startswith("0b001:")
-            and config.entry["mac_panidcomp"].startswith("0b1:")):
-        if (config.entry["nwk_frametype"].startswith("0b01:")
-                and config.entry["nwk_dstshortaddr"] == "0xfffc"
-                and config.entry["der_tx_type"] == "Single-Hop Transmission"):
+                nwkdevtype,
+            )
+    elif (
+        config.entry["mac_frametype"].startswith("0b001:")
+        and config.entry["mac_panidcomp"].startswith("0b1:")
+    ):
+        if (
+            config.entry["nwk_frametype"].startswith("0b01:")
+            and config.entry["nwk_dstshortaddr"] == "0xfffc"
+            and config.entry["der_tx_type"] == "Single-Hop Transmission"
+        ):
             # Only Zigbee Routers and the Zigbee Coordinator transmit Link
             # Status commands, which are the only single-hop NWK commands that
             # are broadcasted to all Zigbee Routers and the Zigbee Coordinator
@@ -493,10 +539,13 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
-        elif (config.entry["nwk_frametype"].startswith("0b01:")
-                and config.entry["nwk_cmd_payloadlength"] == 3
-                and config.entry["der_tx_type"] == "Single-Hop Transmission"):
+                nwkdevtype,
+            )
+        elif (
+            config.entry["nwk_frametype"].startswith("0b01:")
+            and config.entry["nwk_cmd_payloadlength"] == 3
+            and config.entry["der_tx_type"] == "Single-Hop Transmission"
+        ):
             # Only Zigbee Routers and the Zigbee Coordinator transmit Rejoin
             # Responses, which are the only single-hop NWK commands that can
             # have a payload length of 3 bytes according to the Zigbee PRO
@@ -517,9 +566,12 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
-        elif (config.entry["nwk_srcshortaddr"] == "0x0000"
-                or config.entry["nwk_dstshortaddr"] == "0x0000"):
+                nwkdevtype,
+            )
+        elif (
+            config.entry["nwk_srcshortaddr"] == "0x0000"
+            or config.entry["nwk_dstshortaddr"] == "0x0000"
+        ):
             # Zigbee Coordinators always use 0x0000 as their short address
             panid = config.entry["mac_dstpanid"]
             shortaddr = "0x0000"
@@ -532,12 +584,15 @@ def derive_logical_device_types():
                 shortaddr,
                 extendedaddr,
                 macdevtype,
-                nwkdevtype)
+                nwkdevtype,
+            )
 
 
 def derive_address_types():
-    if (config.entry["mac_frametype"].startswith("0b001:")
-            and not config.entry["mac_panidcomp"].startswith("0b1:")):
+    if (
+        config.entry["mac_frametype"].startswith("0b001:")
+        and not config.entry["mac_panidcomp"].startswith("0b1:")
+    ):
         # Ignore Inter-PAN packets
         return
 
@@ -547,13 +602,10 @@ def derive_address_types():
         shortaddr = config.entry["mac_dstshortaddr"]
         extendedaddr = config.get_extendedaddr(panid, shortaddr)
         if shortaddr == "0xffff":
-            config.entry["der_mac_dsttype"] = (
-                "MAC Dst Type: Broadcast"
-            )
+            config.entry["der_mac_dsttype"] = "MAC Dst Type: Broadcast"
         else:
-            config.entry["der_mac_dsttype"] = (
-                "MAC Dst Type: {}".format(
-                    config.get_nwkdevtype(panid, shortaddr, extendedaddr))
+            config.entry["der_mac_dsttype"] = "MAC Dst Type: {}".format(
+                config.get_nwkdevtype(panid, shortaddr, extendedaddr),
             )
         config.entry["der_mac_dstpanid"] = panid
         config.entry["der_mac_dstshortaddr"] = shortaddr
@@ -567,9 +619,8 @@ def derive_address_types():
             panid = config.entry["mac_srcpanid"]
         shortaddr = config.entry["mac_srcshortaddr"]
         extendedaddr = config.get_extendedaddr(panid, shortaddr)
-        config.entry["der_mac_srctype"] = (
-            "MAC Src Type: {}".format(
-                config.get_nwkdevtype(panid, shortaddr, extendedaddr))
+        config.entry["der_mac_srctype"] = "MAC Src Type: {}".format(
+            config.get_nwkdevtype(panid, shortaddr, extendedaddr),
         )
         config.entry["der_mac_srcpanid"] = panid
         config.entry["der_mac_srcshortaddr"] = shortaddr
@@ -583,9 +634,7 @@ def derive_address_types():
         if extendedaddr is None:
             extendedaddr = config.get_extendedaddr(panid, shortaddr)
         if shortaddr == "0xffff":
-            config.entry["der_nwk_dsttype"] = (
-                "NWK Dst Type: All devices"
-            )
+            config.entry["der_nwk_dsttype"] = "NWK Dst Type: All devices"
         elif shortaddr == "0xfffd":
             config.entry["der_nwk_dsttype"] = (
                 "NWK Dst Type: All active receivers"
@@ -599,9 +648,8 @@ def derive_address_types():
                 "NWK Dst Type: All low-power routers"
             )
         else:
-            config.entry["der_nwk_dsttype"] = (
-                "NWK Dst Type: {}".format(
-                    config.get_nwkdevtype(panid, shortaddr, extendedaddr))
+            config.entry["der_nwk_dsttype"] = "NWK Dst Type: {}".format(
+                config.get_nwkdevtype(panid, shortaddr, extendedaddr),
             )
         config.entry["der_nwk_dstpanid"] = panid
         config.entry["der_nwk_dstshortaddr"] = shortaddr
@@ -614,9 +662,8 @@ def derive_address_types():
     if shortaddr is not None:
         if extendedaddr is None:
             extendedaddr = config.get_extendedaddr(panid, shortaddr)
-        config.entry["der_nwk_srctype"] = (
-            "NWK Src Type: {}".format(
-                config.get_nwkdevtype(panid, shortaddr, extendedaddr))
+        config.entry["der_nwk_srctype"] = "NWK Src Type: {}".format(
+            config.get_nwkdevtype(panid, shortaddr, extendedaddr),
         )
         config.entry["der_nwk_srcpanid"] = panid
         config.entry["der_nwk_srcshortaddr"] = shortaddr

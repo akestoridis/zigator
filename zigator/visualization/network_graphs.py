@@ -34,7 +34,7 @@ def network_graphs(out_dirpath):
             "pcap_filename",
         ],
         None,
-        True
+        True,
     )
 
     for pcap_filepath in pcap_filepaths:
@@ -42,10 +42,12 @@ def network_graphs(out_dirpath):
         conditions = [
             ("pcap_directory", pcap_filepath[0]),
             ("pcap_filename", pcap_filepath[1]),
-            ("mac_frametype", "0b001: "
-                "MAC Data"),
-            ("mac_panidcomp", "0b1: "
-                "The source PAN ID is the same as the destination PAN ID"),
+            ("mac_frametype", "0b001: MAC Data"),
+            (
+                "mac_panidcomp",
+                "0b1: "
+                + "The source PAN ID is the same as the destination PAN ID",
+            ),
             ("!mac_dstshortaddr", "0xffff"),
             ("error_msg", None),
         ]
@@ -74,12 +76,13 @@ def network_graphs(out_dirpath):
                     "mac_dstshortaddr",
                 ],
                 conditions + [("mac_dstpanid", panid[0])],
-                True
+                True,
             )
 
             # Derive the set of unique addresses
-            addr_nodes = set(addr_pair[0] for addr_pair in addr_pairs)
+            addr_nodes = set()
             for addr_pair in addr_pairs:
+                addr_nodes.add(addr_pair[0])
                 addr_nodes.add(addr_pair[1])
 
             # Render a directed graph from the observed address pairs
@@ -87,12 +90,14 @@ def network_graphs(out_dirpath):
                 name=out_filename,
                 directory=out_dirpath,
                 format="pdf",
-                engine="dot")
+                engine="dot",
+            )
             for addr_node in addr_nodes:
                 nwkdevtype = config.db.get_nwkdevtype(
                     panid[0],
                     addr_node,
-                    None)
+                    None,
+                )
                 if nwkdevtype == "Zigbee Coordinator":
                     fillcolor = "#FF0000"
                 elif nwkdevtype == "Zigbee Router":
@@ -107,9 +112,8 @@ def network_graphs(out_dirpath):
                     color="black",
                     fillcolor=fillcolor,
                     fontname="DejaVu Sans Mono",
-                    fontsize="10")
+                    fontsize="10",
+                )
             for addr_pair in addr_pairs:
-                digraph.edge(
-                    addr_pair[0],
-                    addr_pair[1])
+                digraph.edge(addr_pair[0], addr_pair[1])
             digraph.render()
