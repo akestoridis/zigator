@@ -36,7 +36,7 @@ The following command should display the version of Zigator that you installed:
 (venv) $ zigator -v
 ```
 
-If you get an error message that the `zigator` command was not found, make sure that your system's PATH environment variable includes the directory of the installed executable.
+If you get an error message that the `zigator` command was not found, make sure that your system's `PATH` environment variable includes the directory of the installed executable.
 For example, if it was installed in `~/.local/bin`, add the following line at the end of your `~/.bashrc` file:
 ```bash
 export PATH=$PATH:~/.local/bin
@@ -64,20 +64,6 @@ Zigator enables its users to do the following:
 
 ## Getting Started
 
-If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee-smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
-More specifically, registered users of [CRAWDAD](https://crawdad.org) can download the following zip files:
-
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-room.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-room.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-duos.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-duos.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-house.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-house.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-trios.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-trios.zip
-
-Each of these zip files contains a pcap file of captured Zigbee packets and a text file that provides a description of the experimental setup and the keys that were used to encrypt and authenticate them.
-
 You can view a synopsis of all the subcommands that Zigator supports as follows:
 ```console
 (venv) $ zigator -h
@@ -93,6 +79,20 @@ Similarly, you can view the supported arguments of the `inject` subcommand for t
 ```console
 (venv) $ zigator inject udp beacon -h
 ```
+
+If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee-smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
+More specifically, registered users of [CRAWDAD](https://crawdad.org) can download the following zip files:
+
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-room.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-room.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-duos.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-duos.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-house.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-house.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-trios.zip
+* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-trios.zip
+
+Each of these zip files contains a pcap file of captured Zigbee packets and a text file that provides a description of the experimental setup and the keys that were used to encrypt and authenticate them.
 
 
 ## Publications
