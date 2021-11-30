@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -18,8 +18,8 @@
 
 import contextlib
 import io
-import re
 import unittest
+
 import zigator
 
 
@@ -29,106 +29,92 @@ class TestCLI(unittest.TestCase):
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             zigator.main(["zigator"])
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_zigator_help_short(self):
-        """Test the -h argument."""
+        """Test the ``-h`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "-h"])
         self.assertEqual(str(cm.exception), "0")
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_zigator_help_long(self):
-        """Test the --help argument."""
+        """Test the ``--help`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "--help"])
         self.assertEqual(str(cm.exception), "0")
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_zigator_version_short(self):
-        """Test the -v argument."""
+        """Test the ``-v`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "-v"])
         self.assertEqual(str(cm.exception), "0")
-        captured_output = tmp_stdout.getvalue().rstrip()
-        match = re.search(
+        self.assertRegex(
+            tmp_stdout.getvalue().rstrip(),
             r"^(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
-            captured_output)
-        self.assertIsNotNone(match)
+        )
 
     def test_zigator_version_long(self):
-        """Test the --version argument."""
+        """Test the ``--version`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "--version"])
         self.assertEqual(str(cm.exception), "0")
-        captured_output = tmp_stdout.getvalue().rstrip()
-        match = re.search(
+        self.assertRegex(
+            tmp_stdout.getvalue().rstrip(),
             r"^(0\+[0-9a-f]{7}|[0-9]+\.[0-9]+(\+[0-9a-f]{7})?)$",
-            captured_output)
-        self.assertIsNotNone(match)
+        )
 
     def test_zigator_debug_short(self):
-        """Test the -d argument."""
+        """Test the ``-d`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             zigator.main(["zigator", "-d"])
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_zigator_debug_long(self):
-        """Test the --debug argument."""
+        """Test the ``--debug`` argument."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             zigator.main(["zigator", "--debug"])
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_none_arguments(self):
-        """Test the usage of None for the list of arguments."""
+        """Test the usage of ``None`` for the list of arguments."""
         tmp_stdout = io.StringIO()
         with contextlib.redirect_stdout(tmp_stdout):
             zigator.main(None)
-        captured_output = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_output), 14)
-        self.assertEqual(captured_output[:14], "usage: zigator")
+        self.assertUsage(tmp_stdout.getvalue().rstrip())
 
     def test_unrecognized_argument_short(self):
         """Test the usage of a short unrecognized argument."""
-        tmp_stdout = io.StringIO()
-        with contextlib.redirect_stderr(tmp_stdout):
+        tmp_stderr = io.StringIO()
+        with contextlib.redirect_stderr(tmp_stderr):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "-o"])
         self.assertEqual(str(cm.exception), "2")
-        captured_error = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_error), 14)
-        self.assertEqual(captured_error[:14], "usage: zigator")
+        self.assertUsage(tmp_stderr.getvalue().rstrip())
 
     def test_unrecognized_argument_long(self):
         """Test the usage of a long unrecognized argument."""
-        tmp_stdout = io.StringIO()
-        with contextlib.redirect_stderr(tmp_stdout):
+        tmp_stderr = io.StringIO()
+        with contextlib.redirect_stderr(tmp_stderr):
             with self.assertRaises(SystemExit) as cm:
                 zigator.main(["zigator", "--output"])
         self.assertEqual(str(cm.exception), "2")
-        captured_error = tmp_stdout.getvalue().rstrip()
-        self.assertGreater(len(captured_error), 14)
-        self.assertEqual(captured_error[:14], "usage: zigator")
+        self.assertUsage(tmp_stderr.getvalue().rstrip())
+
+    def assertUsage(self, obtained_string):
+        self.assertGreater(len(obtained_string), 14)
+        self.assertEqual(obtained_string[:14], "usage: zigator")
 
 
 if __name__ == "__main__":
