@@ -283,6 +283,565 @@ END_DEVICE_CAPACITIES = {
 }
 
 
+def nwk_fields(pkt, msg_queue):
+    """Parse Zigbee NWK fields."""
+    if config.entry["mac_frametype"].startswith("0b000:"):
+        nwk_beacon(pkt)
+        return
+    elif not config.entry["mac_frametype"].startswith("0b001:"):
+        msg_obj = "Packet #{} in {} contains unknown NWK fields".format(
+            config.entry["pkt_num"],
+            config.entry["pcap_filename"],
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = "PE301: Unknown NWK fields"
+        return
+
+    # Frame Control field (2 bytes)
+    # Frame Type subfield (2 bits)
+    if not (
+        config.set_entry(
+            "nwk_frametype",
+            pkt[ZigbeeNWK].frametype,
+            NWK_FRAME_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE302: Unknown NWK frame type"
+        return
+    # Protocol Version subfield (4 bits)
+    if not (
+        config.set_entry(
+            "nwk_protocolversion",
+            pkt[ZigbeeNWK].proto_version,
+            NWK_PROTOCOL_VERSIONS,
+        )
+    ):
+        config.entry["error_msg"] = "PE303: Unknown NWK protocol version"
+        return
+    # Discover Route subfield (2 bits)
+    if not (
+        config.set_entry(
+            "nwk_discroute",
+            pkt[ZigbeeNWK].discover_route,
+            NWK_DR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE304: Unknown NWK DR state"
+        return
+    # Multicast subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_multicast",
+            pkt[ZigbeeNWK].flags.multicast,
+            NWK_MULTICAST_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE305: Unknown NWK multicast state"
+        return
+    # Security subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_security",
+            pkt[ZigbeeNWK].flags.security,
+            NWK_SECURITY_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE306: Unknown NWK security state"
+        return
+    # Source Route subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_srcroute",
+            pkt[ZigbeeNWK].flags.source_route,
+            NWK_SR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE307: Unknown NWK SR state"
+        return
+    # Extended Destination subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_extendeddst",
+            pkt[ZigbeeNWK].flags.extended_dst,
+            NWK_ED_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE308: Unknown NWK ED state"
+        return
+    # Extended Source subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_extendedsrc",
+            pkt[ZigbeeNWK].flags.extended_src,
+            NWK_ES_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE309: Unknown NWK ES state"
+        return
+    # End Device Initiator subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_edinitiator",
+            pkt[ZigbeeNWK].flags.reserved1,
+            NWK_EDI_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE310: Unknown NWK EDI state"
+        return
+
+    # Destination Short Address field (2 bytes)
+    config.entry["nwk_dstshortaddr"] = "0x{:04x}".format(
+        pkt[ZigbeeNWK].destination,
+    )
+
+    # Source Short Address field (2 bytes)
+    config.entry["nwk_srcshortaddr"] = "0x{:04x}".format(
+        pkt[ZigbeeNWK].source,
+    )
+
+    # Radius field (1 byte)
+    config.entry["nwk_radius"] = pkt[ZigbeeNWK].radius
+
+    # Sequence Number field (1 byte)
+    config.entry["nwk_seqnum"] = pkt[ZigbeeNWK].seqnum
+
+    # Destination Extended Address field (0/8 bytes)
+    if config.entry["nwk_extendeddst"].startswith("0b1:"):
+        config.entry["nwk_dstextendedaddr"] = format(
+            pkt[ZigbeeNWK].ext_dst,
+            "016x",
+        )
+    elif not config.entry["nwk_extendeddst"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK ED state"
+        return
+
+    # Source Extended Address field (0/8 bytes)
+    if config.entry["nwk_extendedsrc"].startswith("0b1:"):
+        config.entry["nwk_srcextendedaddr"] = format(
+            pkt[ZigbeeNWK].ext_src,
+            "016x",
+        )
+    elif not config.entry["nwk_extendedsrc"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK ES state"
+        return
+
+    # Multicast Control field (0/1 byte)
+    if config.entry["nwk_multicast"].startswith("0b1:"):
+        msg_obj = (
+            "Packet #{} ".format(config.entry["pkt_num"])
+            + "in {} ".format(config.entry["pcap_filename"])
+            + "contains a Multicast Control field "
+            + "which could not be processed"
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = "Could not process the Multicast Control"
+        return
+    elif not config.entry["nwk_multicast"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid Multicast state"
+        return
+
+    # Source Route Subframe field (variable)
+    if config.entry["nwk_srcroute"].startswith("0b1:"):
+        config.entry["nwk_srcroute_relaycount"] = pkt[ZigbeeNWK].relay_count
+        config.entry["nwk_srcroute_relayindex"] = pkt[ZigbeeNWK].relay_index
+        if config.entry["nwk_srcroute_relaycount"] > 0:
+            config.entry["nwk_srcroute_relaylist"] = ",".join(
+                ["0x{:04x}".format(addr) for addr in pkt[ZigbeeNWK].relays],
+            )
+    elif not config.entry["nwk_srcroute"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK SR state"
+        return
+
+    if config.entry["nwk_security"].startswith("0b1:"):
+        # NWK Auxiliary Header field (6/14 bytes)
+        if pkt.haslayer(ZigbeeSecurityHeader):
+            nwk_auxiliary(pkt, msg_queue)
+        else:
+            config.entry["error_msg"] = (
+                "The NWK Auxiliary Header is not included"
+            )
+            return
+    elif config.entry["nwk_security"].startswith("0b0:"):
+        # NWK Payload field (variable)
+        if config.entry["nwk_frametype"].startswith("0b01:"):
+            if pkt.haslayer(ZigbeeNWKCommandPayload):
+                nwk_command(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no NWK Command fields"
+                return
+        elif config.entry["nwk_frametype"].startswith("0b11:"):
+            msg_obj = (
+                "Packet #{} ".format(config.entry["pkt_num"])
+                + "in {} ".format(config.entry["pcap_filename"])
+                + "contains Inter-PAN fields which were ignored"
+            )
+            if msg_queue is None:
+                logging.debug(msg_obj)
+            else:
+                msg_queue.put((Message.DEBUG, msg_obj))
+            config.entry["error_msg"] = "Ignored the Inter-PAN fields"
+            return
+        elif config.entry["nwk_frametype"].startswith("0b00:"):
+            if pkt.haslayer(ZigbeeAppDataPayload):
+                aps_fields(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no Zigbee APS fields"
+                return
+        else:
+            config.entry["error_msg"] = "Invalid NWK frame type"
+            return
+    else:
+        config.entry["error_msg"] = "Invalid NWK security state"
+        return
+
+
+def nwk_beacon(pkt):
+    # Beacon Payload field (15 bytes)
+    # Protocol ID subfield (8 bits)
+    config.entry["nwk_beacon_protocolid"] = pkt[ZigBeeBeacon].proto_id
+    # Stack Profile subfield (4 bits)
+    config.entry["nwk_beacon_stackprofile"] = pkt[ZigBeeBeacon].stack_profile
+    # Protocol Version subfield (4 bits)
+    if not (
+        config.set_entry(
+            "nwk_beacon_protocolversion",
+            pkt[ZigBeeBeacon].nwkc_protocol_version,
+            NWK_PROTOCOL_VERSIONS,
+        )
+    ):
+        config.entry["error_msg"] = "PE340: Unknown NWK protocol version"
+        return
+    # Router Capacity subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_beacon_routercap",
+            pkt[ZigBeeBeacon].router_capacity,
+            ROUTER_CAPACITIES,
+        )
+    ):
+        config.entry["error_msg"] = "PE341: Unknown router capacity"
+        return
+    # Device Depth subfield (4 bits)
+    config.entry["nwk_beacon_devdepth"] = pkt[ZigBeeBeacon].device_depth
+    # End Device Capacity subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_beacon_edcap",
+            pkt[ZigBeeBeacon].end_device_capacity,
+            END_DEVICE_CAPACITIES,
+        )
+    ):
+        config.entry["error_msg"] = "PE342: Unknown end device capacity"
+        return
+    # Extended PAN ID subfield (64 bits)
+    config.entry["nwk_beacon_epid"] = format(
+        pkt[ZigBeeBeacon].extended_pan_id,
+        "016x",
+    )
+    # TX Offset subfield (24 bits)
+    config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset
+    # Update ID subfield (8 bits)
+    config.entry["nwk_beacon_updateid"] = pkt[ZigBeeBeacon].update_id
+
+    # Beacons do not contain any other fields
+    if len(bytes(pkt[ZigBeeBeacon].payload)) != 0:
+        config.entry["error_msg"] = "PE355: Unexpected payload"
+        return
+
+
+def nwk_auxiliary(pkt, msg_queue):
+    # Security Control field (1 byte)
+    # Security Level subfield (3 bits)
+    if not (
+        config.set_entry(
+            "nwk_aux_seclevel",
+            pkt[ZigbeeSecurityHeader].nwk_seclevel,
+            NWK_SECURITY_LEVELS,
+        )
+    ):
+        config.entry["error_msg"] = "PE311: Unknown NWK security level"
+        return
+    # Key Identifier subfield (2 bits)
+    if not (
+        config.set_entry(
+            "nwk_aux_keytype",
+            pkt[ZigbeeSecurityHeader].key_type,
+            NWK_KEY_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE312: Unknown NWK key type"
+        return
+    # Extended Nonce subfield (1 bit)
+    if not (
+        config.set_entry(
+            "nwk_aux_extnonce",
+            pkt[ZigbeeSecurityHeader].extended_nonce,
+            NWK_EN_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE313: Unknown NWK EN state"
+        return
+
+    # Frame Counter field (4 bytes)
+    config.entry["nwk_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
+    frame_counter = pkt[ZigbeeSecurityHeader].fc
+
+    # Source Address field (0/8 bytes)
+    if config.entry["nwk_aux_extnonce"].startswith("0b1:"):
+        config.entry["nwk_aux_srcaddr"] = format(
+            pkt[ZigbeeSecurityHeader].source,
+            "016x",
+        )
+        potential_sources = {
+            pkt[ZigbeeSecurityHeader].source,
+        }
+    elif config.entry["nwk_aux_extnonce"].startswith("0b0:"):
+        panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["mac_srcshortaddr"]
+        potential_sources = config.get_alternative_addresses(panid, shortaddr)
+
+        if len(potential_sources) == 0:
+            potential_sources = {
+                int(extendedaddr, 16)
+                for extendedaddr in config.extended_addresses.keys()
+            }
+
+        if config.entry["nwk_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["nwk_srcextendedaddr"], 16),
+            )
+        if config.entry["mac_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["mac_srcextendedaddr"], 16),
+            )
+    else:
+        config.entry["error_msg"] = "Invalid NWK EN state"
+        return
+
+    # Key Sequence Number field (1 byte)
+    if config.entry["nwk_aux_keytype"].startswith("0b01:"):
+        config.entry["nwk_aux_keyseqnum"] = (
+            pkt[ZigbeeSecurityHeader].key_seqnum
+        )
+        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
+        potential_keys = config.network_keys.values()
+    else:
+        config.entry["error_msg"] = "Unexpected key type on the NWK layer"
+        return
+
+    # Attempt to decrypt the payload
+    nwk_header = pkt[ZigbeeNWK].copy()
+    nwk_header.remove_payload()
+    header = bytes(nwk_header)
+    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
+    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    mic = pkt[ZigbeeSecurityHeader].data[-4:]
+    for source_addr in potential_sources:
+        for key in potential_keys:
+            dec_payload, auth_payload = crypto.zigbee_dec_ver(
+                key,
+                source_addr,
+                frame_counter,
+                sec_control,
+                header,
+                key_seqnum,
+                enc_payload,
+                mic,
+            )
+
+            # Check whether the decrypted payload is authentic
+            if auth_payload:
+                config.entry["nwk_aux_deckey"] = key.hex()
+                config.entry["nwk_aux_decsrc"] = format(source_addr, "016x")
+                config.entry["nwk_aux_decpayload"] = dec_payload.hex()
+
+                # NWK Payload field (variable)
+                if config.entry["nwk_frametype"].startswith("0b01:"):
+                    dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
+                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
+                    nwk_command(dec_pkt, msg_queue)
+                    return
+                elif config.entry["nwk_frametype"].startswith("0b00:"):
+                    dec_pkt = ZigbeeAppDataPayload(dec_payload)
+                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
+                    aps_fields(dec_pkt, msg_queue)
+                    return
+                else:
+                    config.entry["error_msg"] = (
+                        "Unexpected format of the decrypted NWK payload"
+                    )
+                    return
+    msg_obj = (
+        "Unable to decrypt with a {} ".format(config.entry["nwk_aux_keytype"])
+        + "the NWK payload of packet #{} ".format(config.entry["pkt_num"])
+        + "in {}".format(config.entry["pcap_filename"])
+    )
+    if msg_queue is None:
+        logging.debug(msg_obj)
+    else:
+        msg_queue.put((Message.DEBUG, msg_obj))
+    config.entry["warning_msg"] = "PW301: Unable to decrypt the NWK payload"
+
+
+def nwk_command(pkt, msg_queue):
+    # Command Identifier field (1 byte)
+    if not (
+        config.set_entry(
+            "nwk_cmd_id",
+            pkt[ZigbeeNWKCommandPayload].cmd_identifier,
+            NWK_COMMANDS,
+        )
+    ):
+        config.entry["error_msg"] = "PE314: Unknown NWK command"
+        return
+
+    # Compute the NWK Command Payload Length
+    # The constant 14 was derived by summing the following:
+    #  2: MAC Frame Control
+    #  1: MAC Sequence Number
+    #  2: NWK Frame Control
+    #  2: NWK Destination Short Address
+    #  2: NWK Source Short Address
+    #  1: NWK Radius
+    #  1: NWK Sequence Number
+    #  1: NWK Command Identifier
+    #  2: MAC Frame Check Sequence
+    config.entry["nwk_cmd_payloadlength"] = config.entry["phy_length"] - 14
+    # Compute the length of the MAC Destination Addressing fields
+    if config.entry["mac_dstaddrmode"].startswith("0b10:"):
+        config.entry["nwk_cmd_payloadlength"] -= 4
+    elif config.entry["mac_dstaddrmode"].startswith("0b11:"):
+        config.entry["nwk_cmd_payloadlength"] -= 10
+    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = "Invalid MAC DA mode"
+        return
+    # Compute the length of the MAC Source Addressing fields
+    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
+        if config.entry["mac_panidcomp"].startswith("0b0:"):
+            config.entry["nwk_cmd_payloadlength"] -= 2
+        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
+            config.entry["error_msg"] = "Invalid MAC PIC state"
+            return
+        config.entry["nwk_cmd_payloadlength"] -= 2
+    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
+        if config.entry["mac_panidcomp"].startswith("0b0:"):
+            config.entry["nwk_cmd_payloadlength"] -= 2
+        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
+            config.entry["error_msg"] = "Invalid MAC PIC state"
+            return
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif not config.entry["mac_srcaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = "Invalid MAC SA mode"
+        return
+    # Compute the length of the MAC Auxiliary Security Header field
+    if config.entry["mac_security"].startswith("0b1:"):
+        msg_obj = (
+            "Ignored packet #{} ".format(config.entry["pkt_num"])
+            + "in {} ".format(config.entry["pcap_filename"])
+            + "because it utilizes security services on the MAC layer"
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = (
+            "Ignored NWK command with enabled MAC-layer security"
+        )
+        return
+    elif not config.entry["mac_security"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid MAC security state"
+        return
+    # Check for the presence of the Destination Extended Address field
+    if config.entry["nwk_extendeddst"].startswith("0b1:"):
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif not config.entry["nwk_extendeddst"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK ED state"
+        return
+    # Check for the presence of the Source Extended Address field
+    if config.entry["nwk_extendedsrc"].startswith("0b1:"):
+        config.entry["nwk_cmd_payloadlength"] -= 8
+    elif not config.entry["nwk_extendedsrc"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK ES state"
+        return
+    # Check for the presence of the Multicast Control field
+    if config.entry["nwk_multicast"].startswith("0b1:"):
+        msg_obj = (
+            "Ignored packet #{} ".format(config.entry["pkt_num"])
+            + "in {} ".format(config.entry["pcap_filename"])
+            + "because it contains a Multicast Control field"
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = (
+            "Ignored NWK command that includes the Multicast Control field"
+        )
+        return
+    elif not config.entry["nwk_multicast"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid Multicast state"
+        return
+    # Check for the presence of the Source Route Subframe field
+    if config.entry["nwk_srcroute"].startswith("0b1:"):
+        config.entry["nwk_cmd_payloadlength"] -= (
+            2 + 2*config.entry["nwk_srcroute_relaycount"]
+        )
+    elif not config.entry["nwk_srcroute"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK SR state"
+        return
+    # Compute the length of the NWK Auxiliary Header field
+    if config.entry["nwk_security"].startswith("0b1:"):
+        config.entry["nwk_cmd_payloadlength"] -= 9
+        if config.entry["nwk_aux_extnonce"].startswith("0b1:"):
+            config.entry["nwk_cmd_payloadlength"] -= 8
+        elif not config.entry["nwk_aux_extnonce"].startswith("0b0:"):
+            config.entry["error_msg"] = "Invalid NWK EN state"
+            return
+        if config.entry["nwk_aux_keytype"].startswith("0b01:"):
+            config.entry["nwk_cmd_payloadlength"] -= 1
+        else:
+            config.entry["error_msg"] = "Unexpected key type on the NWK layer"
+            return
+    elif not config.entry["nwk_security"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid NWK security state"
+        return
+
+    # Command Payload field (variable)
+    if config.entry["nwk_cmd_id"].startswith("0x01:"):
+        nwk_routerequest(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x02:"):
+        nwk_routereply(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x03:"):
+        nwk_networkstatus(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x04:"):
+        nwk_leave(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x05:"):
+        nwk_routerecord(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x06:"):
+        nwk_rejoinreq(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x07:"):
+        nwk_rejoinrsp(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x08:"):
+        nwk_linkstatus(pkt, msg_queue)
+    elif config.entry["nwk_cmd_id"].startswith("0x09:"):
+        nwk_networkreport(pkt, msg_queue)
+    elif config.entry["nwk_cmd_id"].startswith("0x0a:"):
+        nwk_networkupdate(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x0b:"):
+        nwk_edtimeoutreq(pkt)
+    elif config.entry["nwk_cmd_id"].startswith("0x0c:"):
+        nwk_edtimeoutrsp(pkt)
+    else:
+        config.entry["error_msg"] = "Invalid NWK command"
+        return
+
+
 def nwk_routerequest(pkt):
     # Command Options field (1 byte)
     # Many-to-One subfield (2 bits)
@@ -823,563 +1382,4 @@ def nwk_edtimeoutrsp(pkt):
     # NWK End Device Timeout Response commands do not contain any other fields
     if len(bytes(pkt[ZigbeeNWKCommandPayload].payload)) != 0:
         config.entry["error_msg"] = "PE354: Unexpected payload"
-        return
-
-
-def nwk_command(pkt, msg_queue):
-    # Command Identifier field (1 byte)
-    if not (
-        config.set_entry(
-            "nwk_cmd_id",
-            pkt[ZigbeeNWKCommandPayload].cmd_identifier,
-            NWK_COMMANDS,
-        )
-    ):
-        config.entry["error_msg"] = "PE314: Unknown NWK command"
-        return
-
-    # Compute the NWK Command Payload Length
-    # The constant 14 was derived by summing the following:
-    #  2: MAC Frame Control
-    #  1: MAC Sequence Number
-    #  2: NWK Frame Control
-    #  2: NWK Destination Short Address
-    #  2: NWK Source Short Address
-    #  1: NWK Radius
-    #  1: NWK Sequence Number
-    #  1: NWK Command Identifier
-    #  2: MAC Frame Check Sequence
-    config.entry["nwk_cmd_payloadlength"] = config.entry["phy_length"] - 14
-    # Compute the length of the MAC Destination Addressing fields
-    if config.entry["mac_dstaddrmode"].startswith("0b10:"):
-        config.entry["nwk_cmd_payloadlength"] -= 4
-    elif config.entry["mac_dstaddrmode"].startswith("0b11:"):
-        config.entry["nwk_cmd_payloadlength"] -= 10
-    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = "Invalid MAC DA mode"
-        return
-    # Compute the length of the MAC Source Addressing fields
-    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
-        if config.entry["mac_panidcomp"].startswith("0b0:"):
-            config.entry["nwk_cmd_payloadlength"] -= 2
-        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
-            config.entry["error_msg"] = "Invalid MAC PIC state"
-            return
-        config.entry["nwk_cmd_payloadlength"] -= 2
-    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
-        if config.entry["mac_panidcomp"].startswith("0b0:"):
-            config.entry["nwk_cmd_payloadlength"] -= 2
-        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
-            config.entry["error_msg"] = "Invalid MAC PIC state"
-            return
-        config.entry["nwk_cmd_payloadlength"] -= 8
-    elif not config.entry["mac_srcaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = "Invalid MAC SA mode"
-        return
-    # Compute the length of the MAC Auxiliary Security Header field
-    if config.entry["mac_security"].startswith("0b1:"):
-        msg_obj = (
-            "Ignored packet #{} ".format(config.entry["pkt_num"])
-            + "in {} ".format(config.entry["pcap_filename"])
-            + "because it utilizes security services on the MAC layer"
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = (
-            "Ignored NWK command with enabled MAC-layer security"
-        )
-        return
-    elif not config.entry["mac_security"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid MAC security state"
-        return
-    # Check for the presence of the Destination Extended Address field
-    if config.entry["nwk_extendeddst"].startswith("0b1:"):
-        config.entry["nwk_cmd_payloadlength"] -= 8
-    elif not config.entry["nwk_extendeddst"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK ED state"
-        return
-    # Check for the presence of the Source Extended Address field
-    if config.entry["nwk_extendedsrc"].startswith("0b1:"):
-        config.entry["nwk_cmd_payloadlength"] -= 8
-    elif not config.entry["nwk_extendedsrc"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK ES state"
-        return
-    # Check for the presence of the Multicast Control field
-    if config.entry["nwk_multicast"].startswith("0b1:"):
-        msg_obj = (
-            "Ignored packet #{} ".format(config.entry["pkt_num"])
-            + "in {} ".format(config.entry["pcap_filename"])
-            + "because it contains a Multicast Control field"
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = (
-            "Ignored NWK command that includes the Multicast Control field"
-        )
-        return
-    elif not config.entry["nwk_multicast"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid Multicast state"
-        return
-    # Check for the presence of the Source Route Subframe field
-    if config.entry["nwk_srcroute"].startswith("0b1:"):
-        config.entry["nwk_cmd_payloadlength"] -= (
-            2 + 2*config.entry["nwk_srcroute_relaycount"]
-        )
-    elif not config.entry["nwk_srcroute"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK SR state"
-        return
-    # Compute the length of the NWK Auxiliary Header field
-    if config.entry["nwk_security"].startswith("0b1:"):
-        config.entry["nwk_cmd_payloadlength"] -= 9
-        if config.entry["nwk_aux_extnonce"].startswith("0b1:"):
-            config.entry["nwk_cmd_payloadlength"] -= 8
-        elif not config.entry["nwk_aux_extnonce"].startswith("0b0:"):
-            config.entry["error_msg"] = "Invalid NWK EN state"
-            return
-        if config.entry["nwk_aux_keytype"].startswith("0b01:"):
-            config.entry["nwk_cmd_payloadlength"] -= 1
-        else:
-            config.entry["error_msg"] = "Unexpected key type on the NWK layer"
-            return
-    elif not config.entry["nwk_security"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK security state"
-        return
-
-    # Command Payload field (variable)
-    if config.entry["nwk_cmd_id"].startswith("0x01:"):
-        nwk_routerequest(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x02:"):
-        nwk_routereply(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x03:"):
-        nwk_networkstatus(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x04:"):
-        nwk_leave(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x05:"):
-        nwk_routerecord(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x06:"):
-        nwk_rejoinreq(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x07:"):
-        nwk_rejoinrsp(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x08:"):
-        nwk_linkstatus(pkt, msg_queue)
-    elif config.entry["nwk_cmd_id"].startswith("0x09:"):
-        nwk_networkreport(pkt, msg_queue)
-    elif config.entry["nwk_cmd_id"].startswith("0x0a:"):
-        nwk_networkupdate(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x0b:"):
-        nwk_edtimeoutreq(pkt)
-    elif config.entry["nwk_cmd_id"].startswith("0x0c:"):
-        nwk_edtimeoutrsp(pkt)
-    else:
-        config.entry["error_msg"] = "Invalid NWK command"
-        return
-
-
-def nwk_beacon(pkt):
-    # Beacon Payload field (15 bytes)
-    # Protocol ID subfield (8 bits)
-    config.entry["nwk_beacon_protocolid"] = pkt[ZigBeeBeacon].proto_id
-    # Stack Profile subfield (4 bits)
-    config.entry["nwk_beacon_stackprofile"] = pkt[ZigBeeBeacon].stack_profile
-    # Protocol Version subfield (4 bits)
-    if not (
-        config.set_entry(
-            "nwk_beacon_protocolversion",
-            pkt[ZigBeeBeacon].nwkc_protocol_version,
-            NWK_PROTOCOL_VERSIONS,
-        )
-    ):
-        config.entry["error_msg"] = "PE340: Unknown NWK protocol version"
-        return
-    # Router Capacity subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_beacon_routercap",
-            pkt[ZigBeeBeacon].router_capacity,
-            ROUTER_CAPACITIES,
-        )
-    ):
-        config.entry["error_msg"] = "PE341: Unknown router capacity"
-        return
-    # Device Depth subfield (4 bits)
-    config.entry["nwk_beacon_devdepth"] = pkt[ZigBeeBeacon].device_depth
-    # End Device Capacity subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_beacon_edcap",
-            pkt[ZigBeeBeacon].end_device_capacity,
-            END_DEVICE_CAPACITIES,
-        )
-    ):
-        config.entry["error_msg"] = "PE342: Unknown end device capacity"
-        return
-    # Extended PAN ID subfield (64 bits)
-    config.entry["nwk_beacon_epid"] = format(
-        pkt[ZigBeeBeacon].extended_pan_id,
-        "016x",
-    )
-    # TX Offset subfield (24 bits)
-    config.entry["nwk_beacon_txoffset"] = pkt[ZigBeeBeacon].tx_offset
-    # Update ID subfield (8 bits)
-    config.entry["nwk_beacon_updateid"] = pkt[ZigBeeBeacon].update_id
-
-    # Beacons do not contain any other fields
-    if len(bytes(pkt[ZigBeeBeacon].payload)) != 0:
-        config.entry["error_msg"] = "PE355: Unexpected payload"
-        return
-
-
-def nwk_auxiliary(pkt, msg_queue):
-    # Security Control field (1 byte)
-    # Security Level subfield (3 bits)
-    if not (
-        config.set_entry(
-            "nwk_aux_seclevel",
-            pkt[ZigbeeSecurityHeader].nwk_seclevel,
-            NWK_SECURITY_LEVELS,
-        )
-    ):
-        config.entry["error_msg"] = "PE311: Unknown NWK security level"
-        return
-    # Key Identifier subfield (2 bits)
-    if not (
-        config.set_entry(
-            "nwk_aux_keytype",
-            pkt[ZigbeeSecurityHeader].key_type,
-            NWK_KEY_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE312: Unknown NWK key type"
-        return
-    # Extended Nonce subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_aux_extnonce",
-            pkt[ZigbeeSecurityHeader].extended_nonce,
-            NWK_EN_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE313: Unknown NWK EN state"
-        return
-
-    # Frame Counter field (4 bytes)
-    config.entry["nwk_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
-    frame_counter = pkt[ZigbeeSecurityHeader].fc
-
-    # Source Address field (0/8 bytes)
-    if config.entry["nwk_aux_extnonce"].startswith("0b1:"):
-        config.entry["nwk_aux_srcaddr"] = format(
-            pkt[ZigbeeSecurityHeader].source,
-            "016x",
-        )
-        potential_sources = {
-            pkt[ZigbeeSecurityHeader].source,
-        }
-    elif config.entry["nwk_aux_extnonce"].startswith("0b0:"):
-        panid = config.entry["mac_dstpanid"]
-        shortaddr = config.entry["mac_srcshortaddr"]
-        potential_sources = config.get_alternative_addresses(panid, shortaddr)
-
-        if len(potential_sources) == 0:
-            potential_sources = {
-                int(extendedaddr, 16)
-                for extendedaddr in config.extended_addresses.keys()
-            }
-
-        if config.entry["nwk_srcextendedaddr"] is not None:
-            potential_sources.add(
-                int(config.entry["nwk_srcextendedaddr"], 16),
-            )
-        if config.entry["mac_srcextendedaddr"] is not None:
-            potential_sources.add(
-                int(config.entry["mac_srcextendedaddr"], 16),
-            )
-    else:
-        config.entry["error_msg"] = "Invalid NWK EN state"
-        return
-
-    # Key Sequence Number field (1 byte)
-    if config.entry["nwk_aux_keytype"].startswith("0b01:"):
-        config.entry["nwk_aux_keyseqnum"] = (
-            pkt[ZigbeeSecurityHeader].key_seqnum
-        )
-        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
-        potential_keys = config.network_keys.values()
-    else:
-        config.entry["error_msg"] = "Unexpected key type on the NWK layer"
-        return
-
-    # Attempt to decrypt the payload
-    nwk_header = pkt[ZigbeeNWK].copy()
-    nwk_header.remove_payload()
-    header = bytes(nwk_header)
-    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
-    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
-    mic = pkt[ZigbeeSecurityHeader].data[-4:]
-    for source_addr in potential_sources:
-        for key in potential_keys:
-            dec_payload, auth_payload = crypto.zigbee_dec_ver(
-                key,
-                source_addr,
-                frame_counter,
-                sec_control,
-                header,
-                key_seqnum,
-                enc_payload,
-                mic,
-            )
-
-            # Check whether the decrypted payload is authentic
-            if auth_payload:
-                config.entry["nwk_aux_deckey"] = key.hex()
-                config.entry["nwk_aux_decsrc"] = format(source_addr, "016x")
-                config.entry["nwk_aux_decpayload"] = dec_payload.hex()
-
-                # NWK Payload field (variable)
-                if config.entry["nwk_frametype"].startswith("0b01:"):
-                    dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
-                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
-                    nwk_command(dec_pkt, msg_queue)
-                    return
-                elif config.entry["nwk_frametype"].startswith("0b00:"):
-                    dec_pkt = ZigbeeAppDataPayload(dec_payload)
-                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
-                    aps_fields(dec_pkt, msg_queue)
-                    return
-                else:
-                    config.entry["error_msg"] = (
-                        "Unexpected format of the decrypted NWK payload"
-                    )
-                    return
-    msg_obj = (
-        "Unable to decrypt with a {} ".format(config.entry["nwk_aux_keytype"])
-        + "the NWK payload of packet #{} ".format(config.entry["pkt_num"])
-        + "in {}".format(config.entry["pcap_filename"])
-    )
-    if msg_queue is None:
-        logging.debug(msg_obj)
-    else:
-        msg_queue.put((Message.DEBUG, msg_obj))
-    config.entry["warning_msg"] = "PW301: Unable to decrypt the NWK payload"
-
-
-def nwk_fields(pkt, msg_queue):
-    """Parse Zigbee NWK fields."""
-    if config.entry["mac_frametype"].startswith("0b000:"):
-        nwk_beacon(pkt)
-        return
-    elif not config.entry["mac_frametype"].startswith("0b001:"):
-        msg_obj = "Packet #{} in {} contains unknown NWK fields".format(
-            config.entry["pkt_num"],
-            config.entry["pcap_filename"],
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = "PE301: Unknown NWK fields"
-        return
-
-    # Frame Control field (2 bytes)
-    # Frame Type subfield (2 bits)
-    if not (
-        config.set_entry(
-            "nwk_frametype",
-            pkt[ZigbeeNWK].frametype,
-            NWK_FRAME_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE302: Unknown NWK frame type"
-        return
-    # Protocol Version subfield (4 bits)
-    if not (
-        config.set_entry(
-            "nwk_protocolversion",
-            pkt[ZigbeeNWK].proto_version,
-            NWK_PROTOCOL_VERSIONS,
-        )
-    ):
-        config.entry["error_msg"] = "PE303: Unknown NWK protocol version"
-        return
-    # Discover Route subfield (2 bits)
-    if not (
-        config.set_entry(
-            "nwk_discroute",
-            pkt[ZigbeeNWK].discover_route,
-            NWK_DR_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE304: Unknown NWK DR state"
-        return
-    # Multicast subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_multicast",
-            pkt[ZigbeeNWK].flags.multicast,
-            NWK_MULTICAST_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE305: Unknown NWK multicast state"
-        return
-    # Security subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_security",
-            pkt[ZigbeeNWK].flags.security,
-            NWK_SECURITY_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE306: Unknown NWK security state"
-        return
-    # Source Route subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_srcroute",
-            pkt[ZigbeeNWK].flags.source_route,
-            NWK_SR_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE307: Unknown NWK SR state"
-        return
-    # Extended Destination subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_extendeddst",
-            pkt[ZigbeeNWK].flags.extended_dst,
-            NWK_ED_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE308: Unknown NWK ED state"
-        return
-    # Extended Source subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_extendedsrc",
-            pkt[ZigbeeNWK].flags.extended_src,
-            NWK_ES_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE309: Unknown NWK ES state"
-        return
-    # End Device Initiator subfield (1 bit)
-    if not (
-        config.set_entry(
-            "nwk_edinitiator",
-            pkt[ZigbeeNWK].flags.reserved1,
-            NWK_EDI_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE310: Unknown NWK EDI state"
-        return
-
-    # Destination Short Address field (2 bytes)
-    config.entry["nwk_dstshortaddr"] = "0x{:04x}".format(
-        pkt[ZigbeeNWK].destination,
-    )
-
-    # Source Short Address field (2 bytes)
-    config.entry["nwk_srcshortaddr"] = "0x{:04x}".format(
-        pkt[ZigbeeNWK].source,
-    )
-
-    # Radius field (1 byte)
-    config.entry["nwk_radius"] = pkt[ZigbeeNWK].radius
-
-    # Sequence Number field (1 byte)
-    config.entry["nwk_seqnum"] = pkt[ZigbeeNWK].seqnum
-
-    # Destination Extended Address field (0/8 bytes)
-    if config.entry["nwk_extendeddst"].startswith("0b1:"):
-        config.entry["nwk_dstextendedaddr"] = format(
-            pkt[ZigbeeNWK].ext_dst,
-            "016x",
-        )
-    elif not config.entry["nwk_extendeddst"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK ED state"
-        return
-
-    # Source Extended Address field (0/8 bytes)
-    if config.entry["nwk_extendedsrc"].startswith("0b1:"):
-        config.entry["nwk_srcextendedaddr"] = format(
-            pkt[ZigbeeNWK].ext_src,
-            "016x",
-        )
-    elif not config.entry["nwk_extendedsrc"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK ES state"
-        return
-
-    # Multicast Control field (0/1 byte)
-    if config.entry["nwk_multicast"].startswith("0b1:"):
-        msg_obj = (
-            "Packet #{} ".format(config.entry["pkt_num"])
-            + "in {} ".format(config.entry["pcap_filename"])
-            + "contains a Multicast Control field "
-            + "which could not be processed"
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = "Could not process the Multicast Control"
-        return
-    elif not config.entry["nwk_multicast"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid Multicast state"
-        return
-
-    # Source Route Subframe field (variable)
-    if config.entry["nwk_srcroute"].startswith("0b1:"):
-        config.entry["nwk_srcroute_relaycount"] = pkt[ZigbeeNWK].relay_count
-        config.entry["nwk_srcroute_relayindex"] = pkt[ZigbeeNWK].relay_index
-        if config.entry["nwk_srcroute_relaycount"] > 0:
-            config.entry["nwk_srcroute_relaylist"] = ",".join(
-                ["0x{:04x}".format(addr) for addr in pkt[ZigbeeNWK].relays],
-            )
-    elif not config.entry["nwk_srcroute"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid NWK SR state"
-        return
-
-    if config.entry["nwk_security"].startswith("0b1:"):
-        # NWK Auxiliary Header field (6/14 bytes)
-        if pkt.haslayer(ZigbeeSecurityHeader):
-            nwk_auxiliary(pkt, msg_queue)
-        else:
-            config.entry["error_msg"] = (
-                "The NWK Auxiliary Header is not included"
-            )
-            return
-    elif config.entry["nwk_security"].startswith("0b0:"):
-        # NWK Payload field (variable)
-        if config.entry["nwk_frametype"].startswith("0b01:"):
-            if pkt.haslayer(ZigbeeNWKCommandPayload):
-                nwk_command(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no NWK Command fields"
-                return
-        elif config.entry["nwk_frametype"].startswith("0b11:"):
-            msg_obj = (
-                "Packet #{} ".format(config.entry["pkt_num"])
-                + "in {} ".format(config.entry["pcap_filename"])
-                + "contains Inter-PAN fields which were ignored"
-            )
-            if msg_queue is None:
-                logging.debug(msg_obj)
-            else:
-                msg_queue.put((Message.DEBUG, msg_obj))
-            config.entry["error_msg"] = "Ignored the Inter-PAN fields"
-            return
-        elif config.entry["nwk_frametype"].startswith("0b00:"):
-            if pkt.haslayer(ZigbeeAppDataPayload):
-                aps_fields(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no Zigbee APS fields"
-                return
-        else:
-            config.entry["error_msg"] = "Invalid NWK frame type"
-            return
-    else:
-        config.entry["error_msg"] = "Invalid NWK security state"
         return

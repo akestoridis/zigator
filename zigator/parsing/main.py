@@ -24,20 +24,6 @@ from ..enums import Message
 from .pcap_file import pcap_file
 
 
-def worker(filepaths, msg_queue, task_index, task_lock):
-    """Parse pcap files from the task list."""
-    while True:
-        with task_lock:
-            if task_index.value < len(filepaths):
-                filepath = filepaths[task_index.value]
-                task_index.value += 1
-            else:
-                break
-        pcap_file(filepath, msg_queue)
-        msg_queue.put((Message.PCAP, filepath))
-    msg_queue.put((Message.RETURN, os.getpid()))
-
-
 def main(pcap_dirpath, db_filepath, num_workers):
     """Parse all pcap files in the provided directory."""
     # Sanity check
@@ -265,3 +251,17 @@ def main(pcap_dirpath, db_filepath, num_workers):
 
     # Disconnection from the database
     config.db.disconnect()
+
+
+def worker(filepaths, msg_queue, task_index, task_lock):
+    """Parse pcap files from the task list."""
+    while True:
+        with task_lock:
+            if task_index.value < len(filepaths):
+                filepath = filepaths[task_index.value]
+                task_index.value += 1
+            else:
+                break
+        pcap_file(filepath, msg_queue)
+        msg_queue.put((Message.PCAP, filepath))
+    msg_queue.put((Message.RETURN, os.getpid()))

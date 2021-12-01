@@ -217,6 +217,232 @@ ZCL_IASZONE_ZONETYPES = {
 }
 
 
+def zcl_fields(pkt):
+    """Parse Zigbee Cluster Library fields."""
+    # Frame Control field (1 byte)
+    # Frame Type subfield (2 bits)
+    if not (
+        config.set_entry(
+            "zcl_frametype",
+            pkt[ZigbeeClusterLibrary].zcl_frametype,
+            ZCL_FRAME_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE601: Unknown ZCL frame type"
+        return
+    # Manufacturer Specific subfield (1 bit)
+    if not (
+        config.set_entry(
+            "zcl_manufspecific",
+            pkt[ZigbeeClusterLibrary].manufacturer_specific,
+            MS_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE602: Unknown ZCL MS state"
+        return
+    # Direction subfield (1 bit)
+    if not (
+        config.set_entry(
+            "zcl_direction",
+            pkt[ZigbeeClusterLibrary].command_direction,
+            DIRECTION_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE603: Unknown ZCL direction state"
+        return
+    # Default Response subfield (1 bit)
+    if not (
+        config.set_entry(
+            "zcl_disdefrsp",
+            pkt[ZigbeeClusterLibrary].disable_default_response,
+            DR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE604: Unknown ZCL DR state"
+        return
+
+    # Manufacturer Code field (0/2 bytes)
+    if config.entry["zcl_manufspecific"].startswith("0b1:"):
+        config.entry["zcl_manufcode"] = "0x{:04x}".format(
+            pkt[ZigbeeClusterLibrary].manufacturer_code,
+        )
+    elif not config.entry["zcl_manufspecific"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid manufacturer-specific state"
+        return
+
+    # Transaction Sequence Number field (1 byte)
+    config.entry["zcl_seqnum"] = (
+        pkt[ZigbeeClusterLibrary].transaction_sequence
+    )
+
+    if config.entry["zcl_frametype"].startswith("0b00:"):
+        # Command Identifier field (1 byte)
+        if not (
+            config.set_entry(
+                "zcl_cmd_id",
+                pkt[ZigbeeClusterLibrary].command_identifier,
+                GLOBAL_COMMANDS,
+            )
+        ):
+            config.entry["error_msg"] = "PE605: Unknown global command"
+            return
+
+        # ZCL Payload field (variable)
+        if config.entry["zcl_cmd_id"].startswith("0x00:"):
+            if pkt.haslayer(ZCLGeneralReadAttributes):
+                zcl_readattributes(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Read Attributes fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x01:"):
+            if pkt.haslayer(ZCLGeneralReadAttributesResponse):
+                zcl_readattributesresponse(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Read Attributes Response fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x02:"):
+            if pkt.haslayer(ZCLGeneralWriteAttributes):
+                zcl_writeattributes(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Write Attributes fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x04:"):
+            if pkt.haslayer(ZCLGeneralWriteAttributesResponse):
+                zcl_writeattributesresponse(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Write Attributes Response fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x06:"):
+            if pkt.haslayer(ZCLGeneralConfigureReporting):
+                zcl_configurereporting(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Configure Reporting fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x07:"):
+            if pkt.haslayer(ZCLGeneralConfigureReportingResponse):
+                zcl_configurereportingresponse(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Configure Reporting Response fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x0a:"):
+            if pkt.haslayer(ZCLGeneralReportAttributes):
+                zcl_reportattributes(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Report Attributes fields"
+                )
+                return
+        elif config.entry["zcl_cmd_id"].startswith("0x0b:"):
+            if pkt.haslayer(ZCLGeneralDefaultResponse):
+                zcl_defaultresponse(pkt)
+            else:
+                config.entry["error_msg"] = (
+                    "There are no ZCL Default Response fields"
+                )
+                return
+        else:
+            config.entry["warning_msg"] = "Unsupported global command"
+            return
+    elif config.entry["zcl_frametype"].startswith("0b01:"):
+        if config.entry["aps_cluster_id"].startswith("0x0500:"):
+            if config.entry["zcl_direction"].startswith("0b0:"):
+                # Command Identifier field (1 byte)
+                if not (
+                    config.set_entry(
+                        "zcl_cmd_id",
+                        pkt[ZigbeeClusterLibrary].command_identifier,
+                        ZCL_IASZONE_RECEIVED_COMMANDS,
+                    )
+                ):
+                    config.entry["error_msg"] = (
+                        "Unknown ZCL IAS Zone client-to-server command"
+                    )
+                    return
+
+                # ZCL Payload field (variable)
+                if config.entry["zcl_cmd_id"].startswith("0x00:"):
+                    if pkt.haslayer(ZCLIASZoneZoneEnrollResponse):
+                        zcl_iaszone_zoneenrollrsp(pkt)
+                    else:
+                        config.entry["error_msg"] = (
+                            "There are no ZCL IAS Zone: "
+                            + "Zone Enroll Response fields"
+                        )
+                        return
+                else:
+                    config.entry["warning_msg"] = (
+                        "Unsupported ZCL IAS Zone client-to-server command"
+                    )
+                    return
+            elif config.entry["zcl_direction"].startswith("0b1:"):
+                # Command Identifier field (1 byte)
+                if not (
+                    config.set_entry(
+                        "zcl_cmd_id",
+                        pkt[ZigbeeClusterLibrary].command_identifier,
+                        ZCL_IASZONE_GENERATED_COMMANDS,
+                    )
+                ):
+                    config.entry["error_msg"] = (
+                        "Unknown ZCL IAS Zone server-to-client command"
+                    )
+                    return
+
+                # ZCL Payload field (variable)
+                if config.entry["zcl_cmd_id"].startswith("0x00:"):
+                    if pkt.haslayer(ZCLIASZoneZoneStatusChangeNotification):
+                        zcl_iaszone_zonestatuschangenotif(pkt)
+                    else:
+                        config.entry["error_msg"] = (
+                            "There are no ZCL IAS Zone: "
+                            + "Zone Status Change Notification fields"
+                        )
+                        return
+                elif config.entry["zcl_cmd_id"].startswith("0x01:"):
+                    if pkt.haslayer(ZCLIASZoneZoneEnrollRequest):
+                        zcl_iaszone_zoneenrollreq(pkt)
+                    else:
+                        config.entry["error_msg"] = (
+                            "There are no ZCL IAS Zone: "
+                            + "Zone Enroll Request fields"
+                        )
+                        return
+                else:
+                    config.entry["warning_msg"] = (
+                        "Unsupported ZCL IAS Zone server-to-client command"
+                    )
+                    return
+            else:
+                config.entry["error_msg"] = "Invalid ZCL direction state"
+                return
+        else:
+            # Command Identifier field (1 byte)
+            config.entry["zcl_cmd_id"] = (
+                "0x{:02x}: Unknown cluster-specific command".format(
+                    pkt[ZigbeeClusterLibrary].command_identifier,
+                )
+            )
+
+            # ZCL Payload field (variable)
+            config.entry["warning_msg"] = "Unknown cluster-specific command"
+            return
+    else:
+        config.entry["error_msg"] = "Invalid ZCL frame type"
+        return
+
+
 def zcl_readattributes(pkt):
     # Attribute Identifiers field (variable)
     config.entry["zcl_readattributes_identifiers"] = ",".join(
@@ -672,230 +898,4 @@ def zcl_iaszone_zoneenrollreq(pkt):
     # do not contain any other fields
     if len(bytes(pkt[ZCLIASZoneZoneEnrollRequest].payload)) != 0:
         config.entry["error_msg"] = "Unexpected payload"
-        return
-
-
-def zcl_fields(pkt):
-    """Parse Zigbee Cluster Library fields."""
-    # Frame Control field (1 byte)
-    # Frame Type subfield (2 bits)
-    if not (
-        config.set_entry(
-            "zcl_frametype",
-            pkt[ZigbeeClusterLibrary].zcl_frametype,
-            ZCL_FRAME_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE601: Unknown ZCL frame type"
-        return
-    # Manufacturer Specific subfield (1 bit)
-    if not (
-        config.set_entry(
-            "zcl_manufspecific",
-            pkt[ZigbeeClusterLibrary].manufacturer_specific,
-            MS_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE602: Unknown ZCL MS state"
-        return
-    # Direction subfield (1 bit)
-    if not (
-        config.set_entry(
-            "zcl_direction",
-            pkt[ZigbeeClusterLibrary].command_direction,
-            DIRECTION_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE603: Unknown ZCL direction state"
-        return
-    # Default Response subfield (1 bit)
-    if not (
-        config.set_entry(
-            "zcl_disdefrsp",
-            pkt[ZigbeeClusterLibrary].disable_default_response,
-            DR_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE604: Unknown ZCL DR state"
-        return
-
-    # Manufacturer Code field (0/2 bytes)
-    if config.entry["zcl_manufspecific"].startswith("0b1:"):
-        config.entry["zcl_manufcode"] = "0x{:04x}".format(
-            pkt[ZigbeeClusterLibrary].manufacturer_code,
-        )
-    elif not config.entry["zcl_manufspecific"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid manufacturer-specific state"
-        return
-
-    # Transaction Sequence Number field (1 byte)
-    config.entry["zcl_seqnum"] = (
-        pkt[ZigbeeClusterLibrary].transaction_sequence
-    )
-
-    if config.entry["zcl_frametype"].startswith("0b00:"):
-        # Command Identifier field (1 byte)
-        if not (
-            config.set_entry(
-                "zcl_cmd_id",
-                pkt[ZigbeeClusterLibrary].command_identifier,
-                GLOBAL_COMMANDS,
-            )
-        ):
-            config.entry["error_msg"] = "PE605: Unknown global command"
-            return
-
-        # ZCL Payload field (variable)
-        if config.entry["zcl_cmd_id"].startswith("0x00:"):
-            if pkt.haslayer(ZCLGeneralReadAttributes):
-                zcl_readattributes(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Read Attributes fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x01:"):
-            if pkt.haslayer(ZCLGeneralReadAttributesResponse):
-                zcl_readattributesresponse(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Read Attributes Response fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x02:"):
-            if pkt.haslayer(ZCLGeneralWriteAttributes):
-                zcl_writeattributes(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Write Attributes fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x04:"):
-            if pkt.haslayer(ZCLGeneralWriteAttributesResponse):
-                zcl_writeattributesresponse(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Write Attributes Response fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x06:"):
-            if pkt.haslayer(ZCLGeneralConfigureReporting):
-                zcl_configurereporting(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Configure Reporting fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x07:"):
-            if pkt.haslayer(ZCLGeneralConfigureReportingResponse):
-                zcl_configurereportingresponse(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Configure Reporting Response fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x0a:"):
-            if pkt.haslayer(ZCLGeneralReportAttributes):
-                zcl_reportattributes(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Report Attributes fields"
-                )
-                return
-        elif config.entry["zcl_cmd_id"].startswith("0x0b:"):
-            if pkt.haslayer(ZCLGeneralDefaultResponse):
-                zcl_defaultresponse(pkt)
-            else:
-                config.entry["error_msg"] = (
-                    "There are no ZCL Default Response fields"
-                )
-                return
-        else:
-            config.entry["warning_msg"] = "Unsupported global command"
-            return
-    elif config.entry["zcl_frametype"].startswith("0b01:"):
-        if config.entry["aps_cluster_id"].startswith("0x0500:"):
-            if config.entry["zcl_direction"].startswith("0b0:"):
-                # Command Identifier field (1 byte)
-                if not (
-                    config.set_entry(
-                        "zcl_cmd_id",
-                        pkt[ZigbeeClusterLibrary].command_identifier,
-                        ZCL_IASZONE_RECEIVED_COMMANDS,
-                    )
-                ):
-                    config.entry["error_msg"] = (
-                        "Unknown ZCL IAS Zone client-to-server command"
-                    )
-                    return
-
-                # ZCL Payload field (variable)
-                if config.entry["zcl_cmd_id"].startswith("0x00:"):
-                    if pkt.haslayer(ZCLIASZoneZoneEnrollResponse):
-                        zcl_iaszone_zoneenrollrsp(pkt)
-                    else:
-                        config.entry["error_msg"] = (
-                            "There are no ZCL IAS Zone: "
-                            + "Zone Enroll Response fields"
-                        )
-                        return
-                else:
-                    config.entry["warning_msg"] = (
-                        "Unsupported ZCL IAS Zone client-to-server command"
-                    )
-                    return
-            elif config.entry["zcl_direction"].startswith("0b1:"):
-                # Command Identifier field (1 byte)
-                if not (
-                    config.set_entry(
-                        "zcl_cmd_id",
-                        pkt[ZigbeeClusterLibrary].command_identifier,
-                        ZCL_IASZONE_GENERATED_COMMANDS,
-                    )
-                ):
-                    config.entry["error_msg"] = (
-                        "Unknown ZCL IAS Zone server-to-client command"
-                    )
-                    return
-
-                # ZCL Payload field (variable)
-                if config.entry["zcl_cmd_id"].startswith("0x00:"):
-                    if pkt.haslayer(ZCLIASZoneZoneStatusChangeNotification):
-                        zcl_iaszone_zonestatuschangenotif(pkt)
-                    else:
-                        config.entry["error_msg"] = (
-                            "There are no ZCL IAS Zone: "
-                            + "Zone Status Change Notification fields"
-                        )
-                        return
-                elif config.entry["zcl_cmd_id"].startswith("0x01:"):
-                    if pkt.haslayer(ZCLIASZoneZoneEnrollRequest):
-                        zcl_iaszone_zoneenrollreq(pkt)
-                    else:
-                        config.entry["error_msg"] = (
-                            "There are no ZCL IAS Zone: "
-                            + "Zone Enroll Request fields"
-                        )
-                        return
-                else:
-                    config.entry["warning_msg"] = (
-                        "Unsupported ZCL IAS Zone server-to-client command"
-                    )
-                    return
-            else:
-                config.entry["error_msg"] = "Invalid ZCL direction state"
-                return
-        else:
-            # Command Identifier field (1 byte)
-            config.entry["zcl_cmd_id"] = (
-                "0x{:02x}: Unknown cluster-specific command".format(
-                    pkt[ZigbeeClusterLibrary].command_identifier,
-                )
-            )
-
-            # ZCL Payload field (variable)
-            config.entry["warning_msg"] = "Unknown cluster-specific command"
-            return
-    else:
-        config.entry["error_msg"] = "Invalid ZCL frame type"
         return

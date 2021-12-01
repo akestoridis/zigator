@@ -337,6 +337,609 @@ CONFIRM_STATUSES = {
 }
 
 
+def aps_fields(pkt, msg_queue):
+    """Parse Zigbee APS fields."""
+    # Frame Control field (1 byte)
+    # Frame Type subfield (2 bits)
+    if not (
+        config.set_entry(
+            "aps_frametype",
+            pkt[ZigbeeAppDataPayload].aps_frametype,
+            APS_FRAME_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE401: Unknown APS frame type"
+        return
+    # Delivery Mode subfield (2 bits)
+    if not (
+        config.set_entry(
+            "aps_delmode",
+            pkt[ZigbeeAppDataPayload].delivery_mode,
+            APS_DELIVERY_MODES,
+        )
+    ):
+        config.entry["error_msg"] = "PE402: Unknown APS delivery mode"
+        return
+    # ACK Format subfield (1 bit)
+    if not (
+        config.set_entry(
+            "aps_ackformat",
+            pkt[ZigbeeAppDataPayload].frame_control.ack_format,
+            APS_ACKFORMAT_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE403: Unknown APS ACK format state"
+        return
+    # Security subfield (1 bit)
+    if not (
+        config.set_entry(
+            "aps_security",
+            pkt[ZigbeeAppDataPayload].frame_control.security,
+            APS_SECURITY_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE404: Unknown APS security state"
+        return
+    # Acknowledgment Request subfield (1 bit)
+    if not (
+        config.set_entry(
+            "aps_ackreq",
+            pkt[ZigbeeAppDataPayload].frame_control.ack_req,
+            APS_AR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE405: Unknown APS AR state"
+        return
+    # Extended Header subfield (1 bit)
+    if not (
+        config.set_entry(
+            "aps_exthdr",
+            pkt[ZigbeeAppDataPayload].frame_control.extended_hdr,
+            APS_EH_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE406: Unknown APS EH state"
+        return
+
+    # The APS Header fields vary significantly between different frame types
+    if config.entry["aps_frametype"].startswith("0b00:"):
+        aps_data_header(pkt, msg_queue)
+    elif config.entry["aps_frametype"].startswith("0b01:"):
+        aps_command_header(pkt, msg_queue)
+    elif config.entry["aps_frametype"].startswith("0b10:"):
+        aps_ack_header(pkt, msg_queue)
+    elif config.entry["aps_frametype"].startswith("0b11:"):
+        msg_obj = (
+            "Packet #{} ".format(config.entry["pkt_num"])
+            + "in {} ".format(config.entry["pcap_filename"])
+            + "contains Inter-PAN fields which were ignored"
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = "Ignored the Inter-PAN fields"
+        return
+    else:
+        config.entry["error_msg"] = "Invalid APS frame type"
+        return
+
+
+def aps_data_header(pkt, msg_queue):
+    if (
+        config.entry["aps_delmode"].startswith("0b00:")
+        or config.entry["aps_delmode"].startswith("0b10:")
+    ):
+        # Destination Endpoint field (1 byte)
+        config.entry["aps_dstendpoint"] = (
+            pkt[ZigbeeAppDataPayload].dst_endpoint
+        )
+    elif config.entry["aps_delmode"].startswith("0b11:"):
+        # Group Address field (2 bytes)
+        config.entry["aps_groupaddr"] = "0x{:04x}".format(
+            pkt[ZigbeeAppDataPayload].group_addr,
+        )
+    else:
+        config.entry["error_msg"] = "Invalid APS delivery mode"
+        return
+
+    # Profile Identifier field (2 bytes)
+    if not (
+        config.set_entry(
+            "aps_profile_id",
+            pkt[ZigbeeAppDataPayload].profile,
+            APS_PROFILES,
+        )
+    ):
+        config.entry["aps_profile_id"] = (
+            "0x{:04x}: Unknown APS profile".format(
+                pkt[ZigbeeAppDataPayload].profile,
+            )
+        )
+
+    # Cluster Identifier field (2 bytes)
+    if config.entry["aps_profile_id"].startswith("0x0000:"):
+        if not (
+            config.set_entry(
+                "aps_cluster_id",
+                pkt[ZigbeeAppDataPayload].cluster,
+                ZDP_CLUSTERS,
+            )
+        ):
+            config.entry["aps_cluster_id"] = (
+                "0x{:04x}: Unknown ZDP cluster".format(
+                    pkt[ZigbeeAppDataPayload].cluster,
+                )
+            )
+    elif config.entry["aps_profile_id"].split()[1] != "Unknown":
+        if not (
+            config.set_entry(
+                "aps_cluster_id",
+                pkt[ZigbeeAppDataPayload].cluster,
+                ZCL_CLUSTERS,
+            )
+        ):
+            config.entry["aps_cluster_id"] = (
+                "0x{:04x}: Unknown ZCL cluster".format(
+                    pkt[ZigbeeAppDataPayload].cluster,
+                )
+            )
+    else:
+        config.entry["aps_cluster_id"] = (
+            "0x{:04x}: Unknown APS cluster".format(
+                pkt[ZigbeeAppDataPayload].cluster,
+            )
+        )
+
+    # Source Endpoint field (1 byte)
+    config.entry["aps_srcendpoint"] = pkt[ZigbeeAppDataPayload].src_endpoint
+
+    # APS Counter field (1 byte)
+    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
+
+    # Extended Header field (0/1/2 bytes)
+    if config.entry["aps_exthdr"].startswith("0b1:"):
+        # Extended Frame Control subfield (1 byte)
+        # Fragmentation subsubfield (2 bits)
+        if not (
+            config.set_entry(
+                "aps_fragmentation",
+                pkt[ZigbeeAppDataPayload].fragmentation,
+                FRAGMENTATION_STATES,
+            )
+        ):
+            config.entry["error_msg"] = "PE407: Unknown fragmentation state"
+            return
+
+        if (
+            config.entry["aps_fragmentation"].startswith("0b01:")
+            or config.entry["aps_fragmentation"].startswith("0b10:")
+        ):
+            # Block Number subfield (1 byte)
+            config.entry["aps_blocknumber"] = (
+                pkt[ZigbeeAppDataPayload].block_number
+            )
+        elif not config.entry["aps_fragmentation"].startswith("0b00:"):
+            config.entry["error_msg"] = "Invalid fragmentation state"
+            return
+    elif not config.entry["aps_exthdr"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid APS EH state"
+        return
+
+    if config.entry["aps_security"].startswith("0b1:"):
+        # APS Auxiliary Header field (5/6/13/14 bytes)
+        if pkt.haslayer(ZigbeeSecurityHeader):
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
+        else:
+            config.entry["error_msg"] = (
+                "The APS Auxiliary Header is not included"
+            )
+            return
+    elif config.entry["aps_security"].startswith("0b0:"):
+        # APS Data fields (variable)
+        if config.entry["aps_profile_id"].startswith("0x0000:"):
+            if pkt.haslayer(ZigbeeDeviceProfile):
+                zdp_fields(pkt)
+            else:
+                config.entry["error_msg"] = "There are no ZDP fields"
+                return
+        elif config.entry["aps_profile_id"].split()[1] != "Unknown":
+            if pkt.haslayer(ZigbeeClusterLibrary):
+                zcl_fields(pkt)
+            else:
+                config.entry["error_msg"] = "There are no ZCL fields"
+                return
+        else:
+            config.entry["error_msg"] = (
+                "Unknown APS profile with ID {}".format(
+                    config.entry["aps_profile_id"],
+                )
+            )
+            return
+    else:
+        config.entry["error_msg"] = "Invalid APS security state"
+        return
+
+
+def aps_ack_header(pkt, msg_queue):
+    if config.entry["aps_ackformat"].startswith("0b0:"):
+        # Destination Endpoint field (1 byte)
+        config.entry["aps_dstendpoint"] = (
+            pkt[ZigbeeAppDataPayload].dst_endpoint
+        )
+
+        # Profile Identifier field (2 bytes)
+        if not (
+            config.set_entry(
+                "aps_profile_id",
+                pkt[ZigbeeAppDataPayload].profile,
+                APS_PROFILES,
+            )
+        ):
+            config.entry["aps_profile_id"] = (
+                "0x{:04x}: Unknown APS profile".format(
+                    pkt[ZigbeeAppDataPayload].profile,
+                )
+            )
+
+        # Cluster Identifier field (2 bytes)
+        if config.entry["aps_profile_id"].startswith("0x0000:"):
+            if not (
+                config.set_entry(
+                    "aps_cluster_id",
+                    pkt[ZigbeeAppDataPayload].cluster,
+                    ZDP_CLUSTERS,
+                )
+            ):
+                config.entry["aps_cluster_id"] = (
+                    "0x{:04x}: Unknown ZDP cluster".format(
+                        pkt[ZigbeeAppDataPayload].cluster,
+                    )
+                )
+        elif config.entry["aps_profile_id"].split()[1] != "Unknown":
+            if not (
+                config.set_entry(
+                    "aps_cluster_id",
+                    pkt[ZigbeeAppDataPayload].cluster,
+                    ZCL_CLUSTERS,
+                )
+            ):
+                config.entry["aps_cluster_id"] = (
+                    "0x{:04x}: Unknown ZCL cluster".format(
+                        pkt[ZigbeeAppDataPayload].cluster,
+                    )
+                )
+        else:
+            config.entry["aps_cluster_id"] = (
+                "0x{:04x}: Unknown APS cluster".format(
+                    pkt[ZigbeeAppDataPayload].cluster,
+                )
+            )
+
+        # Source Endpoint field (1 byte)
+        config.entry["aps_srcendpoint"] = (
+            pkt[ZigbeeAppDataPayload].src_endpoint
+        )
+    elif not config.entry["aps_ackformat"].startswith("0b1:"):
+        config.entry["error_msg"] = "Invalid ACK Format state"
+        return
+
+    # APS Counter field (1 byte)
+    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
+
+    # Extended Header field (0/1/3 bytes)
+    if config.entry["aps_exthdr"].startswith("0b1:"):
+        # Extended Frame Control subfield (1 byte)
+        # Fragmentation subsubfield (2 bits)
+        if not (
+            config.set_entry(
+                "aps_fragmentation",
+                pkt[ZigbeeAppDataPayload].fragmentation,
+                FRAGMENTATION_STATES,
+            )
+        ):
+            config.entry["error_msg"] = "PE408: Unknown fragmentation state"
+            return
+
+        if (
+            config.entry["aps_fragmentation"].startswith("0b01:")
+            or config.entry["aps_fragmentation"].startswith("0b10:")
+        ):
+            # Block Number subfield (1 byte)
+            config.entry["aps_blocknumber"] = (
+                pkt[ZigbeeAppDataPayload].block_number
+            )
+
+            # ACK Bitfield subfield (1 byte)
+            config.entry["aps_ackbitfield"] = (
+                pkt[ZigbeeAppDataPayload].ack_bitfield
+            )
+        elif not config.entry["aps_fragmentation"].startswith("0b00:"):
+            config.entry["error_msg"] = "Invalid fragmentation state"
+            return
+    elif not config.entry["aps_exthdr"].startswith("0b0:"):
+        config.entry["error_msg"] = "Invalid APS EH state"
+        return
+
+    if config.entry["aps_security"].startswith("0b1:"):
+        # APS Auxiliary Header field (5/6/13/14 bytes)
+        if pkt.haslayer(ZigbeeSecurityHeader):
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
+        else:
+            config.entry["error_msg"] = (
+                "The APS Auxiliary Header is not included"
+            )
+            return
+    elif config.entry["aps_security"].startswith("0b0:"):
+        # APS Acknowledgments do not contain any other fields
+        if len(bytes(pkt[ZigbeeAppDataPayload].payload)) != 0:
+            config.entry["error_msg"] = "PE426: Unexpected payload"
+            return
+    else:
+        config.entry["error_msg"] = "Invalid APS security state"
+        return
+
+
+def aps_command_header(pkt, msg_queue):
+    # APS Counter field (1 byte)
+    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
+
+    if config.entry["aps_security"].startswith("0b1:"):
+        # APS Auxiliary Header field (5/6/13/14 bytes)
+        if pkt.haslayer(ZigbeeSecurityHeader):
+            aps_auxiliary(pkt, msg_queue, tunneled=False)
+        else:
+            config.entry["error_msg"] = (
+                "The APS Auxiliary Header is not included"
+            )
+            return
+    elif config.entry["aps_security"].startswith("0b0:"):
+        # APS Command fields (variable)
+        if pkt.haslayer(ZigbeeAppCommandPayload):
+            aps_command_payload(pkt, msg_queue, tunneled=False)
+        else:
+            config.entry["error_msg"] = "There are no APS Command fields"
+            return
+    else:
+        config.entry["error_msg"] = "Invalid APS security state"
+        return
+
+
+def aps_auxiliary(pkt, msg_queue, tunneled=False):
+    # Security Control field (1 byte)
+    # Security Level subfield (3 bits)
+    if not (
+        config.set_entry(
+            "aps_aux_seclevel",
+            pkt[ZigbeeSecurityHeader].nwk_seclevel,
+            APS_SECURITY_LEVELS,
+        )
+    ):
+        config.entry["error_msg"] = "PE409: Unknown APS security level"
+        return
+    # Key Identifier subfield (2 bits)
+    if not (
+        config.set_entry(
+            "aps_aux_keytype",
+            pkt[ZigbeeSecurityHeader].key_type,
+            APS_KEY_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE410: Unknown APS key type"
+        return
+    # Extended Nonce subfield (1 bit)
+    if not (
+        config.set_entry(
+            "aps_aux_extnonce",
+            pkt[ZigbeeSecurityHeader].extended_nonce,
+            APS_EN_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE411: Unknown APS EN state"
+        return
+
+    # Frame Counter field (4 bytes)
+    config.entry["aps_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
+    frame_counter = pkt[ZigbeeSecurityHeader].fc
+
+    # Source Address field (0/8 bytes)
+    if config.entry["aps_aux_extnonce"].startswith("0b1:"):
+        config.entry["aps_aux_srcaddr"] = format(
+            pkt[ZigbeeSecurityHeader].source,
+            "016x",
+        )
+        potential_sources = {
+            pkt[ZigbeeSecurityHeader].source,
+        }
+    elif config.entry["aps_aux_extnonce"].startswith("0b0:"):
+        panid = config.entry["mac_dstpanid"]
+        shortaddr = config.entry["nwk_srcshortaddr"]
+        potential_sources = config.get_alternative_addresses(panid, shortaddr)
+
+        if len(potential_sources) == 0:
+            potential_sources = {
+                int(extendedaddr, 16)
+                for extendedaddr in config.extended_addresses.keys()
+            }
+
+        if config.entry["nwk_aux_srcaddr"] is not None:
+            potential_sources.add(int(config.entry["nwk_aux_srcaddr"], 16))
+        if config.entry["nwk_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["nwk_srcextendedaddr"], 16),
+            )
+        if config.entry["mac_srcextendedaddr"] is not None:
+            potential_sources.add(
+                int(config.entry["mac_srcextendedaddr"], 16),
+            )
+    else:
+        config.entry["error_msg"] = "Invalid APS EN state"
+        return
+
+    # Key Sequence Number field (0/1 byte)
+    if config.entry["aps_aux_keytype"].startswith("0b01:"):
+        config.entry["aps_aux_keyseqnum"] = (
+            pkt[ZigbeeSecurityHeader].key_seqnum
+        )
+        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
+        potential_keys = config.network_keys.values()
+    elif config.entry["aps_aux_keytype"].startswith("0b00:"):
+        key_seqnum = None
+        potential_keys = config.link_keys.values()
+    elif config.entry["aps_aux_keytype"].startswith("0b10:"):
+        key_seqnum = None
+        potential_keys = {
+            crypto.zigbee_hmac(bytes.fromhex("00"), key)
+            for key in config.link_keys.values()
+        }
+    elif config.entry["aps_aux_keytype"].startswith("0b11:"):
+        key_seqnum = None
+        potential_keys = {
+            crypto.zigbee_hmac(bytes.fromhex("02"), key)
+            for key in config.link_keys.values()
+        }
+    else:
+        config.entry["error_msg"] = "Invalid APS key type"
+        return
+
+    # Attempt to decrypt the payload
+    if tunneled:
+        tunneled_framecontrol = (
+            pkt[ZigbeeAppCommandPayload].aps_frametype
+            + 4*pkt[ZigbeeAppCommandPayload].delivery_mode
+        )
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
+            tunneled_framecontrol += 16
+        if pkt[ZigbeeAppCommandPayload].frame_control.security:
+            tunneled_framecontrol += 32
+        if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
+            tunneled_framecontrol += 64
+        if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
+            tunneled_framecontrol += 128
+        tunneled_counter = pkt[ZigbeeAppCommandPayload].counter
+        header = bytearray([tunneled_framecontrol, tunneled_counter])
+    else:
+        aps_header = pkt[ZigbeeAppDataPayload].copy()
+        aps_header.remove_payload()
+        header = bytes(aps_header)
+    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
+    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
+    mic = pkt[ZigbeeSecurityHeader].data[-4:]
+    for source_addr in potential_sources:
+        for key in potential_keys:
+            dec_payload, auth_payload = crypto.zigbee_dec_ver(
+                key,
+                source_addr,
+                frame_counter,
+                sec_control,
+                header,
+                key_seqnum,
+                enc_payload,
+                mic,
+            )
+
+            # Check whether the decrypted payload is authentic
+            if auth_payload:
+                config.entry["aps_aux_deckey"] = key.hex()
+                config.entry["aps_aux_decsrc"] = format(source_addr, "016x")
+                config.entry["aps_aux_decpayload"] = dec_payload.hex()
+
+                # APS Payload field (variable)
+                if config.entry["aps_frametype"].startswith("0b00:"):
+                    if config.entry["aps_profile_id"].startswith("0x0000:"):
+                        dec_pkt = ZigbeeDeviceProfile(dec_payload)
+                        config.entry["aps_aux_decshow"] = dec_pkt.show(
+                            dump=True,
+                        )
+                        zdp_fields(dec_pkt)
+                        return
+                    elif (
+                        config.entry["aps_profile_id"].split()[1]
+                        != "Unknown"
+                    ):
+                        dec_pkt = ZigbeeClusterLibrary(dec_payload)
+                        config.entry["aps_aux_decshow"] = dec_pkt.show(
+                            dump=True,
+                        )
+                        zcl_fields(dec_pkt)
+                        return
+                    else:
+                        config.entry["error_msg"] = (
+                            "Unknown APS profile with ID {}".format(
+                                config.entry["aps_profile_id"],
+                            )
+                        )
+                        return
+                elif config.entry["aps_frametype"].startswith("0b01:"):
+                    dec_pkt = ZigbeeAppCommandPayload(dec_payload)
+                    config.entry["aps_aux_decshow"] = dec_pkt.show(dump=True)
+                    aps_command_payload(dec_pkt, msg_queue, tunneled=tunneled)
+                    return
+                elif config.entry["aps_frametype"].startswith("0b10:"):
+                    # APS Acknowledgments do not contain any other fields
+                    if len(dec_payload) != 0:
+                        config.entry["error_msg"] = (
+                            "PE427: Unexpected payload"
+                        )
+                        return
+                    return
+                else:
+                    config.entry["error_msg"] = (
+                        "Unexpected format of the decrypted APS payload"
+                    )
+                    return
+    msg_obj = (
+        "Unable to decrypt with a {} ".format(config.entry["aps_aux_keytype"])
+        + "the APS payload of packet #{} ".format(config.entry["pkt_num"])
+        + "in {}".format(config.entry["pcap_filename"])
+    )
+    if msg_queue is None:
+        logging.debug(msg_obj)
+    else:
+        msg_queue.put((Message.DEBUG, msg_obj))
+    config.entry["warning_msg"] = "PW401: Unable to decrypt the APS payload"
+
+
+def aps_command_payload(pkt, msg_queue, tunneled=False):
+    # Check whether this is a tunneled command or not
+    if tunneled:
+        cmd_id_column = "aps_tunnel_cmd_id"
+    else:
+        cmd_id_column = "aps_cmd_id"
+
+    # Command Identifier field (1 byte)
+    if not (
+        config.set_entry(
+            cmd_id_column,
+            pkt[ZigbeeAppCommandPayload].cmd_identifier,
+            APS_COMMANDS,
+        )
+    ):
+        config.entry["error_msg"] = "PE412: Unknown APS command"
+        return
+
+    # Command Payload field (variable)
+    if config.entry[cmd_id_column].startswith("0x05:"):
+        aps_transportkey(pkt, msg_queue)
+    elif config.entry[cmd_id_column].startswith("0x06:"):
+        aps_updatedevice(pkt)
+    elif config.entry[cmd_id_column].startswith("0x07:"):
+        aps_removedevice(pkt)
+    elif config.entry[cmd_id_column].startswith("0x08:"):
+        aps_requestkey(pkt)
+    elif config.entry[cmd_id_column].startswith("0x09:"):
+        aps_switchkey(pkt)
+    elif config.entry[cmd_id_column].startswith("0x0e:"):
+        aps_tunnel(pkt, msg_queue)
+    elif config.entry[cmd_id_column].startswith("0x0f:"):
+        aps_verifykey(pkt)
+    elif config.entry[cmd_id_column].startswith("0x10:"):
+        aps_confirmkey(pkt)
+    else:
+        config.entry["error_msg"] = "Invalid APS command"
+        return
+
+
 def aps_transportkey(pkt, msg_queue):
     # Standard Key Type field (1 byte)
     if not (
@@ -715,607 +1318,4 @@ def aps_confirmkey(pkt):
     # APS Confirm Key commands do not contain any other fields
     if len(bytes(pkt[ZigbeeAppCommandPayload].payload)) != 0:
         config.entry["error_msg"] = "PE434: Unexpected payload"
-        return
-
-
-def aps_command_payload(pkt, msg_queue, tunneled=False):
-    # Check whether this is a tunneled command or not
-    if tunneled:
-        cmd_id_column = "aps_tunnel_cmd_id"
-    else:
-        cmd_id_column = "aps_cmd_id"
-
-    # Command Identifier field (1 byte)
-    if not (
-        config.set_entry(
-            cmd_id_column,
-            pkt[ZigbeeAppCommandPayload].cmd_identifier,
-            APS_COMMANDS,
-        )
-    ):
-        config.entry["error_msg"] = "PE412: Unknown APS command"
-        return
-
-    # Command Payload field (variable)
-    if config.entry[cmd_id_column].startswith("0x05:"):
-        aps_transportkey(pkt, msg_queue)
-    elif config.entry[cmd_id_column].startswith("0x06:"):
-        aps_updatedevice(pkt)
-    elif config.entry[cmd_id_column].startswith("0x07:"):
-        aps_removedevice(pkt)
-    elif config.entry[cmd_id_column].startswith("0x08:"):
-        aps_requestkey(pkt)
-    elif config.entry[cmd_id_column].startswith("0x09:"):
-        aps_switchkey(pkt)
-    elif config.entry[cmd_id_column].startswith("0x0e:"):
-        aps_tunnel(pkt, msg_queue)
-    elif config.entry[cmd_id_column].startswith("0x0f:"):
-        aps_verifykey(pkt)
-    elif config.entry[cmd_id_column].startswith("0x10:"):
-        aps_confirmkey(pkt)
-    else:
-        config.entry["error_msg"] = "Invalid APS command"
-        return
-
-
-def aps_auxiliary(pkt, msg_queue, tunneled=False):
-    # Security Control field (1 byte)
-    # Security Level subfield (3 bits)
-    if not (
-        config.set_entry(
-            "aps_aux_seclevel",
-            pkt[ZigbeeSecurityHeader].nwk_seclevel,
-            APS_SECURITY_LEVELS,
-        )
-    ):
-        config.entry["error_msg"] = "PE409: Unknown APS security level"
-        return
-    # Key Identifier subfield (2 bits)
-    if not (
-        config.set_entry(
-            "aps_aux_keytype",
-            pkt[ZigbeeSecurityHeader].key_type,
-            APS_KEY_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE410: Unknown APS key type"
-        return
-    # Extended Nonce subfield (1 bit)
-    if not (
-        config.set_entry(
-            "aps_aux_extnonce",
-            pkt[ZigbeeSecurityHeader].extended_nonce,
-            APS_EN_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE411: Unknown APS EN state"
-        return
-
-    # Frame Counter field (4 bytes)
-    config.entry["aps_aux_framecounter"] = pkt[ZigbeeSecurityHeader].fc
-    frame_counter = pkt[ZigbeeSecurityHeader].fc
-
-    # Source Address field (0/8 bytes)
-    if config.entry["aps_aux_extnonce"].startswith("0b1:"):
-        config.entry["aps_aux_srcaddr"] = format(
-            pkt[ZigbeeSecurityHeader].source,
-            "016x",
-        )
-        potential_sources = {
-            pkt[ZigbeeSecurityHeader].source,
-        }
-    elif config.entry["aps_aux_extnonce"].startswith("0b0:"):
-        panid = config.entry["mac_dstpanid"]
-        shortaddr = config.entry["nwk_srcshortaddr"]
-        potential_sources = config.get_alternative_addresses(panid, shortaddr)
-
-        if len(potential_sources) == 0:
-            potential_sources = {
-                int(extendedaddr, 16)
-                for extendedaddr in config.extended_addresses.keys()
-            }
-
-        if config.entry["nwk_aux_srcaddr"] is not None:
-            potential_sources.add(int(config.entry["nwk_aux_srcaddr"], 16))
-        if config.entry["nwk_srcextendedaddr"] is not None:
-            potential_sources.add(
-                int(config.entry["nwk_srcextendedaddr"], 16),
-            )
-        if config.entry["mac_srcextendedaddr"] is not None:
-            potential_sources.add(
-                int(config.entry["mac_srcextendedaddr"], 16),
-            )
-    else:
-        config.entry["error_msg"] = "Invalid APS EN state"
-        return
-
-    # Key Sequence Number field (0/1 byte)
-    if config.entry["aps_aux_keytype"].startswith("0b01:"):
-        config.entry["aps_aux_keyseqnum"] = (
-            pkt[ZigbeeSecurityHeader].key_seqnum
-        )
-        key_seqnum = pkt[ZigbeeSecurityHeader].key_seqnum
-        potential_keys = config.network_keys.values()
-    elif config.entry["aps_aux_keytype"].startswith("0b00:"):
-        key_seqnum = None
-        potential_keys = config.link_keys.values()
-    elif config.entry["aps_aux_keytype"].startswith("0b10:"):
-        key_seqnum = None
-        potential_keys = {
-            crypto.zigbee_hmac(bytes.fromhex("00"), key)
-            for key in config.link_keys.values()
-        }
-    elif config.entry["aps_aux_keytype"].startswith("0b11:"):
-        key_seqnum = None
-        potential_keys = {
-            crypto.zigbee_hmac(bytes.fromhex("02"), key)
-            for key in config.link_keys.values()
-        }
-    else:
-        config.entry["error_msg"] = "Invalid APS key type"
-        return
-
-    # Attempt to decrypt the payload
-    if tunneled:
-        tunneled_framecontrol = (
-            pkt[ZigbeeAppCommandPayload].aps_frametype
-            + 4*pkt[ZigbeeAppCommandPayload].delivery_mode
-        )
-        if pkt[ZigbeeAppCommandPayload].frame_control.ack_format:
-            tunneled_framecontrol += 16
-        if pkt[ZigbeeAppCommandPayload].frame_control.security:
-            tunneled_framecontrol += 32
-        if pkt[ZigbeeAppCommandPayload].frame_control.ack_req:
-            tunneled_framecontrol += 64
-        if pkt[ZigbeeAppCommandPayload].frame_control.extended_hdr:
-            tunneled_framecontrol += 128
-        tunneled_counter = pkt[ZigbeeAppCommandPayload].counter
-        header = bytearray([tunneled_framecontrol, tunneled_counter])
-    else:
-        aps_header = pkt[ZigbeeAppDataPayload].copy()
-        aps_header.remove_payload()
-        header = bytes(aps_header)
-    sec_control = bytes(pkt[ZigbeeSecurityHeader])[0]
-    enc_payload = pkt[ZigbeeSecurityHeader].data[:-4]
-    mic = pkt[ZigbeeSecurityHeader].data[-4:]
-    for source_addr in potential_sources:
-        for key in potential_keys:
-            dec_payload, auth_payload = crypto.zigbee_dec_ver(
-                key,
-                source_addr,
-                frame_counter,
-                sec_control,
-                header,
-                key_seqnum,
-                enc_payload,
-                mic,
-            )
-
-            # Check whether the decrypted payload is authentic
-            if auth_payload:
-                config.entry["aps_aux_deckey"] = key.hex()
-                config.entry["aps_aux_decsrc"] = format(source_addr, "016x")
-                config.entry["aps_aux_decpayload"] = dec_payload.hex()
-
-                # APS Payload field (variable)
-                if config.entry["aps_frametype"].startswith("0b00:"):
-                    if config.entry["aps_profile_id"].startswith("0x0000:"):
-                        dec_pkt = ZigbeeDeviceProfile(dec_payload)
-                        config.entry["aps_aux_decshow"] = dec_pkt.show(
-                            dump=True,
-                        )
-                        zdp_fields(dec_pkt)
-                        return
-                    elif (
-                        config.entry["aps_profile_id"].split()[1]
-                        != "Unknown"
-                    ):
-                        dec_pkt = ZigbeeClusterLibrary(dec_payload)
-                        config.entry["aps_aux_decshow"] = dec_pkt.show(
-                            dump=True,
-                        )
-                        zcl_fields(dec_pkt)
-                        return
-                    else:
-                        config.entry["error_msg"] = (
-                            "Unknown APS profile with ID {}".format(
-                                config.entry["aps_profile_id"],
-                            )
-                        )
-                        return
-                elif config.entry["aps_frametype"].startswith("0b01:"):
-                    dec_pkt = ZigbeeAppCommandPayload(dec_payload)
-                    config.entry["aps_aux_decshow"] = dec_pkt.show(dump=True)
-                    aps_command_payload(dec_pkt, msg_queue, tunneled=tunneled)
-                    return
-                elif config.entry["aps_frametype"].startswith("0b10:"):
-                    # APS Acknowledgments do not contain any other fields
-                    if len(dec_payload) != 0:
-                        config.entry["error_msg"] = (
-                            "PE427: Unexpected payload"
-                        )
-                        return
-                    return
-                else:
-                    config.entry["error_msg"] = (
-                        "Unexpected format of the decrypted APS payload"
-                    )
-                    return
-    msg_obj = (
-        "Unable to decrypt with a {} ".format(config.entry["aps_aux_keytype"])
-        + "the APS payload of packet #{} ".format(config.entry["pkt_num"])
-        + "in {}".format(config.entry["pcap_filename"])
-    )
-    if msg_queue is None:
-        logging.debug(msg_obj)
-    else:
-        msg_queue.put((Message.DEBUG, msg_obj))
-    config.entry["warning_msg"] = "PW401: Unable to decrypt the APS payload"
-
-
-def aps_data_header(pkt, msg_queue):
-    if (
-        config.entry["aps_delmode"].startswith("0b00:")
-        or config.entry["aps_delmode"].startswith("0b10:")
-    ):
-        # Destination Endpoint field (1 byte)
-        config.entry["aps_dstendpoint"] = (
-            pkt[ZigbeeAppDataPayload].dst_endpoint
-        )
-    elif config.entry["aps_delmode"].startswith("0b11:"):
-        # Group Address field (2 bytes)
-        config.entry["aps_groupaddr"] = "0x{:04x}".format(
-            pkt[ZigbeeAppDataPayload].group_addr,
-        )
-    else:
-        config.entry["error_msg"] = "Invalid APS delivery mode"
-        return
-
-    # Profile Identifier field (2 bytes)
-    if not (
-        config.set_entry(
-            "aps_profile_id",
-            pkt[ZigbeeAppDataPayload].profile,
-            APS_PROFILES,
-        )
-    ):
-        config.entry["aps_profile_id"] = (
-            "0x{:04x}: Unknown APS profile".format(
-                pkt[ZigbeeAppDataPayload].profile,
-            )
-        )
-
-    # Cluster Identifier field (2 bytes)
-    if config.entry["aps_profile_id"].startswith("0x0000:"):
-        if not (
-            config.set_entry(
-                "aps_cluster_id",
-                pkt[ZigbeeAppDataPayload].cluster,
-                ZDP_CLUSTERS,
-            )
-        ):
-            config.entry["aps_cluster_id"] = (
-                "0x{:04x}: Unknown ZDP cluster".format(
-                    pkt[ZigbeeAppDataPayload].cluster,
-                )
-            )
-    elif config.entry["aps_profile_id"].split()[1] != "Unknown":
-        if not (
-            config.set_entry(
-                "aps_cluster_id",
-                pkt[ZigbeeAppDataPayload].cluster,
-                ZCL_CLUSTERS,
-            )
-        ):
-            config.entry["aps_cluster_id"] = (
-                "0x{:04x}: Unknown ZCL cluster".format(
-                    pkt[ZigbeeAppDataPayload].cluster,
-                )
-            )
-    else:
-        config.entry["aps_cluster_id"] = (
-            "0x{:04x}: Unknown APS cluster".format(
-                pkt[ZigbeeAppDataPayload].cluster,
-            )
-        )
-
-    # Source Endpoint field (1 byte)
-    config.entry["aps_srcendpoint"] = pkt[ZigbeeAppDataPayload].src_endpoint
-
-    # APS Counter field (1 byte)
-    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
-
-    # Extended Header field (0/1/2 bytes)
-    if config.entry["aps_exthdr"].startswith("0b1:"):
-        # Extended Frame Control subfield (1 byte)
-        # Fragmentation subsubfield (2 bits)
-        if not (
-            config.set_entry(
-                "aps_fragmentation",
-                pkt[ZigbeeAppDataPayload].fragmentation,
-                FRAGMENTATION_STATES,
-            )
-        ):
-            config.entry["error_msg"] = "PE407: Unknown fragmentation state"
-            return
-
-        if (
-            config.entry["aps_fragmentation"].startswith("0b01:")
-            or config.entry["aps_fragmentation"].startswith("0b10:")
-        ):
-            # Block Number subfield (1 byte)
-            config.entry["aps_blocknumber"] = (
-                pkt[ZigbeeAppDataPayload].block_number
-            )
-        elif not config.entry["aps_fragmentation"].startswith("0b00:"):
-            config.entry["error_msg"] = "Invalid fragmentation state"
-            return
-    elif not config.entry["aps_exthdr"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid APS EH state"
-        return
-
-    if config.entry["aps_security"].startswith("0b1:"):
-        # APS Auxiliary Header field (5/6/13/14 bytes)
-        if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue, tunneled=False)
-        else:
-            config.entry["error_msg"] = (
-                "The APS Auxiliary Header is not included"
-            )
-            return
-    elif config.entry["aps_security"].startswith("0b0:"):
-        # APS Data fields (variable)
-        if config.entry["aps_profile_id"].startswith("0x0000:"):
-            if pkt.haslayer(ZigbeeDeviceProfile):
-                zdp_fields(pkt)
-            else:
-                config.entry["error_msg"] = "There are no ZDP fields"
-                return
-        elif config.entry["aps_profile_id"].split()[1] != "Unknown":
-            if pkt.haslayer(ZigbeeClusterLibrary):
-                zcl_fields(pkt)
-            else:
-                config.entry["error_msg"] = "There are no ZCL fields"
-                return
-        else:
-            config.entry["error_msg"] = (
-                "Unknown APS profile with ID {}".format(
-                    config.entry["aps_profile_id"],
-                )
-            )
-            return
-    else:
-        config.entry["error_msg"] = "Invalid APS security state"
-        return
-
-
-def aps_command_header(pkt, msg_queue):
-    # APS Counter field (1 byte)
-    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
-
-    if config.entry["aps_security"].startswith("0b1:"):
-        # APS Auxiliary Header field (5/6/13/14 bytes)
-        if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue, tunneled=False)
-        else:
-            config.entry["error_msg"] = (
-                "The APS Auxiliary Header is not included"
-            )
-            return
-    elif config.entry["aps_security"].startswith("0b0:"):
-        # APS Command fields (variable)
-        if pkt.haslayer(ZigbeeAppCommandPayload):
-            aps_command_payload(pkt, msg_queue, tunneled=False)
-        else:
-            config.entry["error_msg"] = "There are no APS Command fields"
-            return
-    else:
-        config.entry["error_msg"] = "Invalid APS security state"
-        return
-
-
-def aps_ack_header(pkt, msg_queue):
-    if config.entry["aps_ackformat"].startswith("0b0:"):
-        # Destination Endpoint field (1 byte)
-        config.entry["aps_dstendpoint"] = (
-            pkt[ZigbeeAppDataPayload].dst_endpoint
-        )
-
-        # Profile Identifier field (2 bytes)
-        if not (
-            config.set_entry(
-                "aps_profile_id",
-                pkt[ZigbeeAppDataPayload].profile,
-                APS_PROFILES,
-            )
-        ):
-            config.entry["aps_profile_id"] = (
-                "0x{:04x}: Unknown APS profile".format(
-                    pkt[ZigbeeAppDataPayload].profile,
-                )
-            )
-
-        # Cluster Identifier field (2 bytes)
-        if config.entry["aps_profile_id"].startswith("0x0000:"):
-            if not (
-                config.set_entry(
-                    "aps_cluster_id",
-                    pkt[ZigbeeAppDataPayload].cluster,
-                    ZDP_CLUSTERS,
-                )
-            ):
-                config.entry["aps_cluster_id"] = (
-                    "0x{:04x}: Unknown ZDP cluster".format(
-                        pkt[ZigbeeAppDataPayload].cluster,
-                    )
-                )
-        elif config.entry["aps_profile_id"].split()[1] != "Unknown":
-            if not (
-                config.set_entry(
-                    "aps_cluster_id",
-                    pkt[ZigbeeAppDataPayload].cluster,
-                    ZCL_CLUSTERS,
-                )
-            ):
-                config.entry["aps_cluster_id"] = (
-                    "0x{:04x}: Unknown ZCL cluster".format(
-                        pkt[ZigbeeAppDataPayload].cluster,
-                    )
-                )
-        else:
-            config.entry["aps_cluster_id"] = (
-                "0x{:04x}: Unknown APS cluster".format(
-                    pkt[ZigbeeAppDataPayload].cluster,
-                )
-            )
-
-        # Source Endpoint field (1 byte)
-        config.entry["aps_srcendpoint"] = (
-            pkt[ZigbeeAppDataPayload].src_endpoint
-        )
-    elif not config.entry["aps_ackformat"].startswith("0b1:"):
-        config.entry["error_msg"] = "Invalid ACK Format state"
-        return
-
-    # APS Counter field (1 byte)
-    config.entry["aps_counter"] = pkt[ZigbeeAppDataPayload].counter
-
-    # Extended Header field (0/1/3 bytes)
-    if config.entry["aps_exthdr"].startswith("0b1:"):
-        # Extended Frame Control subfield (1 byte)
-        # Fragmentation subsubfield (2 bits)
-        if not (
-            config.set_entry(
-                "aps_fragmentation",
-                pkt[ZigbeeAppDataPayload].fragmentation,
-                FRAGMENTATION_STATES,
-            )
-        ):
-            config.entry["error_msg"] = "PE408: Unknown fragmentation state"
-            return
-
-        if (
-            config.entry["aps_fragmentation"].startswith("0b01:")
-            or config.entry["aps_fragmentation"].startswith("0b10:")
-        ):
-            # Block Number subfield (1 byte)
-            config.entry["aps_blocknumber"] = (
-                pkt[ZigbeeAppDataPayload].block_number
-            )
-
-            # ACK Bitfield subfield (1 byte)
-            config.entry["aps_ackbitfield"] = (
-                pkt[ZigbeeAppDataPayload].ack_bitfield
-            )
-        elif not config.entry["aps_fragmentation"].startswith("0b00:"):
-            config.entry["error_msg"] = "Invalid fragmentation state"
-            return
-    elif not config.entry["aps_exthdr"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid APS EH state"
-        return
-
-    if config.entry["aps_security"].startswith("0b1:"):
-        # APS Auxiliary Header field (5/6/13/14 bytes)
-        if pkt.haslayer(ZigbeeSecurityHeader):
-            aps_auxiliary(pkt, msg_queue, tunneled=False)
-        else:
-            config.entry["error_msg"] = (
-                "The APS Auxiliary Header is not included"
-            )
-            return
-    elif config.entry["aps_security"].startswith("0b0:"):
-        # APS Acknowledgments do not contain any other fields
-        if len(bytes(pkt[ZigbeeAppDataPayload].payload)) != 0:
-            config.entry["error_msg"] = "PE426: Unexpected payload"
-            return
-    else:
-        config.entry["error_msg"] = "Invalid APS security state"
-        return
-
-
-def aps_fields(pkt, msg_queue):
-    """Parse Zigbee APS fields."""
-    # Frame Control field (1 byte)
-    # Frame Type subfield (2 bits)
-    if not (
-        config.set_entry(
-            "aps_frametype",
-            pkt[ZigbeeAppDataPayload].aps_frametype,
-            APS_FRAME_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE401: Unknown APS frame type"
-        return
-    # Delivery Mode subfield (2 bits)
-    if not (
-        config.set_entry(
-            "aps_delmode",
-            pkt[ZigbeeAppDataPayload].delivery_mode,
-            APS_DELIVERY_MODES,
-        )
-    ):
-        config.entry["error_msg"] = "PE402: Unknown APS delivery mode"
-        return
-    # ACK Format subfield (1 bit)
-    if not (
-        config.set_entry(
-            "aps_ackformat",
-            pkt[ZigbeeAppDataPayload].frame_control.ack_format,
-            APS_ACKFORMAT_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE403: Unknown APS ACK format state"
-        return
-    # Security subfield (1 bit)
-    if not (
-        config.set_entry(
-            "aps_security",
-            pkt[ZigbeeAppDataPayload].frame_control.security,
-            APS_SECURITY_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE404: Unknown APS security state"
-        return
-    # Acknowledgment Request subfield (1 bit)
-    if not (
-        config.set_entry(
-            "aps_ackreq",
-            pkt[ZigbeeAppDataPayload].frame_control.ack_req,
-            APS_AR_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE405: Unknown APS AR state"
-        return
-    # Extended Header subfield (1 bit)
-    if not (
-        config.set_entry(
-            "aps_exthdr",
-            pkt[ZigbeeAppDataPayload].frame_control.extended_hdr,
-            APS_EH_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE406: Unknown APS EH state"
-        return
-
-    # The APS Header fields vary significantly between different frame types
-    if config.entry["aps_frametype"].startswith("0b00:"):
-        aps_data_header(pkt, msg_queue)
-    elif config.entry["aps_frametype"].startswith("0b01:"):
-        aps_command_header(pkt, msg_queue)
-    elif config.entry["aps_frametype"].startswith("0b10:"):
-        aps_ack_header(pkt, msg_queue)
-    elif config.entry["aps_frametype"].startswith("0b11:"):
-        msg_obj = (
-            "Packet #{} ".format(config.entry["pkt_num"])
-            + "in {} ".format(config.entry["pcap_filename"])
-            + "contains Inter-PAN fields which were ignored"
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = "Ignored the Inter-PAN fields"
-        return
-    else:
-        config.entry["error_msg"] = "Invalid APS frame type"
         return

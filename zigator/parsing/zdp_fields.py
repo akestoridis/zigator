@@ -54,6 +54,30 @@ ALLOCADDR_STATES = {
 }
 
 
+def zdp_fields(pkt):
+    """Parse Zigbee Device Profile fields."""
+    # Transaction Sequence Number field (1 byte)
+    config.entry["zdp_seqnum"] = pkt[ZigbeeDeviceProfile].trans_seqnum
+
+    # Transaction Data field (variable)
+    if config.entry["aps_cluster_id"].startswith("0x0005:"):
+        if pkt.haslayer(ZDPActiveEPReq):
+            zdp_activeepreq(pkt)
+        else:
+            config.entry["error_msg"] = (
+                "There are no ZDP Active_EP_req fields"
+            )
+            return
+    elif config.entry["aps_cluster_id"].startswith("0x0013:"):
+        if pkt.haslayer(ZDPDeviceAnnce):
+            zdp_deviceannce(pkt)
+        else:
+            config.entry["error_msg"] = "There are no ZDP Device_annce fields"
+            return
+    else:
+        config.entry["warning_msg"] = "Unknown ZDP transaction data"
+
+
 def zdp_activeepreq(pkt):
     # NWK Address field (2 bytes)
     config.entry["zdp_activeepreq_nwkaddr"] = "0x{:04x}".format(
@@ -144,27 +168,3 @@ def zdp_deviceannce(pkt):
     if len(bytes(pkt[ZDPDeviceAnnce].payload)) != 0:
         config.entry["error_msg"] = "Unexpected payload"
         return
-
-
-def zdp_fields(pkt):
-    """Parse Zigbee Device Profile fields."""
-    # Transaction Sequence Number field (1 byte)
-    config.entry["zdp_seqnum"] = pkt[ZigbeeDeviceProfile].trans_seqnum
-
-    # Transaction Data field (variable)
-    if config.entry["aps_cluster_id"].startswith("0x0005:"):
-        if pkt.haslayer(ZDPActiveEPReq):
-            zdp_activeepreq(pkt)
-        else:
-            config.entry["error_msg"] = (
-                "There are no ZDP Active_EP_req fields"
-            )
-            return
-    elif config.entry["aps_cluster_id"].startswith("0x0013:"):
-        if pkt.haslayer(ZDPDeviceAnnce):
-            zdp_deviceannce(pkt)
-        else:
-            config.entry["error_msg"] = "There are no ZDP Device_annce fields"
-            return
-    else:
-        config.entry["warning_msg"] = "Unknown ZDP transaction data"

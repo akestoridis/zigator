@@ -17,6 +17,19 @@
 from .. import config
 
 
+def derive_info():
+    """Derive additional information from the parsed packet."""
+    extract_network_identifiers()
+    extract_short_addresses()
+    extract_extended_addresses()
+    map_addresses()
+    extract_pairs()
+    compare_short_addresses()
+    derive_transmission_type()
+    derive_logical_device_types()
+    derive_address_types()
+
+
 def extract_network_identifiers():
     if config.entry["mac_frametype"].startswith("0b000:"):
         config.update_networks(
@@ -668,16 +681,3 @@ def derive_address_types():
         config.entry["der_nwk_srcpanid"] = panid
         config.entry["der_nwk_srcshortaddr"] = shortaddr
         config.entry["der_nwk_srcextendedaddr"] = extendedaddr
-
-
-def derive_info():
-    """Derive additional information from the parsed packet."""
-    extract_network_identifiers()
-    extract_short_addresses()
-    extract_extended_addresses()
-    map_addresses()
-    extract_pairs()
-    compare_short_addresses()
-    derive_transmission_type()
-    derive_logical_device_types()
-    derive_address_types()

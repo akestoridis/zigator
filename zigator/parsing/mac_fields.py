@@ -157,180 +157,361 @@ ASSOCPERMIT_STATES = {
 }
 
 
-def mac_assocreq(pkt):
-    # Capability Information field (1 byte)
-    # Alternate PAN Coordinator subfield (1 bit)
+def mac_fields(pkt, msg_queue):
+    """Parse IEEE 802.15.4 MAC fields."""
+    config.entry["mac_show"] = pkt.show(dump=True)
+    if pkt[Dot15d4FCS].fcs is None:
+        config.entry["error_msg"] = (
+            "PE201: The frame check sequence (FCS) field is not included"
+        )
+        return
+
+    comp_fcs = struct.unpack("<H", pkt.compute_fcs(bytes(pkt)[:-2]))[0]
+    if pkt[Dot15d4FCS].fcs != comp_fcs:
+        msg_obj = (
+            "The received FCS (0x{:04x}), ".format(pkt[Dot15d4FCS].fcs)
+            + "for packet #{} ".format(config.entry["pkt_num"])
+            + "in {}, ".format(config.entry["pcap_filename"])
+            + "does not match the computed FCS (0x{:04x})".format(comp_fcs)
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = (
+            "PE202: Incorrect frame check sequence (FCS)"
+        )
+        return
+
+    # Frame Check Sequence field (2 bytes)
+    config.entry["mac_fcs"] = "0x{:04x}".format(pkt[Dot15d4FCS].fcs)
+
+    # Frame Control field (2 bytes)
+    # Frame Type subfield (3 bits)
     if not (
         config.set_entry(
-            "mac_assocreq_apc",
-            pkt[Dot15d4CmdAssocReq].alternate_pan_coordinator,
-            APC_STATES,
+            "mac_frametype",
+            pkt[Dot15d4FCS].fcf_frametype,
+            MAC_FRAME_TYPES,
         )
     ):
-        config.entry["error_msg"] = "PE212: Unknown APC state"
+        config.entry["error_msg"] = "PE203: Unknown MAC frame type"
         return
-    # Device Type subfield (1 bit)
+    # Security subfield (1 bit)
     if not (
         config.set_entry(
-            "mac_assocreq_devtype",
-            pkt[Dot15d4CmdAssocReq].device_type,
-            DEVICE_TYPES,
+            "mac_security",
+            pkt[Dot15d4FCS].fcf_security,
+            MAC_SECURITY_STATES,
         )
     ):
-        config.entry["error_msg"] = "PE213: Unknown device type"
+        config.entry["error_msg"] = "PE204: Unknown MAC security state"
         return
-    # Power Source subfield (1 bit)
+    # Frame Pending subfield (1 bit)
     if not (
         config.set_entry(
-            "mac_assocreq_powsrc",
-            pkt[Dot15d4CmdAssocReq].power_source,
-            POWER_SOURCES,
+            "mac_framepending",
+            pkt[Dot15d4FCS].fcf_pending,
+            MAC_FP_STATES,
         )
     ):
-        config.entry["error_msg"] = "PE214: Unknown power source"
+        config.entry["error_msg"] = "PE205: Unknown MAC FP state"
         return
-    # Receiver On When Idle subfield (1 bit)
+    # Acknowledgment Request subfield (1 bit)
     if not (
         config.set_entry(
-            "mac_assocreq_rxidle",
-            pkt[Dot15d4CmdAssocReq].receiver_on_when_idle,
-            RXIDLE_STATES,
+            "mac_ackreq",
+            pkt[Dot15d4FCS].fcf_ackreq,
+            MAC_AR_STATES,
         )
     ):
-        config.entry["error_msg"] = "PE215: Unknown RX state when idle"
+        config.entry["error_msg"] = "PE206: Unknown MAC AR state"
         return
-    # Security Capability subfield (1 bit)
+    # PAN ID Compression subfield (1 bit)
     if not (
         config.set_entry(
-            "mac_assocreq_seccap",
-            pkt[Dot15d4CmdAssocReq].security_capability,
-            SECURITY_CAPABILITIES,
+            "mac_panidcomp",
+            pkt[Dot15d4FCS].fcf_panidcompress,
+            MAC_PIC_STATES,
         )
     ):
-        config.entry["error_msg"] = "PE216: Unknown MAC security capability"
+        config.entry["error_msg"] = "PE207: Unknown MAC PIC state"
         return
-    # Allocate Address subfield (1 bit)
+    # Destination Addressing Mode subfield (2 bits)
     if not (
         config.set_entry(
-            "mac_assocreq_allocaddr",
-            pkt[Dot15d4CmdAssocReq].allocate_address,
-            ALLOCADDR_STATES,
+            "mac_dstaddrmode",
+            pkt[Dot15d4FCS].fcf_destaddrmode,
+            MAC_DA_MODES,
         )
     ):
-        config.entry["error_msg"] = "PE217: Unknown address allocation"
+        config.entry["error_msg"] = "PE208: Unknown MAC DA mode"
         return
-
-    # MAC Association Request commands do not contain any other fields
-    if len(bytes(pkt[Dot15d4CmdAssocReq].payload)) != 0:
-        config.entry["error_msg"] = "PE225: Unexpected payload"
-        return
-
-
-def mac_assocrsp(pkt):
-    # Short Address field (2 bytes)
-    config.entry["mac_assocrsp_shortaddr"] = "0x{:04x}".format(
-        pkt[Dot15d4CmdAssocResp].short_address,
-    )
-
-    # Association Status field (1 byte)
+    # Frame Version subfield (2 bits)
     if not (
         config.set_entry(
-            "mac_assocrsp_status",
-            pkt[Dot15d4CmdAssocResp].association_status,
-            ASSOC_STATUSES,
+            "mac_frameversion",
+            pkt[Dot15d4FCS].fcf_framever,
+            MAC_FRAME_VERSIONS,
         )
     ):
-        config.entry["error_msg"] = "PE218: Unknown association status"
+        config.entry["error_msg"] = "PE209: Unknown MAC frame version"
         return
-
-    # MAC Association Response commands do not contain any other fields
-    if len(bytes(pkt[Dot15d4CmdAssocResp].payload)) != 0:
-        config.entry["error_msg"] = "PE226: Unexpected payload"
-        return
-
-
-def mac_disassoc(pkt):
-    # Disassociation Reason field (1 byte)
+    # Source Addressing Mode subfield (2 bits)
     if not (
         config.set_entry(
-            "mac_disassoc_reason",
-            pkt[Dot15d4CmdDisassociation].disassociation_reason,
-            DISASSOC_REASONS,
+            "mac_srcaddrmode",
+            pkt[Dot15d4FCS].fcf_srcaddrmode,
+            MAC_SA_MODES,
         )
     ):
-        config.entry["error_msg"] = "PE219: Unknown disassociation reason"
+        config.entry["error_msg"] = "PE210: Unknown MAC SA mode"
         return
 
-    # MAC Disassociation Notification commands do not contain any other fields
-    if len(bytes(pkt[Dot15d4CmdDisassociation].payload)) != 0:
-        config.entry["error_msg"] = "PE227: Unexpected payload"
-        return
+    # Sequence Number field (1 byte)
+    config.entry["mac_seqnum"] = pkt[Dot15d4FCS].seqnum
 
-
-def mac_realign(pkt):
-    # PAN Identifier field (2 bytes)
-    config.entry["mac_realign_panid"] = "0x{:04x}".format(
-        pkt[Dot15d4CmdCoordRealign].panid,
-    )
-
-    # Coordinator Short Address field (2 bytes)
-    config.entry["mac_realign_coordaddr"] = "0x{:04x}".format(
-        pkt[Dot15d4CmdCoordRealign].coord_address,
-    )
-
-    # Channel Number field (1 byte)
-    config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
-
-    # Short Address field (2 bytes)
-    config.entry["mac_realign_shortaddr"] = "0x{:04x}".format(
-        pkt[Dot15d4CmdCoordRealign].dev_address,
-    )
-
-    # Channel Page field (0/1 byte)
-    if pkt.haslayer(Dot15d4CmdCoordRealignPage):
-        config.entry["mac_realign_page"] = (
-            pkt[Dot15d4CmdCoordRealignPage].channel_page
-        )
-
-        # MAC Coordinator Realignment commands do not contain any other fields
-        if len(bytes(pkt[Dot15d4CmdCoordRealignPage].payload)) != 0:
-            config.entry["error_msg"] = "PE232: Unexpected payload"
+    if config.entry["mac_security"].startswith("0b1:"):
+        # Auxiliary Security Header field (0/5/6/10/14 bytes)
+        if pkt.haslayer(Dot15d4AuxSecurityHeader):
+            # Zigbee does not utilize any security services on the MAC layer
+            msg_obj = (
+                "The packet #{} ".format(config.entry["pkt_num"])
+                + "in {} ".format(config.entry["pcap_filename"])
+                + "is utilizing security services on the MAC layer"
+            )
+            if msg_queue is None:
+                logging.debug(msg_obj)
+            else:
+                msg_queue.put((Message.DEBUG, msg_obj))
+            config.entry["error_msg"] = (
+                "Ignored the MAC Auxiliary Security Header"
+            )
+            return
+        else:
+            config.entry["error_msg"] = (
+                "The MAC Auxiliary Security Header is not included"
+            )
+            return
+    elif config.entry["mac_security"].startswith("0b0:"):
+        # MAC Payload field (variable)
+        if config.entry["mac_frametype"].startswith("0b010:"):
+            # MAC Acknowledgments do not contain any other fields
+            if len(bytes(pkt[Dot15d4FCS].payload)) != 0:
+                config.entry["error_msg"] = "PE224: Unexpected payload"
+                return
+        elif config.entry["mac_frametype"].startswith("0b011:"):
+            if pkt.haslayer(Dot15d4Cmd):
+                mac_command(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no MAC Command fields"
+                return
+        elif config.entry["mac_frametype"].startswith("0b000:"):
+            if pkt.haslayer(Dot15d4Beacon):
+                mac_beacon(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no MAC Beacon fields"
+                return
+        elif config.entry["mac_frametype"].startswith("0b001:"):
+            if pkt.haslayer(Dot15d4Data):
+                mac_data(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no MAC Data fields"
+                return
+        else:
+            config.entry["error_msg"] = "Invalid MAC frame type"
             return
     else:
-        # MAC Coordinator Realignment commands do not contain any other fields
-        if len(bytes(pkt[Dot15d4CmdCoordRealign].payload)) != 0:
-            config.entry["error_msg"] = "PE233: Unexpected payload"
+        config.entry["error_msg"] = "Invalid MAC security state"
+        return
+
+
+def mac_data(pkt, msg_queue):
+    # Destination Addressing fields (0/4/10 bytes)
+    if config.entry["mac_dstaddrmode"].startswith("0b10:"):
+        # Destination PAN ID subfield (2 bytes)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_panid,
+        )
+        # Destination Short Address subfield (2 bytes)
+        config.entry["mac_dstshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_addr,
+        )
+    elif config.entry["mac_dstaddrmode"].startswith("0b11:"):
+        # Destination PAN ID subfield (2 bytes)
+        config.entry["mac_dstpanid"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].dest_panid,
+        )
+        # Destination Extended Address subfield (8 bytes)
+        config.entry["mac_dstextendedaddr"] = format(
+            pkt[Dot15d4Data].dest_addr,
+            "016x",
+        )
+    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = "Invalid MAC DA mode"
+        return
+
+    # Source Addressing fields (0/2/4/8/10 bytes)
+    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
+        if config.entry["mac_panidcomp"].startswith("0b0:"):
+            # Source PAN ID subfield (2 bytes)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Data].src_panid,
+            )
+        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
+            config.entry["error_msg"] = "Invalid MAC PIC state"
             return
-
-
-def mac_gtsreq(pkt):
-    # GTS Characteristics field (1 byte)
-    # GTS Length subfield (4 bits)
-    config.entry["mac_gtsreq_length"] = pkt[Dot15d4CmdGTSReq].gts_len
-    # GTS Direction subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_gtsreq_dir",
-            pkt[Dot15d4CmdGTSReq].gts_dir,
-            GTS_DIRECTIONS,
+        # Source Short Address subfield (2 bytes)
+        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Data].src_addr,
         )
-    ):
-        config.entry["error_msg"] = "PE220: Unknown GTS direction"
-        return
-    # GTS Characteristics Type subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_gtsreq_chartype",
-            pkt[Dot15d4CmdGTSReq].charact_type,
-            GTS_CHARACTERISTICS_TYPES,
+    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
+        if config.entry["mac_panidcomp"].startswith("0b0:"):
+            # Source PAN ID subfield (2 bytes)
+            config.entry["mac_srcpanid"] = "0x{:04x}".format(
+                pkt[Dot15d4Data].src_panid,
+            )
+        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
+            config.entry["error_msg"] = "Invalid MAC PIC state"
+            return
+        # Source Extended Address subfield (8 bytes)
+        config.entry["mac_srcextendedaddr"] = format(
+            pkt[Dot15d4Data].src_addr,
+            "016x",
         )
-    ):
-        config.entry["error_msg"] = "PE221: Unknown GTS characteristics type"
+    elif not config.entry["mac_srcaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = "Invalid MAC SA mode"
         return
 
-    # MAC GTS Request commands do not contain any other fields
-    if len(bytes(pkt[Dot15d4CmdGTSReq].payload)) != 0:
-        config.entry["error_msg"] = "PE234: Unexpected payload"
+    # Data Payload field (variable)
+    if pkt.haslayer(ZigbeeNWK):
+        nwk_fields(pkt, msg_queue)
+    else:
+        config.entry["error_msg"] = "There are no Zigbee NWK fields"
+        return
+
+
+def mac_beacon(pkt, msg_queue):
+    if not config.entry["mac_panidcomp"].startswith("0b0:"):
+        config.entry["error_msg"] = (
+            "The source PAN ID of MAC Beacons should not be compressed"
+        )
+        return
+    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = (
+            "MAC Beacons should not contain a destination PAN ID and address"
+        )
+        return
+
+    # Addressing fields (4/10 bytes)
+    # Source PAN ID subfield (2 bytes)
+    config.entry["mac_srcpanid"] = "0x{:04x}".format(
+        pkt[Dot15d4Beacon].src_panid,
+    )
+    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
+        # Source Short Address subfield (2 bytes)
+        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
+            pkt[Dot15d4Beacon].src_addr,
+        )
+    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
+        # Source Extended Address subfield (8 bytes)
+        config.entry["mac_srcextendedaddr"] = format(
+            pkt[Dot15d4Beacon].src_addr,
+            "016x",
+        )
+    elif config.entry["mac_srcaddrmode"].startswith("0b00:"):
+        config.entry["error_msg"] = (
+            "MAC Beacons should contain a source PAN ID and address"
+        )
+        return
+    else:
+        config.entry["error_msg"] = "Invalid MAC SA mode"
+        return
+
+    # Superframe Specification field (2 bytes)
+    # Beacon Order subfield (4 bits)
+    config.entry["mac_beacon_beaconorder"] = pkt[Dot15d4Beacon].sf_beaconorder
+    # Superframe Order subfield (4 bits)
+    config.entry["mac_beacon_sforder"] = pkt[Dot15d4Beacon].sf_sforder
+    # Final CAP Slot subfield (4 bits)
+    config.entry["mac_beacon_finalcap"] = pkt[Dot15d4Beacon].sf_finalcapslot
+    # Battery Life Extension subfield (1 bit)
+    config.entry["mac_beacon_ble"] = pkt[Dot15d4Beacon].sf_battlifeextend
+    # PAN Coordinator subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_beacon_pancoord",
+            pkt[Dot15d4Beacon].sf_pancoord,
+            PANCOORDINATOR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE222: Unknown PAN coordinator state"
+        return
+    # Association Permit subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_beacon_assocpermit",
+            pkt[Dot15d4Beacon].sf_assocpermit,
+            ASSOCPERMIT_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE223: Unknown association permit state"
+        return
+
+    # GTS Specification field (1 byte)
+    # GTS Descriptor Count subfield (3 bits)
+    config.entry["mac_beacon_gtsnum"] = pkt[Dot15d4Beacon].gts_spec_desccount
+    # GTS Permit subfield (1 bit)
+    config.entry["mac_beacon_gtspermit"] = pkt[Dot15d4Beacon].gts_spec_permit
+
+    # GTS Directions field (0/1 byte)
+    if config.entry["mac_beacon_gtsnum"] > 0:
+        # GTS Directions Mask subfield (7 bits)
+        config.entry["mac_beacon_gtsmask"] = pkt[Dot15d4Beacon].gts_dir_mask
+
+    # GTS List field (variable)
+    if config.entry["mac_beacon_gtsnum"] > 0:
+        msg_obj = (
+            "Packet #{} ".format(config.entry["pkt_num"])
+            + "in {} ".format(config.entry["pcap_filename"])
+            + "contains a GTS List field which could not be processed"
+        )
+        if msg_queue is None:
+            logging.debug(msg_obj)
+        else:
+            msg_queue.put((Message.DEBUG, msg_obj))
+        config.entry["error_msg"] = "Could not process the GTS List"
+        return
+
+    # Pending Address Specification field (1 byte)
+    # Number of Short Addresses Pending (3 bits)
+    config.entry["mac_beacon_nsap"] = pkt[Dot15d4Beacon].pa_num_short
+    # Number of Extended Addresses Pending (3 bits)
+    config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
+
+    # Address List field (variable)
+    if config.entry["mac_beacon_nsap"] > 0:
+        config.entry["mac_beacon_shortaddresses"] = ",".join(
+            [
+                "0x{:04x}".format(addr)
+                for addr in pkt[Dot15d4Beacon].pa_short_addresses
+            ],
+        )
+    if config.entry["mac_beacon_neap"] > 0:
+        config.entry["mac_beacon_extendedaddresses"] = ",".join(
+            [
+                format(addr, "016x")
+                for addr in pkt[Dot15d4Beacon].pa_long_addresses
+            ],
+        )
+
+    # Beacon Payload field (variable)
+    if pkt.haslayer(ZigBeeBeacon):
+        nwk_fields(pkt, msg_queue)
+    else:
+        config.entry["error_msg"] = (
+            "There is no beacon payload from the Zigbee NWK layer"
+        )
         return
 
 
@@ -521,359 +702,178 @@ def mac_command(pkt, msg_queue):
         return
 
 
-def mac_beacon(pkt, msg_queue):
-    if not config.entry["mac_panidcomp"].startswith("0b0:"):
-        config.entry["error_msg"] = (
-            "The source PAN ID of MAC Beacons should not be compressed"
+def mac_assocreq(pkt):
+    # Capability Information field (1 byte)
+    # Alternate PAN Coordinator subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_apc",
+            pkt[Dot15d4CmdAssocReq].alternate_pan_coordinator,
+            APC_STATES,
         )
+    ):
+        config.entry["error_msg"] = "PE212: Unknown APC state"
         return
-    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = (
-            "MAC Beacons should not contain a destination PAN ID and address"
+    # Device Type subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_devtype",
+            pkt[Dot15d4CmdAssocReq].device_type,
+            DEVICE_TYPES,
         )
+    ):
+        config.entry["error_msg"] = "PE213: Unknown device type"
+        return
+    # Power Source subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_powsrc",
+            pkt[Dot15d4CmdAssocReq].power_source,
+            POWER_SOURCES,
+        )
+    ):
+        config.entry["error_msg"] = "PE214: Unknown power source"
+        return
+    # Receiver On When Idle subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_rxidle",
+            pkt[Dot15d4CmdAssocReq].receiver_on_when_idle,
+            RXIDLE_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE215: Unknown RX state when idle"
+        return
+    # Security Capability subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_seccap",
+            pkt[Dot15d4CmdAssocReq].security_capability,
+            SECURITY_CAPABILITIES,
+        )
+    ):
+        config.entry["error_msg"] = "PE216: Unknown MAC security capability"
+        return
+    # Allocate Address subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_assocreq_allocaddr",
+            pkt[Dot15d4CmdAssocReq].allocate_address,
+            ALLOCADDR_STATES,
+        )
+    ):
+        config.entry["error_msg"] = "PE217: Unknown address allocation"
         return
 
-    # Addressing fields (4/10 bytes)
-    # Source PAN ID subfield (2 bytes)
-    config.entry["mac_srcpanid"] = "0x{:04x}".format(
-        pkt[Dot15d4Beacon].src_panid,
+    # MAC Association Request commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdAssocReq].payload)) != 0:
+        config.entry["error_msg"] = "PE225: Unexpected payload"
+        return
+
+
+def mac_assocrsp(pkt):
+    # Short Address field (2 bytes)
+    config.entry["mac_assocrsp_shortaddr"] = "0x{:04x}".format(
+        pkt[Dot15d4CmdAssocResp].short_address,
     )
-    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
-        # Source Short Address subfield (2 bytes)
-        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
-            pkt[Dot15d4Beacon].src_addr,
-        )
-    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
-        # Source Extended Address subfield (8 bytes)
-        config.entry["mac_srcextendedaddr"] = format(
-            pkt[Dot15d4Beacon].src_addr,
-            "016x",
-        )
-    elif config.entry["mac_srcaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = (
-            "MAC Beacons should contain a source PAN ID and address"
-        )
-        return
-    else:
-        config.entry["error_msg"] = "Invalid MAC SA mode"
-        return
 
-    # Superframe Specification field (2 bytes)
-    # Beacon Order subfield (4 bits)
-    config.entry["mac_beacon_beaconorder"] = pkt[Dot15d4Beacon].sf_beaconorder
-    # Superframe Order subfield (4 bits)
-    config.entry["mac_beacon_sforder"] = pkt[Dot15d4Beacon].sf_sforder
-    # Final CAP Slot subfield (4 bits)
-    config.entry["mac_beacon_finalcap"] = pkt[Dot15d4Beacon].sf_finalcapslot
-    # Battery Life Extension subfield (1 bit)
-    config.entry["mac_beacon_ble"] = pkt[Dot15d4Beacon].sf_battlifeextend
-    # PAN Coordinator subfield (1 bit)
+    # Association Status field (1 byte)
     if not (
         config.set_entry(
-            "mac_beacon_pancoord",
-            pkt[Dot15d4Beacon].sf_pancoord,
-            PANCOORDINATOR_STATES,
+            "mac_assocrsp_status",
+            pkt[Dot15d4CmdAssocResp].association_status,
+            ASSOC_STATUSES,
         )
     ):
-        config.entry["error_msg"] = "PE222: Unknown PAN coordinator state"
+        config.entry["error_msg"] = "PE218: Unknown association status"
         return
-    # Association Permit subfield (1 bit)
+
+    # MAC Association Response commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdAssocResp].payload)) != 0:
+        config.entry["error_msg"] = "PE226: Unexpected payload"
+        return
+
+
+def mac_disassoc(pkt):
+    # Disassociation Reason field (1 byte)
     if not (
         config.set_entry(
-            "mac_beacon_assocpermit",
-            pkt[Dot15d4Beacon].sf_assocpermit,
-            ASSOCPERMIT_STATES,
+            "mac_disassoc_reason",
+            pkt[Dot15d4CmdDisassociation].disassociation_reason,
+            DISASSOC_REASONS,
         )
     ):
-        config.entry["error_msg"] = "PE223: Unknown association permit state"
+        config.entry["error_msg"] = "PE219: Unknown disassociation reason"
         return
 
-    # GTS Specification field (1 byte)
-    # GTS Descriptor Count subfield (3 bits)
-    config.entry["mac_beacon_gtsnum"] = pkt[Dot15d4Beacon].gts_spec_desccount
-    # GTS Permit subfield (1 bit)
-    config.entry["mac_beacon_gtspermit"] = pkt[Dot15d4Beacon].gts_spec_permit
-
-    # GTS Directions field (0/1 byte)
-    if config.entry["mac_beacon_gtsnum"] > 0:
-        # GTS Directions Mask subfield (7 bits)
-        config.entry["mac_beacon_gtsmask"] = pkt[Dot15d4Beacon].gts_dir_mask
-
-    # GTS List field (variable)
-    if config.entry["mac_beacon_gtsnum"] > 0:
-        msg_obj = (
-            "Packet #{} ".format(config.entry["pkt_num"])
-            + "in {} ".format(config.entry["pcap_filename"])
-            + "contains a GTS List field which could not be processed"
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = "Could not process the GTS List"
-        return
-
-    # Pending Address Specification field (1 byte)
-    # Number of Short Addresses Pending (3 bits)
-    config.entry["mac_beacon_nsap"] = pkt[Dot15d4Beacon].pa_num_short
-    # Number of Extended Addresses Pending (3 bits)
-    config.entry["mac_beacon_neap"] = pkt[Dot15d4Beacon].pa_num_long
-
-    # Address List field (variable)
-    if config.entry["mac_beacon_nsap"] > 0:
-        config.entry["mac_beacon_shortaddresses"] = ",".join(
-            [
-                "0x{:04x}".format(addr)
-                for addr in pkt[Dot15d4Beacon].pa_short_addresses
-            ],
-        )
-    if config.entry["mac_beacon_neap"] > 0:
-        config.entry["mac_beacon_extendedaddresses"] = ",".join(
-            [
-                format(addr, "016x")
-                for addr in pkt[Dot15d4Beacon].pa_long_addresses
-            ],
-        )
-
-    # Beacon Payload field (variable)
-    if pkt.haslayer(ZigBeeBeacon):
-        nwk_fields(pkt, msg_queue)
-    else:
-        config.entry["error_msg"] = (
-            "There is no beacon payload from the Zigbee NWK layer"
-        )
+    # MAC Disassociation Notification commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdDisassociation].payload)) != 0:
+        config.entry["error_msg"] = "PE227: Unexpected payload"
         return
 
 
-def mac_data(pkt, msg_queue):
-    # Destination Addressing fields (0/4/10 bytes)
-    if config.entry["mac_dstaddrmode"].startswith("0b10:"):
-        # Destination PAN ID subfield (2 bytes)
-        config.entry["mac_dstpanid"] = "0x{:04x}".format(
-            pkt[Dot15d4Data].dest_panid,
-        )
-        # Destination Short Address subfield (2 bytes)
-        config.entry["mac_dstshortaddr"] = "0x{:04x}".format(
-            pkt[Dot15d4Data].dest_addr,
-        )
-    elif config.entry["mac_dstaddrmode"].startswith("0b11:"):
-        # Destination PAN ID subfield (2 bytes)
-        config.entry["mac_dstpanid"] = "0x{:04x}".format(
-            pkt[Dot15d4Data].dest_panid,
-        )
-        # Destination Extended Address subfield (8 bytes)
-        config.entry["mac_dstextendedaddr"] = format(
-            pkt[Dot15d4Data].dest_addr,
-            "016x",
-        )
-    elif not config.entry["mac_dstaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = "Invalid MAC DA mode"
-        return
+def mac_realign(pkt):
+    # PAN Identifier field (2 bytes)
+    config.entry["mac_realign_panid"] = "0x{:04x}".format(
+        pkt[Dot15d4CmdCoordRealign].panid,
+    )
 
-    # Source Addressing fields (0/2/4/8/10 bytes)
-    if config.entry["mac_srcaddrmode"].startswith("0b10:"):
-        if config.entry["mac_panidcomp"].startswith("0b0:"):
-            # Source PAN ID subfield (2 bytes)
-            config.entry["mac_srcpanid"] = "0x{:04x}".format(
-                pkt[Dot15d4Data].src_panid,
-            )
-        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
-            config.entry["error_msg"] = "Invalid MAC PIC state"
-            return
-        # Source Short Address subfield (2 bytes)
-        config.entry["mac_srcshortaddr"] = "0x{:04x}".format(
-            pkt[Dot15d4Data].src_addr,
-        )
-    elif config.entry["mac_srcaddrmode"].startswith("0b11:"):
-        if config.entry["mac_panidcomp"].startswith("0b0:"):
-            # Source PAN ID subfield (2 bytes)
-            config.entry["mac_srcpanid"] = "0x{:04x}".format(
-                pkt[Dot15d4Data].src_panid,
-            )
-        elif not config.entry["mac_panidcomp"].startswith("0b1:"):
-            config.entry["error_msg"] = "Invalid MAC PIC state"
-            return
-        # Source Extended Address subfield (8 bytes)
-        config.entry["mac_srcextendedaddr"] = format(
-            pkt[Dot15d4Data].src_addr,
-            "016x",
-        )
-    elif not config.entry["mac_srcaddrmode"].startswith("0b00:"):
-        config.entry["error_msg"] = "Invalid MAC SA mode"
-        return
+    # Coordinator Short Address field (2 bytes)
+    config.entry["mac_realign_coordaddr"] = "0x{:04x}".format(
+        pkt[Dot15d4CmdCoordRealign].coord_address,
+    )
 
-    # Data Payload field (variable)
-    if pkt.haslayer(ZigbeeNWK):
-        nwk_fields(pkt, msg_queue)
-    else:
-        config.entry["error_msg"] = "There are no Zigbee NWK fields"
-        return
+    # Channel Number field (1 byte)
+    config.entry["mac_realign_channel"] = pkt[Dot15d4CmdCoordRealign].channel
 
+    # Short Address field (2 bytes)
+    config.entry["mac_realign_shortaddr"] = "0x{:04x}".format(
+        pkt[Dot15d4CmdCoordRealign].dev_address,
+    )
 
-def mac_fields(pkt, msg_queue):
-    """Parse IEEE 802.15.4 MAC fields."""
-    config.entry["mac_show"] = pkt.show(dump=True)
-    if pkt[Dot15d4FCS].fcs is None:
-        config.entry["error_msg"] = (
-            "PE201: The frame check sequence (FCS) field is not included"
+    # Channel Page field (0/1 byte)
+    if pkt.haslayer(Dot15d4CmdCoordRealignPage):
+        config.entry["mac_realign_page"] = (
+            pkt[Dot15d4CmdCoordRealignPage].channel_page
         )
-        return
 
-    comp_fcs = struct.unpack("<H", pkt.compute_fcs(bytes(pkt)[:-2]))[0]
-    if pkt[Dot15d4FCS].fcs != comp_fcs:
-        msg_obj = (
-            "The received FCS (0x{:04x}), ".format(pkt[Dot15d4FCS].fcs)
-            + "for packet #{} ".format(config.entry["pkt_num"])
-            + "in {}, ".format(config.entry["pcap_filename"])
-            + "does not match the computed FCS (0x{:04x})".format(comp_fcs)
-        )
-        if msg_queue is None:
-            logging.debug(msg_obj)
-        else:
-            msg_queue.put((Message.DEBUG, msg_obj))
-        config.entry["error_msg"] = (
-            "PE202: Incorrect frame check sequence (FCS)"
-        )
-        return
-
-    # Frame Check Sequence field (2 bytes)
-    config.entry["mac_fcs"] = "0x{:04x}".format(pkt[Dot15d4FCS].fcs)
-
-    # Frame Control field (2 bytes)
-    # Frame Type subfield (3 bits)
-    if not (
-        config.set_entry(
-            "mac_frametype",
-            pkt[Dot15d4FCS].fcf_frametype,
-            MAC_FRAME_TYPES,
-        )
-    ):
-        config.entry["error_msg"] = "PE203: Unknown MAC frame type"
-        return
-    # Security subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_security",
-            pkt[Dot15d4FCS].fcf_security,
-            MAC_SECURITY_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE204: Unknown MAC security state"
-        return
-    # Frame Pending subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_framepending",
-            pkt[Dot15d4FCS].fcf_pending,
-            MAC_FP_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE205: Unknown MAC FP state"
-        return
-    # Acknowledgment Request subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_ackreq",
-            pkt[Dot15d4FCS].fcf_ackreq,
-            MAC_AR_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE206: Unknown MAC AR state"
-        return
-    # PAN ID Compression subfield (1 bit)
-    if not (
-        config.set_entry(
-            "mac_panidcomp",
-            pkt[Dot15d4FCS].fcf_panidcompress,
-            MAC_PIC_STATES,
-        )
-    ):
-        config.entry["error_msg"] = "PE207: Unknown MAC PIC state"
-        return
-    # Destination Addressing Mode subfield (2 bits)
-    if not (
-        config.set_entry(
-            "mac_dstaddrmode",
-            pkt[Dot15d4FCS].fcf_destaddrmode,
-            MAC_DA_MODES,
-        )
-    ):
-        config.entry["error_msg"] = "PE208: Unknown MAC DA mode"
-        return
-    # Frame Version subfield (2 bits)
-    if not (
-        config.set_entry(
-            "mac_frameversion",
-            pkt[Dot15d4FCS].fcf_framever,
-            MAC_FRAME_VERSIONS,
-        )
-    ):
-        config.entry["error_msg"] = "PE209: Unknown MAC frame version"
-        return
-    # Source Addressing Mode subfield (2 bits)
-    if not (
-        config.set_entry(
-            "mac_srcaddrmode",
-            pkt[Dot15d4FCS].fcf_srcaddrmode,
-            MAC_SA_MODES,
-        )
-    ):
-        config.entry["error_msg"] = "PE210: Unknown MAC SA mode"
-        return
-
-    # Sequence Number field (1 byte)
-    config.entry["mac_seqnum"] = pkt[Dot15d4FCS].seqnum
-
-    if config.entry["mac_security"].startswith("0b1:"):
-        # Auxiliary Security Header field (0/5/6/10/14 bytes)
-        if pkt.haslayer(Dot15d4AuxSecurityHeader):
-            # Zigbee does not utilize any security services on the MAC layer
-            msg_obj = (
-                "The packet #{} ".format(config.entry["pkt_num"])
-                + "in {} ".format(config.entry["pcap_filename"])
-                + "is utilizing security services on the MAC layer"
-            )
-            if msg_queue is None:
-                logging.debug(msg_obj)
-            else:
-                msg_queue.put((Message.DEBUG, msg_obj))
-            config.entry["error_msg"] = (
-                "Ignored the MAC Auxiliary Security Header"
-            )
-            return
-        else:
-            config.entry["error_msg"] = (
-                "The MAC Auxiliary Security Header is not included"
-            )
-            return
-    elif config.entry["mac_security"].startswith("0b0:"):
-        # MAC Payload field (variable)
-        if config.entry["mac_frametype"].startswith("0b010:"):
-            # MAC Acknowledgments do not contain any other fields
-            if len(bytes(pkt[Dot15d4FCS].payload)) != 0:
-                config.entry["error_msg"] = "PE224: Unexpected payload"
-                return
-        elif config.entry["mac_frametype"].startswith("0b011:"):
-            if pkt.haslayer(Dot15d4Cmd):
-                mac_command(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no MAC Command fields"
-                return
-        elif config.entry["mac_frametype"].startswith("0b000:"):
-            if pkt.haslayer(Dot15d4Beacon):
-                mac_beacon(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no MAC Beacon fields"
-                return
-        elif config.entry["mac_frametype"].startswith("0b001:"):
-            if pkt.haslayer(Dot15d4Data):
-                mac_data(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no MAC Data fields"
-                return
-        else:
-            config.entry["error_msg"] = "Invalid MAC frame type"
+        # MAC Coordinator Realignment commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4CmdCoordRealignPage].payload)) != 0:
+            config.entry["error_msg"] = "PE232: Unexpected payload"
             return
     else:
-        config.entry["error_msg"] = "Invalid MAC security state"
+        # MAC Coordinator Realignment commands do not contain any other fields
+        if len(bytes(pkt[Dot15d4CmdCoordRealign].payload)) != 0:
+            config.entry["error_msg"] = "PE233: Unexpected payload"
+            return
+
+
+def mac_gtsreq(pkt):
+    # GTS Characteristics field (1 byte)
+    # GTS Length subfield (4 bits)
+    config.entry["mac_gtsreq_length"] = pkt[Dot15d4CmdGTSReq].gts_len
+    # GTS Direction subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_gtsreq_dir",
+            pkt[Dot15d4CmdGTSReq].gts_dir,
+            GTS_DIRECTIONS,
+        )
+    ):
+        config.entry["error_msg"] = "PE220: Unknown GTS direction"
+        return
+    # GTS Characteristics Type subfield (1 bit)
+    if not (
+        config.set_entry(
+            "mac_gtsreq_chartype",
+            pkt[Dot15d4CmdGTSReq].charact_type,
+            GTS_CHARACTERISTICS_TYPES,
+        )
+    ):
+        config.entry["error_msg"] = "PE221: Unknown GTS characteristics type"
+        return
+
+    # MAC GTS Request commands do not contain any other fields
+    if len(bytes(pkt[Dot15d4CmdGTSReq].payload)) != 0:
+        config.entry["error_msg"] = "PE234: Unexpected payload"
         return
