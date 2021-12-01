@@ -378,6 +378,7 @@ def connect(db_filepath):
     connection = sqlite3.connect(db_filepath)
     connection.text_factory = str
     cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
 
 
 def create_table(tablename):
