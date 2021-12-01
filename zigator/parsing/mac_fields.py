@@ -34,6 +34,7 @@ from scapy.all import (
 )
 
 from .. import config
+from ..enums import Message
 from .nwk_fields import nwk_fields
 
 
@@ -444,7 +445,7 @@ def mac_command(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = (
             "Ignored MAC command with enabled MAC-layer security"
         )
@@ -608,7 +609,7 @@ def mac_beacon(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = "Could not process the GTS List"
         return
 
@@ -729,7 +730,7 @@ def mac_fields(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = (
             "PE202: Incorrect frame check sequence (FCS)"
         )
@@ -835,7 +836,7 @@ def mac_fields(pkt, msg_queue):
             if msg_queue is None:
                 logging.debug(msg_obj)
             else:
-                msg_queue.put((config.DEBUG_MSG, msg_obj))
+                msg_queue.put((Message.DEBUG, msg_obj))
             config.entry["error_msg"] = (
                 "Ignored the MAC Auxiliary Security Header"
             )

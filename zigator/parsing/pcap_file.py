@@ -23,6 +23,7 @@ from scapy.all import (
 )
 
 from .. import config
+from ..enums import Message
 from .derive_info import derive_info
 from .phy_fields import phy_fields
 from .sll_fields import sll_fields
@@ -49,7 +50,7 @@ def pcap_file(filepath, msg_queue):
     # Parse the packets of the pcap file
     msg_queue.put(
         (
-            config.INFO_MSG,
+            Message.INFO,
             "Reading packets from the \"{}\" file...".format(filepath),
         ),
     )
@@ -69,7 +70,7 @@ def pcap_file(filepath, msg_queue):
             derive_info()
 
         # Send a copy of the collected data to the main process
-        msg_queue.put((config.PKT_MSG, copy.deepcopy(config.entry)))
+        msg_queue.put((Message.PKT, copy.deepcopy(config.entry)))
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(
@@ -80,7 +81,7 @@ def pcap_file(filepath, msg_queue):
     # Log the number of parsed packets from this pcap file
     msg_queue.put(
         (
-            config.INFO_MSG,
+            Message.INFO,
             "Parsed {} packets from the \"{}\" file".format(
                 config.entry["pkt_num"],
                 filepath,
@@ -91,25 +92,22 @@ def pcap_file(filepath, msg_queue):
     # Send a copy of each dictionary that changed after parsing packets
     if config.network_keys != init_network_keys:
         msg_queue.put(
-            (config.NETWORK_KEYS_MSG, copy.deepcopy(config.network_keys)),
+            (Message.NETWORK_KEYS, copy.deepcopy(config.network_keys)),
         )
     if config.link_keys != init_link_keys:
-        msg_queue.put((config.LINK_KEYS_MSG, copy.deepcopy(config.link_keys)))
+        msg_queue.put((Message.LINK_KEYS, copy.deepcopy(config.link_keys)))
     if config.networks != init_networks:
-        msg_queue.put((config.NETWORKS_MSG, copy.deepcopy(config.networks)))
+        msg_queue.put((Message.NETWORKS, copy.deepcopy(config.networks)))
     if config.short_addresses != init_short_addresses:
         msg_queue.put(
-            (
-                config.SHORT_ADDRESSES_MSG,
-                copy.deepcopy(config.short_addresses),
-            ),
+            (Message.SHORT_ADDRESSES, copy.deepcopy(config.short_addresses)),
         )
     if config.extended_addresses != init_extended_addresses:
         msg_queue.put(
             (
-                config.EXTENDED_ADDRESSES_MSG,
+                Message.EXTENDED_ADDRESSES,
                 copy.deepcopy(config.extended_addresses),
             ),
         )
     if config.pairs != init_pairs:
-        msg_queue.put((config.PAIRS_MSG, copy.deepcopy(config.pairs)))
+        msg_queue.put((Message.PAIRS, copy.deepcopy(config.pairs)))

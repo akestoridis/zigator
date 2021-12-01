@@ -20,6 +20,7 @@ import os
 from glob import glob
 
 from .. import config
+from ..enums import Message
 from .pcap_file import pcap_file
 
 
@@ -33,8 +34,8 @@ def worker(filepaths, msg_queue, task_index, task_lock):
             else:
                 break
         pcap_file(filepath, msg_queue)
-        msg_queue.put((config.PCAP_MSG, filepath))
-    msg_queue.put((config.RETURN_MSG, os.getpid()))
+        msg_queue.put((Message.PCAP, filepath))
+    msg_queue.put((Message.RETURN, os.getpid()))
 
 
 def main(pcap_dirpath, db_filepath, num_workers):
@@ -99,23 +100,23 @@ def main(pcap_dirpath, db_filepath, num_workers):
     new_link_keys = 0
     while num_terminated_processes < num_workers:
         msg_type, msg_obj = msg_queue.get()
-        if msg_type is config.RETURN_MSG:
+        if msg_type == Message.RETURN:
             num_terminated_processes += 1
             logging.debug(
                 "The process with ID {} ".format(msg_obj)
                 + "has no more pcap files to parse",
             )
-        elif msg_type is config.DEBUG_MSG:
+        elif msg_type == Message.DEBUG:
             logging.debug(msg_obj)
-        elif msg_type is config.INFO_MSG:
+        elif msg_type == Message.INFO:
             logging.info(msg_obj)
-        elif msg_type is config.WARNING_MSG:
+        elif msg_type == Message.WARNING:
             logging.warning(msg_obj)
-        elif msg_type is config.ERROR_MSG:
+        elif msg_type == Message.ERROR:
             logging.error(msg_obj)
-        elif msg_type is config.CRITICAL_MSG:
+        elif msg_type == Message.CRITICAL:
             logging.critical(msg_obj)
-        elif msg_type is config.PCAP_MSG:
+        elif msg_type == Message.PCAP:
             pcap_counter += 1
             logging.info(
                 "Parsed {} out of the {} pcap files".format(
@@ -123,21 +124,21 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     len(filepaths),
                 ),
             )
-        elif msg_type is config.PKT_MSG:
+        elif msg_type == Message.PKT:
             config.db.insert("packets", msg_obj)
-        elif msg_type is config.NETWORK_KEYS_MSG:
+        elif msg_type == Message.NETWORK_KEYS:
             for key_name in msg_obj.keys():
                 if key_name not in config.network_keys.keys():
                     if msg_obj[key_name] not in config.network_keys.values():
                         config.network_keys[key_name] = msg_obj[key_name]
                         new_network_keys += 1
-        elif msg_type is config.LINK_KEYS_MSG:
+        elif msg_type == Message.LINK_KEYS:
             for key_name in msg_obj.keys():
                 if key_name not in config.link_keys.keys():
                     if msg_obj[key_name] not in config.link_keys.values():
                         config.link_keys[key_name] = msg_obj[key_name]
                         new_link_keys += 1
-        elif msg_type is config.NETWORKS_MSG:
+        elif msg_type == Message.NETWORKS:
             for panid in msg_obj.keys():
                 config.update_networks(
                     panid,
@@ -145,7 +146,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     msg_obj[panid]["earliest"],
                     msg_obj[panid]["latest"],
                 )
-        elif msg_type is config.SHORT_ADDRESSES_MSG:
+        elif msg_type == Message.SHORT_ADDRESSES:
             for (panid, shortaddr) in msg_obj.keys():
                 config.update_short_addresses(
                     panid,
@@ -156,7 +157,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     msg_obj[(panid, shortaddr)]["earliest"],
                     msg_obj[(panid, shortaddr)]["latest"],
                 )
-        elif msg_type is config.EXTENDED_ADDRESSES_MSG:
+        elif msg_type == Message.EXTENDED_ADDRESSES:
             for extendedaddr in msg_obj.keys():
                 config.update_extended_addresses(
                     extendedaddr,
@@ -166,7 +167,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
                     msg_obj[extendedaddr]["earliest"],
                     msg_obj[extendedaddr]["latest"],
                 )
-        elif msg_type is config.PAIRS_MSG:
+        elif msg_type == Message.PAIRS:
             for (panid, srcaddr, dstaddr) in msg_obj.keys():
                 config.update_pairs(
                     panid,

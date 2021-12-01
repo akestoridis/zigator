@@ -36,22 +36,6 @@ NETWORK_FILEPATH = os.path.join(CONFIG_DIR, "network-keys.tsv")
 LINK_FILEPATH = os.path.join(CONFIG_DIR, "link-keys.tsv")
 INSTALL_FILEPATH = os.path.join(CONFIG_DIR, "install-codes.tsv")
 
-# Define different types of messages
-RETURN_MSG = 0
-DEBUG_MSG = 1
-INFO_MSG = 2
-WARNING_MSG = 3
-ERROR_MSG = 4
-CRITICAL_MSG = 5
-PCAP_MSG = 6
-PKT_MSG = 7
-NETWORK_KEYS_MSG = 8
-LINK_KEYS_MSG = 9
-NETWORKS_MSG = 10
-SHORT_ADDRESSES_MSG = 11
-EXTENDED_ADDRESSES_MSG = 12
-PAIRS_MSG = 13
-
 # Initialize the global variables
 version = "0+unknown"
 network_keys = {}

@@ -38,6 +38,7 @@ from . import (
     server,
 )
 from .. import config
+from ..enums import Message
 from ..parsing.derive_info import derive_info
 from ..parsing.phy_fields import phy_fields
 
@@ -184,7 +185,7 @@ def main(
         # Check whether clean-up actions should be executed
         if answer == "y" and helper_thread is not None:
             logging.info("Stopping the helper thread...")
-            HELPER_DEQUE.append((config.RETURN_MSG, None))
+            HELPER_DEQUE.append((Message.RETURN, None))
             helper_thread.join()
             logging.info("Stopped the helper thread")
 
@@ -199,7 +200,7 @@ def packet_handler(pkt):
 
     if float(pkt.time) - START_TIME > MAX_PCAP_DURATION:
         HELPER_DEQUE.append(
-            (config.PCAP_MSG, "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID)),
+            (Message.PCAP, "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID)),
         )
         START_TIME = float(pkt.time)
         PKT_NUM = 0
@@ -207,7 +208,7 @@ def packet_handler(pkt):
     PKT_NUM += 1
     HELPER_DEQUE.append(
         (
-            config.PKT_MSG,
+            Message.PKT,
             (
                 pkt,
                 os.path.join(
@@ -260,12 +261,12 @@ def helper(
     while True:
         if len(HELPER_DEQUE) > 0:
             msg_type, msg_obj = HELPER_DEQUE.popleft()
-            if msg_type == config.PKT_MSG:
+            if msg_type == Message.PKT:
                 writing_queue.put((msg_type, msg_obj))
                 preparsing_queue.put((msg_type, msg_obj))
-            elif msg_type == config.PCAP_MSG:
+            elif msg_type == Message.PCAP:
                 writing_queue.put((msg_type, msg_obj))
-            elif msg_type == config.RETURN_MSG:
+            elif msg_type == Message.RETURN:
                 writing_queue.put((msg_type, msg_obj))
                 preparsing_queue.put((msg_type, msg_obj))
                 break
@@ -300,11 +301,11 @@ def writer(writing_queue):
 
     while True:
         msg_type, msg_obj = writing_queue.get()
-        if msg_type == config.PKT_MSG:
+        if msg_type == Message.PKT:
             wrpcap(msg_obj[1], msg_obj[0], append=True)
-        elif msg_type == config.PCAP_MSG:
+        elif msg_type == Message.PCAP:
             compress_file(msg_obj)
-        elif msg_type == config.RETURN_MSG:
+        elif msg_type == Message.RETURN:
             break
         else:
             logging.warning(
@@ -357,7 +358,7 @@ def parser(preparsing_queue, postparsing_queue):
 
     while True:
         msg_type, msg_obj = preparsing_queue.get()
-        if msg_type == config.PKT_MSG:
+        if msg_type == Message.PKT:
             pkt, pcap_filepath, pkt_num = msg_obj
 
             config.reset_entries()
@@ -370,7 +371,7 @@ def parser(preparsing_queue, postparsing_queue):
             if config.entry["error_msg"] is None:
                 derive_info()
 
-            postparsing_queue.put((config.PKT_MSG, deepcopy(config.entry)))
+            postparsing_queue.put((Message.PKT, deepcopy(config.entry)))
             if config.network_keys != prev_network_keys:
                 new_network_keys = {}
                 for key_name in config.network_keys.keys():
@@ -380,7 +381,7 @@ def parser(preparsing_queue, postparsing_queue):
                         new_network_keys[key_name] = key_bytes
                 if len(new_network_keys.keys()) > 0:
                     postparsing_queue.put(
-                        (config.NETWORK_KEYS_MSG, deepcopy(new_network_keys)),
+                        (Message.NETWORK_KEYS, deepcopy(new_network_keys)),
                     )
             if config.link_keys != prev_link_keys:
                 new_link_keys = {}
@@ -391,35 +392,32 @@ def parser(preparsing_queue, postparsing_queue):
                         new_link_keys[key_name] = key_bytes
                 if len(new_link_keys.keys()) > 0:
                     postparsing_queue.put(
-                        (config.LINK_KEYS_MSG, deepcopy(new_link_keys)),
+                        (Message.LINK_KEYS, deepcopy(new_link_keys)),
                     )
             if config.networks != prev_networks:
                 prev_networks = deepcopy(config.networks)
                 postparsing_queue.put(
-                    (config.NETWORKS_MSG, deepcopy(prev_networks)),
+                    (Message.NETWORKS, deepcopy(prev_networks)),
                 )
             if config.short_addresses != prev_short_addresses:
                 prev_short_addresses = deepcopy(config.short_addresses)
                 postparsing_queue.put(
-                    (
-                        config.SHORT_ADDRESSES_MSG,
-                        deepcopy(prev_short_addresses),
-                    ),
+                    (Message.SHORT_ADDRESSES, deepcopy(prev_short_addresses)),
                 )
             if config.extended_addresses != prev_extended_addresses:
                 prev_extended_addresses = deepcopy(config.extended_addresses)
                 postparsing_queue.put(
                     (
-                        config.EXTENDED_ADDRESSES_MSG,
+                        Message.EXTENDED_ADDRESSES,
                         deepcopy(prev_extended_addresses),
                     ),
                 )
             if config.pairs != prev_pairs:
                 prev_pairs = deepcopy(config.pairs)
                 postparsing_queue.put(
-                    (config.PAIRS_MSG, deepcopy(prev_pairs)),
+                    (Message.PAIRS, deepcopy(prev_pairs)),
                 )
-        elif msg_type == config.NETWORK_KEYS_MSG:
+        elif msg_type == Message.NETWORK_KEYS:
             for key_name in msg_obj.keys():
                 return_msg = config.add_new_key(
                     msg_obj[key_name],
@@ -429,7 +427,7 @@ def parser(preparsing_queue, postparsing_queue):
                 if return_msg is not None:
                     logging.warning(return_msg)
             prev_network_keys = deepcopy(config.network_keys)
-        elif msg_type == config.LINK_KEYS_MSG:
+        elif msg_type == Message.LINK_KEYS:
             for key_name in msg_obj.keys():
                 return_msg = config.add_new_key(
                     msg_obj[key_name],
@@ -439,7 +437,7 @@ def parser(preparsing_queue, postparsing_queue):
                 if return_msg is not None:
                     logging.warning(return_msg)
             prev_link_keys = deepcopy(config.link_keys)
-        elif msg_type == config.RETURN_MSG:
+        elif msg_type == Message.RETURN:
             postparsing_queue.put((msg_type, msg_obj))
             break
         else:
@@ -489,7 +487,7 @@ def gatherer(
     while True:
         try:
             msg_type, msg_obj = postparsing_queue.get(timeout=batch_delay)
-            if msg_type == config.PKT_MSG:
+            if msg_type == Message.PKT:
                 config.entry = msg_obj
                 collect_data()
                 detect_events(link_keys_lock)
@@ -498,7 +496,7 @@ def gatherer(
                     num_uncommitted_entries = 0
                 else:
                     num_uncommitted_entries += 1
-            elif msg_type == config.NETWORK_KEYS_MSG:
+            elif msg_type == Message.NETWORK_KEYS:
                 with network_keys_lock:
                     for key_name in msg_obj.keys():
                         return_msg = config.add_new_key(
@@ -508,7 +506,7 @@ def gatherer(
                         )
                         if return_msg is not None:
                             logging.warning(return_msg)
-            elif msg_type == config.LINK_KEYS_MSG:
+            elif msg_type == Message.LINK_KEYS:
                 with link_keys_lock:
                     for key_name in msg_obj.keys():
                         return_msg = config.add_new_key(
@@ -518,19 +516,19 @@ def gatherer(
                         )
                         if return_msg is not None:
                             logging.warning(return_msg)
-            elif msg_type == config.NETWORKS_MSG:
+            elif msg_type == Message.NETWORKS:
                 with networks_lock:
                     config.networks = msg_obj
-            elif msg_type == config.SHORT_ADDRESSES_MSG:
+            elif msg_type == Message.SHORT_ADDRESSES:
                 with short_addresses_lock:
                     config.short_addresses = msg_obj
-            elif msg_type == config.EXTENDED_ADDRESSES_MSG:
+            elif msg_type == Message.EXTENDED_ADDRESSES:
                 with extended_addresses_lock:
                     config.extended_addresses = msg_obj
-            elif msg_type == config.PAIRS_MSG:
+            elif msg_type == Message.PAIRS:
                 with pairs_lock:
                     config.pairs = msg_obj
-            elif msg_type == config.RETURN_MSG:
+            elif msg_type == Message.RETURN:
                 if num_uncommitted_entries > 0:
                     config.db.commit()
                     num_uncommitted_entries = 0

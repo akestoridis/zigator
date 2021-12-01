@@ -29,6 +29,7 @@ from .. import (
     config,
     crypto,
 )
+from ..enums import Message
 from .zcl_fields import zcl_fields
 from .zdp_fields import zdp_fields
 
@@ -387,7 +388,7 @@ def aps_transportkey(pkt, msg_queue):
             if msg_queue is None:
                 logging.warning(return_msg)
             else:
-                msg_queue.put((config.WARNING_MSG, return_msg))
+                msg_queue.put((Message.WARNING, return_msg))
     elif config.entry["aps_transportkey_stdkeytype"].startswith("0x04:"):
         # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = (
@@ -421,7 +422,7 @@ def aps_transportkey(pkt, msg_queue):
             if msg_queue is None:
                 logging.warning(return_msg)
             else:
-                msg_queue.put((config.WARNING_MSG, return_msg))
+                msg_queue.put((Message.WARNING, return_msg))
     elif config.entry["aps_transportkey_stdkeytype"].startswith("0x03:"):
         # Key field (16 bytes)
         config.entry["aps_transportkey_key"] = (
@@ -460,7 +461,7 @@ def aps_transportkey(pkt, msg_queue):
             if msg_queue is None:
                 logging.warning(return_msg)
             else:
-                msg_queue.put((config.WARNING_MSG, return_msg))
+                msg_queue.put((Message.WARNING, return_msg))
     else:
         config.entry["error_msg"] = "Invalid standard key type"
         return
@@ -948,7 +949,7 @@ def aps_auxiliary(pkt, msg_queue, tunneled=False):
     if msg_queue is None:
         logging.debug(msg_obj)
     else:
-        msg_queue.put((config.DEBUG_MSG, msg_obj))
+        msg_queue.put((Message.DEBUG, msg_obj))
     config.entry["warning_msg"] = "PW401: Unable to decrypt the APS payload"
 
 
@@ -1312,7 +1313,7 @@ def aps_fields(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = "Ignored the Inter-PAN fields"
         return
     else:

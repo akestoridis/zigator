@@ -27,6 +27,7 @@ import cherrypy
 import psutil
 
 from .. import config
+from ..enums import Message
 
 SENSOR_ID = None
 OUTPUT_DIRECTORY = None
@@ -80,7 +81,7 @@ class NetworkKeysService(object):
                         new_network_keys[key_name] = key_bytes
         if len(new_network_keys.keys()) > 0:
             PREPARSING_QUEUE.put(
-                (config.NETWORK_KEYS_MSG, deepcopy(new_network_keys)),
+                (Message.NETWORK_KEYS, deepcopy(new_network_keys)),
             )
         if return_msg is not None:
             raise cherrypy.HTTPError(500, message=return_msg)
@@ -126,7 +127,7 @@ class LinkKeysService(object):
                         new_link_keys[key_name] = key_bytes
         if len(new_link_keys.keys()) > 0:
             PREPARSING_QUEUE.put(
-                (config.LINK_KEYS_MSG, deepcopy(new_link_keys)),
+                (Message.LINK_KEYS, deepcopy(new_link_keys)),
             )
         if return_msg is not None:
             raise cherrypy.HTTPError(500, message=return_msg)

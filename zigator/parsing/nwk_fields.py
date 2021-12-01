@@ -28,6 +28,7 @@ from .. import (
     config,
     crypto,
 )
+from ..enums import Message
 from .aps_fields import aps_fields
 
 
@@ -640,7 +641,7 @@ def nwk_linkstatus(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = "Unable to process the Link Status List"
         return
     if config.entry["nwk_linkstatus_count"] > 0:
@@ -701,7 +702,7 @@ def nwk_networkreport(pkt, msg_queue):
             if msg_queue is None:
                 logging.debug(msg_obj)
             else:
-                msg_queue.put((config.DEBUG_MSG, msg_obj))
+                msg_queue.put((Message.DEBUG, msg_obj))
             config.entry["error_msg"] = "Unable to process the PAN IDs"
             return
         if config.entry["nwk_networkreport_count"] > 0:
@@ -885,7 +886,7 @@ def nwk_command(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = (
             "Ignored NWK command with enabled MAC-layer security"
         )
@@ -915,7 +916,7 @@ def nwk_command(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = (
             "Ignored NWK command that includes the Multicast Control field"
         )
@@ -1162,7 +1163,7 @@ def nwk_auxiliary(pkt, msg_queue):
     if msg_queue is None:
         logging.debug(msg_obj)
     else:
-        msg_queue.put((config.DEBUG_MSG, msg_obj))
+        msg_queue.put((Message.DEBUG, msg_obj))
     config.entry["warning_msg"] = "PW301: Unable to decrypt the NWK payload"
 
 
@@ -1179,7 +1180,7 @@ def nwk_fields(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = "PE301: Unknown NWK fields"
         return
 
@@ -1322,7 +1323,7 @@ def nwk_fields(pkt, msg_queue):
         if msg_queue is None:
             logging.debug(msg_obj)
         else:
-            msg_queue.put((config.DEBUG_MSG, msg_obj))
+            msg_queue.put((Message.DEBUG, msg_obj))
         config.entry["error_msg"] = "Could not process the Multicast Control"
         return
     elif not config.entry["nwk_multicast"].startswith("0b0:"):
@@ -1367,7 +1368,7 @@ def nwk_fields(pkt, msg_queue):
             if msg_queue is None:
                 logging.debug(msg_obj)
             else:
-                msg_queue.put((config.DEBUG_MSG, msg_obj))
+                msg_queue.put((Message.DEBUG, msg_obj))
             config.entry["error_msg"] = "Ignored the Inter-PAN fields"
             return
         elif config.entry["nwk_frametype"].startswith("0b00:"):
