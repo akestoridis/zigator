@@ -469,7 +469,13 @@ def nwk_fields(pkt, msg_queue):
             return
     elif config.entry["nwk_security"].startswith("0b0:"):
         # NWK Payload field (variable)
-        if config.entry["nwk_frametype"].startswith("0b01:"):
+        if config.entry["nwk_frametype"].startswith("0b00:"):
+            if pkt.haslayer(ZigbeeAppDataPayload):
+                aps_fields(pkt, msg_queue)
+            else:
+                config.entry["error_msg"] = "There are no Zigbee APS fields"
+                return
+        elif config.entry["nwk_frametype"].startswith("0b01:"):
             if pkt.haslayer(ZigbeeNWKCommandPayload):
                 nwk_command(pkt, msg_queue)
             else:
@@ -487,12 +493,6 @@ def nwk_fields(pkt, msg_queue):
                 msg_queue.put((Message.DEBUG, msg_obj))
             config.entry["error_msg"] = "Ignored the Inter-PAN fields"
             return
-        elif config.entry["nwk_frametype"].startswith("0b00:"):
-            if pkt.haslayer(ZigbeeAppDataPayload):
-                aps_fields(pkt, msg_queue)
-            else:
-                config.entry["error_msg"] = "There are no Zigbee APS fields"
-                return
         else:
             config.entry["error_msg"] = "Invalid NWK frame type"
             return
@@ -662,15 +662,15 @@ def nwk_auxiliary(pkt, msg_queue):
                 config.entry["nwk_aux_decpayload"] = dec_payload.hex()
 
                 # NWK Payload field (variable)
-                if config.entry["nwk_frametype"].startswith("0b01:"):
-                    dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
-                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
-                    nwk_command(dec_pkt, msg_queue)
-                    return
-                elif config.entry["nwk_frametype"].startswith("0b00:"):
+                if config.entry["nwk_frametype"].startswith("0b00:"):
                     dec_pkt = ZigbeeAppDataPayload(dec_payload)
                     config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
                     aps_fields(dec_pkt, msg_queue)
+                    return
+                elif config.entry["nwk_frametype"].startswith("0b01:"):
+                    dec_pkt = ZigbeeNWKCommandPayload(dec_payload)
+                    config.entry["nwk_aux_decshow"] = dec_pkt.show(dump=True)
+                    nwk_command(dec_pkt, msg_queue)
                     return
                 else:
                     config.entry["error_msg"] = (

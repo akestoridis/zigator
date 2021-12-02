@@ -404,10 +404,10 @@ def aps_fields(pkt, msg_queue):
     # The APS Header fields vary significantly between different frame types
     if config.entry["aps_frametype"].startswith("0b00:"):
         aps_data_header(pkt, msg_queue)
-    elif config.entry["aps_frametype"].startswith("0b01:"):
-        aps_command_header(pkt, msg_queue)
     elif config.entry["aps_frametype"].startswith("0b10:"):
         aps_ack_header(pkt, msg_queue)
+    elif config.entry["aps_frametype"].startswith("0b01:"):
+        aps_command_header(pkt, msg_queue)
     elif config.entry["aps_frametype"].startswith("0b11:"):
         msg_obj = (
             "Packet #{} ".format(config.entry["pkt_num"])
@@ -870,11 +870,6 @@ def aps_auxiliary(pkt, msg_queue, tunneled=False):
                             )
                         )
                         return
-                elif config.entry["aps_frametype"].startswith("0b01:"):
-                    dec_pkt = ZigbeeAppCommandPayload(dec_payload)
-                    config.entry["aps_aux_decshow"] = dec_pkt.show(dump=True)
-                    aps_command_payload(dec_pkt, msg_queue, tunneled=tunneled)
-                    return
                 elif config.entry["aps_frametype"].startswith("0b10:"):
                     # APS Acknowledgments do not contain any other fields
                     if len(dec_payload) != 0:
@@ -882,6 +877,11 @@ def aps_auxiliary(pkt, msg_queue, tunneled=False):
                             "PE427: Unexpected payload"
                         )
                         return
+                    return
+                elif config.entry["aps_frametype"].startswith("0b01:"):
+                    dec_pkt = ZigbeeAppCommandPayload(dec_payload)
+                    config.entry["aps_aux_decshow"] = dec_pkt.show(dump=True)
+                    aps_command_payload(dec_pkt, msg_queue, tunneled=tunneled)
                     return
                 else:
                     config.entry["error_msg"] = (

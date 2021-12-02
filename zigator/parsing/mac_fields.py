@@ -300,11 +300,11 @@ def mac_fields(pkt, msg_queue):
             if len(bytes(pkt[Dot15d4FCS].payload)) != 0:
                 config.entry["error_msg"] = "PE224: Unexpected payload"
                 return
-        elif config.entry["mac_frametype"].startswith("0b011:"):
-            if pkt.haslayer(Dot15d4Cmd):
-                mac_command(pkt, msg_queue)
+        elif config.entry["mac_frametype"].startswith("0b001:"):
+            if pkt.haslayer(Dot15d4Data):
+                mac_data(pkt, msg_queue)
             else:
-                config.entry["error_msg"] = "There are no MAC Command fields"
+                config.entry["error_msg"] = "There are no MAC Data fields"
                 return
         elif config.entry["mac_frametype"].startswith("0b000:"):
             if pkt.haslayer(Dot15d4Beacon):
@@ -312,11 +312,11 @@ def mac_fields(pkt, msg_queue):
             else:
                 config.entry["error_msg"] = "There are no MAC Beacon fields"
                 return
-        elif config.entry["mac_frametype"].startswith("0b001:"):
-            if pkt.haslayer(Dot15d4Data):
-                mac_data(pkt, msg_queue)
+        elif config.entry["mac_frametype"].startswith("0b011:"):
+            if pkt.haslayer(Dot15d4Cmd):
+                mac_command(pkt, msg_queue)
             else:
-                config.entry["error_msg"] = "There are no MAC Data fields"
+                config.entry["error_msg"] = "There are no MAC Command fields"
                 return
         else:
             config.entry["error_msg"] = "Invalid MAC frame type"
