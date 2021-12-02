@@ -87,14 +87,10 @@ def worker(db_filepath, out_dirpath, task_index, task_lock):
 
         # Do not count entries with errors,
         # except when we want to count the errors themselves
-        if "error_msg" in column_names:
-            count_errors = True
-        else:
-            count_errors = False
         results = config.db.grouped_count(
             "packets",
             column_names,
-            count_errors,
+            "error_msg" in column_names,
         )
 
         # Write the computed frequencies in the output file

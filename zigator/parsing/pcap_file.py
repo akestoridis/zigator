@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
-import copy
 import os
+from copy import deepcopy
 
 from scapy.all import (
     CookedLinux,
@@ -32,12 +32,12 @@ from .sll_fields import sll_fields
 def pcap_file(filepath, msg_queue):
     """Parse all packets in the provided pcap file."""
     # Keep a copy of each dictionary that may change after parsing packets
-    init_network_keys = copy.deepcopy(config.network_keys)
-    init_link_keys = copy.deepcopy(config.link_keys)
-    init_networks = copy.deepcopy(config.networks)
-    init_short_addresses = copy.deepcopy(config.short_addresses)
-    init_extended_addresses = copy.deepcopy(config.extended_addresses)
-    init_pairs = copy.deepcopy(config.pairs)
+    init_network_keys = deepcopy(config.network_keys)
+    init_link_keys = deepcopy(config.link_keys)
+    init_networks = deepcopy(config.networks)
+    init_short_addresses = deepcopy(config.short_addresses)
+    init_extended_addresses = deepcopy(config.extended_addresses)
+    init_pairs = deepcopy(config.pairs)
 
     # Reset all data entries in the dictionary
     config.reset_entries()
@@ -70,7 +70,7 @@ def pcap_file(filepath, msg_queue):
             derive_info()
 
         # Send a copy of the collected data to the main process
-        msg_queue.put((Message.PKT, copy.deepcopy(config.entry)))
+        msg_queue.put((Message.PKT, deepcopy(config.entry)))
 
         # Reset only the data entries that the next packet may change
         config.reset_entries(
@@ -91,23 +91,18 @@ def pcap_file(filepath, msg_queue):
 
     # Send a copy of each dictionary that changed after parsing packets
     if config.network_keys != init_network_keys:
-        msg_queue.put(
-            (Message.NETWORK_KEYS, copy.deepcopy(config.network_keys)),
-        )
+        msg_queue.put((Message.NETWORK_KEYS, deepcopy(config.network_keys)))
     if config.link_keys != init_link_keys:
-        msg_queue.put((Message.LINK_KEYS, copy.deepcopy(config.link_keys)))
+        msg_queue.put((Message.LINK_KEYS, deepcopy(config.link_keys)))
     if config.networks != init_networks:
-        msg_queue.put((Message.NETWORKS, copy.deepcopy(config.networks)))
+        msg_queue.put((Message.NETWORKS, deepcopy(config.networks)))
     if config.short_addresses != init_short_addresses:
         msg_queue.put(
-            (Message.SHORT_ADDRESSES, copy.deepcopy(config.short_addresses)),
+            (Message.SHORT_ADDRESSES, deepcopy(config.short_addresses)),
         )
     if config.extended_addresses != init_extended_addresses:
         msg_queue.put(
-            (
-                Message.EXTENDED_ADDRESSES,
-                copy.deepcopy(config.extended_addresses),
-            ),
+            (Message.EXTENDED_ADDRESSES, deepcopy(config.extended_addresses)),
         )
     if config.pairs != init_pairs:
-        msg_queue.put((Message.PAIRS, copy.deepcopy(config.pairs)))
+        msg_queue.put((Message.PAIRS, deepcopy(config.pairs)))

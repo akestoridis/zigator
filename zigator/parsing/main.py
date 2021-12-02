@@ -249,7 +249,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
             "Generated {} \"{}\" parsing errors".format(frequency, message),
         )
 
-    # Disconnection from the database
+    # Disconnect from the database
     config.db.disconnect()
 
 
