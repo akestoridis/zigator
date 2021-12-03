@@ -370,7 +370,7 @@ connection = None
 cursor = None
 
 
-def connect(db_filepath):
+def connect(db_filepath, wal=False):
     global connection
     global cursor
 
@@ -378,7 +378,10 @@ def connect(db_filepath):
     connection = sqlite3.connect(db_filepath)
     connection.text_factory = str
     cursor = connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
+
+    # Enable write-ahead logging only upon request
+    if wal:
+        cursor.execute("PRAGMA journal_mode=WAL")
 
 
 def create_table(tablename):

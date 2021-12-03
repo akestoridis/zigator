@@ -137,7 +137,7 @@ def main(
         os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
 
         # Initialize the database that will store data and events
-        config.db.connect(db_filepath)
+        config.db.connect(db_filepath, wal=True)
         config.db.create_table("basic_information")
         config.db.create_table("battery_percentages")
         config.db.create_table("events")
@@ -483,7 +483,7 @@ def gatherer(
         )
 
     num_uncommitted_entries = 0
-    config.db.connect(db_filepath)
+    config.db.connect(db_filepath, wal=True)
     while True:
         try:
             msg_type, msg_obj = postparsing_queue.get(timeout=batch_delay)
