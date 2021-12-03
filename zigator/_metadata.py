@@ -47,7 +47,7 @@ __classifiers__ = [
 __install_requires__ = [
     # direct dependencies
     "CherryPy==18.6.1",
-    "graphviz==0.17",
+    "graphviz==0.19",
     "numpy==1.21.4",
     "psutil==5.8.0",
     "pycrc==0.9.2",
