@@ -36,7 +36,7 @@ The following command should display the version of Zigator that you installed:
 (venv) $ zigator -v
 ```
 
-If you get an error message that the `zigator` command was not found, make sure that your system's `PATH` environment variable includes the directory of the installed executable.
+If you decided to install Zigator outside of a Python 3 virtual environment and then you received an error message that the `zigator` command was not found, make sure that your system's `PATH` environment variable includes the directory of the installed executable.
 For example, if it was installed in `~/.local/bin`, add the following line at the end of your `~/.bashrc` file:
 ```bash
 export PATH=$PATH:~/.local/bin
@@ -79,6 +79,20 @@ Similarly, you can view the supported arguments of the `inject` subcommand for t
 ```console
 (venv) $ zigator inject udp beacon -h
 ```
+
+For instance, you can forward a forged beacon for injection over UDP, that has its PAN ID set to 0xbbcc and the remaining fields set to their default values, by executing the following command:
+```console
+(venv) $ zigator inject udp beacon --mac_srcpanid 0xbbcc
+```
+
+Note that some Zigator subcommands can only be executed by the superuser.
+For example, you will have to execute your installed executable with `sudo` in order to send a forged packet to a raw socket, e.g.:
+```console
+(venv) $ sudo ./venv/bin/zigator inject sll beacon --mac_srcpanid 0xbbcc
+```
+
+A disclaimer will be printed whenever the user executes a command that would launch an attack.
+The user will have to accept responsibility for their actions if they want to proceed.
 
 If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee-smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
 More specifically, registered users of [CRAWDAD](https://crawdad.org) can download the following zip files:
