@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -54,7 +54,7 @@ class TestIntegration(unittest.TestCase):
             r"^INFO:root:Printing the current configuration...$",
         )
         config_list = tmp_stdout.getvalue().rstrip().split("\n\n")
-        self.assertEqual(len(config_list), 4)
+        self.assertEqual(len(config_list), 7)
         network_keys = config_list[0].split("\n")
         self.assertGreater(len(network_keys), 0)
         self.assertEqual(network_keys[0], "Network keys:")
@@ -122,8 +122,23 @@ class TestIntegration(unittest.TestCase):
                 install_codes[i][:37],
                 "66666666666666666666666666666666a603\t",
             )
+        mac_keys = config_list[3].split("\n")
+        self.assertGreater(len(mac_keys), 0)
+        self.assertEqual(mac_keys[0], "MAC keys:")
+        for i in range(1, len(mac_keys)):
+            self.assertGreater(len(mac_keys[i]), 33)
+        mle_keys = config_list[4].split("\n")
+        self.assertGreater(len(mle_keys), 0)
+        self.assertEqual(mle_keys[0], "MLE keys:")
+        for i in range(1, len(mle_keys)):
+            self.assertGreater(len(mle_keys[i]), 33)
+        master_keys = config_list[5].split("\n")
+        self.assertGreater(len(master_keys), 0)
+        self.assertEqual(master_keys[0], "Master keys:")
+        for i in range(1, len(master_keys)):
+            self.assertGreater(len(master_keys[i]), 33)
         self.assertRegex(
-            config_list[3],
+            config_list[6],
             r"^Configuration directory: \".+zigator\"$",
         )
 
@@ -212,7 +227,7 @@ class TestIntegration(unittest.TestCase):
             r"^INFO:root:Printing the current configuration...$",
         )
         config_list = tmp_stdout.getvalue().rstrip().split("\n\n")
-        self.assertEqual(len(config_list), 4)
+        self.assertEqual(len(config_list), 7)
         network_keys = config_list[0].split("\n")
         self.assertGreater(len(network_keys), 0)
         self.assertEqual(network_keys[0], "Network keys:")
@@ -236,14 +251,23 @@ class TestIntegration(unittest.TestCase):
         )
         install_codes = config_list[2].split("\n")
         self.assertGreater(len(install_codes), 0)
+        self.assertEqual(install_codes[0], "Install codes:")
         self.assertTrue(
             "55555555555555555555555555555555a9d1\t"
             + "test_55555555555555555555555555555555a9d1"
             in install_codes,
         )
-        self.assertEqual(install_codes[0], "Install codes:")
+        mac_keys = config_list[3].split("\n")
+        self.assertGreater(len(mac_keys), 0)
+        self.assertEqual(mac_keys[0], "MAC keys:")
+        mle_keys = config_list[4].split("\n")
+        self.assertGreater(len(mle_keys), 0)
+        self.assertEqual(mle_keys[0], "MLE keys:")
+        master_keys = config_list[5].split("\n")
+        self.assertGreater(len(master_keys), 0)
+        self.assertEqual(master_keys[0], "Master keys:")
         self.assertRegex(
-            config_list[3],
+            config_list[6],
             r"^Configuration directory: \".+zigator\"$",
         )
 
@@ -251,7 +275,15 @@ class TestIntegration(unittest.TestCase):
         pcap_directory = os.path.join(DIR_PATH, "data")
         db_filepath = os.path.join(DIR_PATH, "info-logging.db")
         with self.assertLogs(level="INFO") as cm:
-            zigator.main(["zigator", "parse", pcap_directory, db_filepath])
+            zigator.main(
+                [
+                    "zigator",
+                    "parse",
+                    "zigbee",
+                    pcap_directory,
+                    db_filepath,
+                ],
+            )
         self.assertLoggingOutput(cm)
 
         connection = sqlite3.connect(db_filepath)
@@ -267,9 +299,9 @@ class TestIntegration(unittest.TestCase):
             [
                 ("extended_addresses",),
                 ("networks",),
-                ("packets",),
                 ("pairs",),
                 ("short_addresses",),
+                ("zigbee_packets",),
             ],
         )
         self.assertExtendedAddressesTable(cursor)
@@ -348,7 +380,7 @@ class TestIntegration(unittest.TestCase):
         )
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 44)
+        self.assertEqual(len(cm.output), 55)
 
         self.assertRegex(
             cm.output[0],
@@ -357,7 +389,7 @@ class TestIntegration(unittest.TestCase):
         )
         self.assertRegex(
             cm.output[1],
-            r"^INFO:root:Detected 8 pcap files in the \".+data\" directory$",
+            r"^INFO:root:Detected 10 pcap files in the \".+data\" directory$",
         )
         self.assertRegex(
             cm.output[2],
@@ -366,197 +398,251 @@ class TestIntegration(unittest.TestCase):
         )
 
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+00-wrong-data-link-type.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 1 packets from the "
             + r"\".+00-wrong-data-link-type.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 1 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 1 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+01-phy-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 4 packets from the "
             + r"\".+01-phy-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 2 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 2 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+02-mac-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 13 packets from the "
+            cm.output[3:33],
+            r"^INFO:root:Parsed 16 packets from the "
             + r"\".+02-mac-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 3 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 3 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+03-nwk-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 15 packets from the "
             + r"\".+03-nwk-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 4 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 4 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+04-aps-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 11 packets from the "
             + r"\".+04-aps-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 5 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 5 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+05-zdp-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 1 packets from the "
             + r"\".+05-zdp-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 6 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 6 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+06-zcl-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 1 packets from the "
             + r"\".+06-zcl-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 7 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 7 out of the 10 pcap files$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Reading packets from the "
             + r"\".+07-sll-testing.pcap\" file...$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
+            cm.output[3:33],
             r"^INFO:root:Parsed 1 packets from the "
             + r"\".+07-sll-testing.pcap\" file$",
         )
         self.assertAnyRegex(
-            cm.output[3:27],
-            r"^INFO:root:Parsed 8 out of the 8 pcap files$",
+            cm.output[3:33],
+            r"^INFO:root:Parsed 8 out of the 10 pcap files$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Reading packets from the "
+            + r"\".+08-thr-testing.pcap\" file...$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Parsed 2 packets from the "
+            + r"\".+08-thr-testing.pcap\" file$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Parsed 9 out of the 10 pcap files$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Reading packets from the "
+            + r"\".+09-mle-testing.pcap\" file...$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Parsed 2 packets from the "
+            + r"\".+09-mle-testing.pcap\" file$",
+        )
+        self.assertAnyRegex(
+            cm.output[3:33],
+            r"^INFO:root:Parsed 10 out of the 10 pcap files$",
         )
 
         self.assertRegex(
-            cm.output[27],
+            cm.output[33],
             r"^INFO:root:All ([1-9]|[1-9][0-9]+) workers "
             + r"completed their tasks$",
         )
         self.assertRegex(
-            cm.output[28],
+            cm.output[34],
             r"^INFO:root:Discovered 0 previously unknown network keys$",
         )
         self.assertRegex(
-            cm.output[29],
+            cm.output[35],
             r"^INFO:root:Discovered 1 previously unknown link keys$",
         )
         self.assertRegex(
-            cm.output[30],
+            cm.output[36],
             r"^INFO:root:Discovered 6 pairs of network identifiers$",
         )
         self.assertRegex(
-            cm.output[31],
+            cm.output[37],
             r"^INFO:root:Discovered 20 PAN ID and short address pairs$",
         )
         self.assertRegex(
-            cm.output[32],
+            cm.output[38],
             r"^INFO:root:Discovered 11 extended addresses$",
         )
         self.assertRegex(
-            cm.output[33],
+            cm.output[39],
             r"^INFO:root:Discovered 12 source-destination pairs of "
             + r"MAC Data packets$",
         )
         self.assertRegex(
-            cm.output[34],
-            r"^INFO:root:Updating the derived entries of "
-            + r"parsed packets...$",
+            cm.output[40],
+            r"^INFO:root:Updating the derived information...$",
         )
         self.assertRegex(
-            cm.output[35],
-            r"^INFO:root:Finished updating the derived entries of "
-            + r"parsed packets$",
+            cm.output[41],
+            r"^INFO:root:Finished updating the derived information$",
         )
         self.assertRegex(
-            cm.output[36],
+            cm.output[42],
             r"^WARNING:root:Generated 1 \"PW301: "
             + r"Unable to decrypt the NWK payload\" parsing warnings$",
         )
         self.assertRegex(
-            cm.output[37],
+            cm.output[43],
             r"^WARNING:root:Generated 3 \"PW401: "
             + r"Unable to decrypt the APS payload\" parsing warnings$",
         )
         self.assertRegex(
-            cm.output[38],
+            cm.output[44],
             r"^WARNING:root:Generated 1 \""
             + r"Unknown ZDP transaction data\" parsing warnings$",
         )
         self.assertRegex(
-            cm.output[39],
+            cm.output[45],
+            r"^WARNING:root:Generated 1 \""
+            + r"Ignored secured MAC Command packet\" parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[46],
             r"^WARNING:root:Generated 2 \"PE101: "
             + r"Invalid packet length\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[40],
+            cm.output[47],
             r"^WARNING:root:Generated 2 \"PE102: "
             + r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[41],
+            cm.output[48],
             r"^WARNING:root:Generated 1 \"PE202: "
             + r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[42],
+            cm.output[49],
+            r"^WARNING:root:Generated 1 \"PE211: "
+            + r"Unknown MAC command\" parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[50],
             r"^WARNING:root:Generated 1 \"PE224: "
             + r"Unexpected payload\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[43],
+            cm.output[51],
+            r"^WARNING:root:Generated 2 \""
+            + r"PE302: Unknown NWK frame type\" "
+            + r"parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[52],
             r"^WARNING:root:Generated 1 \""
             + r"There are no MAC Association Request fields\" "
+            + r"parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[53],
+            r"^WARNING:root:Generated 2 \""
+            + r"There are no Zigbee NWK fields\" "
+            + r"parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[54],
+            r"^WARNING:root:Generated 1 \""
+            + r"There are no Zigbee beacon fields\" "
             + r"parsing errors$",
         )
 
@@ -696,7 +782,7 @@ class TestIntegration(unittest.TestCase):
 
     def assertPacketsTable(self, cursor):
         cursor.execute(
-            "SELECT * FROM packets ORDER BY pcap_filename, pkt_num",
+            "SELECT * FROM zigbee_packets ORDER BY pcap_filename, pkt_num",
         )
         table_columns = list(
             enumerate([col_name[0] for col_name in cursor.description]),
@@ -1639,6 +1725,140 @@ class TestIntegration(unittest.TestCase):
                 ("mac_cmd_id", "0x01: MAC Association Request"),
                 ("mac_cmd_payloadlength", 0),
                 ("error_msg", "There are no MAC Association Request fields"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 14),
+                ("pkt_time", 1599996430.0),
+                ("phy_length", 12),
+                ("phy_payload", "638832ccbb00007afeff49d1"),
+                ("mac_show", None),
+                ("mac_fcs", "0xd149"),
+                ("mac_frametype", "0b011: MAC Command"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b0: No additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b10: Short destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b00: IEEE 802.15.4-2003 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b10: Short source MAC address"),
+                ("mac_seqnum", 50),
+                ("mac_dstpanid", "0xbbcc"),
+                ("mac_dstshortaddr", "0x0000"),
+                ("mac_srcshortaddr", "0xfe7a"),
+                ("error_msg", "PE211: Unknown MAC command"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 15),
+                ("pkt_time", 1599996431.0),
+                ("phy_length", 45),
+                (
+                    "phy_payload",
+                    ""
+                    + "00c089dec00100000000999999ff0f00"
+                    + "0003204578616d706c654e6574774e61"
+                    + "6d6500c0dec0dec0dec0de2223",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x2322"),
+                ("mac_frametype", "0b000: MAC Beacon"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b0: No additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b0: The sender does not request a MAC Acknowledgment",
+                ),
+                ("mac_panidcomp", "0b0: Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b00: No destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b00: IEEE 802.15.4-2003 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 137),
+                ("mac_srcpanid", "0xc0de"),
+                ("mac_srcextendedaddr", "9999990000000001"),
+                ("mac_beacon_beaconorder", 15),
+                ("mac_beacon_sforder", 15),
+                ("mac_beacon_finalcap", 15),
+                ("mac_beacon_ble", 0),
+                (
+                    "mac_beacon_pancoord",
+                    "0b0: The sender is not the PAN coordinator",
+                ),
+                (
+                    "mac_beacon_assocpermit",
+                    "0b0: "
+                    + "The sender is currently not "
+                    + "accepting association requests",
+                ),
+                ("mac_beacon_gtsnum", 0),
+                ("mac_beacon_gtspermit", 0),
+                ("mac_beacon_nsap", 0),
+                ("mac_beacon_neap", 0),
+                ("error_msg", "There are no Zigbee beacon fields"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 16),
+                ("pkt_time", 1599996432.0),
+                ("phy_length", 22),
+                (
+                    "phy_payload",
+                    ""
+                    + "6b9891dec0008401840d060000000104"
+                    + "a9ed57ce4fc5",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0xc54f"),
+                ("mac_frametype", "0b011: MAC Command"),
+                ("mac_security", "0b1: MAC Security Enabled"),
+                (
+                    "mac_framepending",
+                    "0b0: No additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b10: Short destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b10: Short source MAC address"),
+                ("mac_seqnum", 145),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstshortaddr", "0x8400"),
+                ("mac_srcshortaddr", "0x8401"),
+                ("error_msg", "Ignored secured MAC Command packet"),
             ],
             [
                 ("pcap_directory", None),
@@ -4560,6 +4780,185 @@ class TestIntegration(unittest.TestCase):
                 ("mac_srcaddrmode", "0b00: No source MAC address"),
                 ("mac_seqnum", 119),
                 ("der_tx_type", "Single-Hop Transmission"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "08-thr-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599997953.0),
+                ("phy_length", 124),
+                (
+                    "phy_payload",
+                    ""
+                    + "71dc6fdec00400000000999999030000"
+                    + "0000999999c2c8f0017f33f04d4c4d4c"
+                    + "b000465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e541bc7",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0xc71b"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b1: Additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b11: Extended destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 111),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstextendedaddr", "9999990000000004"),
+                ("mac_srcextendedaddr", "9999990000000003"),
+                ("error_msg", "PE302: Unknown NWK frame type"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "08-thr-testing.pcap"),
+                ("pkt_num", 2),
+                ("pkt_time", 1599997954.0),
+                ("phy_length", 124),
+                (
+                    "phy_payload",
+                    ""
+                    + "71dc70dec00400000000999999030000"
+                    + "0000999999e2c8f00111465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e548b31",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x318b"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b1: Additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b11: Extended destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 112),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstextendedaddr", "9999990000000004"),
+                ("mac_srcextendedaddr", "9999990000000003"),
+                ("error_msg", "PE302: Unknown NWK frame type"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "09-mle-testing.pcap"),
+                ("pkt_num", 1),
+                ("pkt_time", 1599998209.0),
+                ("phy_length", 37),
+                (
+                    "phy_payload",
+                    ""
+                    + "01d880ffffffffefdb05000000009999"
+                    + "997f3b02f04d4c4d4c61f9ff101a0480"
+                    + "0238001f53",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x531f"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b0: No additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b0: The sender does not request a MAC Acknowledgment",
+                ),
+                ("mac_panidcomp", "0b0: Do not compress the source PAN ID"),
+                ("mac_dstaddrmode", "0b10: Short destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 128),
+                ("mac_dstpanid", "0xffff"),
+                ("mac_dstshortaddr", "0xffff"),
+                ("mac_srcpanid", "0xdbef"),
+                ("mac_srcextendedaddr", "9999990000000005"),
+                ("error_msg", "There are no Zigbee NWK fields"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "09-mle-testing.pcap"),
+                ("pkt_num", 2),
+                ("pkt_time", 1599998210.0),
+                ("phy_length", 63),
+                (
+                    "phy_payload",
+                    ""
+                    + "41d841dec0ffff06000000009999997f"
+                    + "3b02f04d4c4d4c7f4100158900000000"
+                    + "00000001345dd6e444fb49e2c4ee2f51"
+                    + "be3875c491a1d3520b268bb1c37616",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x1676"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b0: No additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b0: The sender does not request a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b10: Short destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 65),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstshortaddr", "0xffff"),
+                ("mac_srcextendedaddr", "9999990000000006"),
+                ("error_msg", "There are no Zigbee NWK fields"),
             ],
         ]
         self.assertEntries(obtained_entries, expected_entries)

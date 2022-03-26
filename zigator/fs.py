@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -30,14 +30,14 @@ from . import crypto
 
 def write_tsv(results, out_filepath):
     fp = open(out_filepath, mode="w", encoding="utf-8")
-    for row in results:
-        for i in range(len(row)):
+    for line in results:
+        for i in range(len(line)):
             if i == 0:
-                fp.write("{}".format(row[i]))
-            elif i < (len(row) - 1):
-                fp.write(", {}".format(row[i]))
+                fp.write("{}".format(line[i]))
+            elif i < (len(line) - 1):
+                fp.write(", {}".format(line[i]))
             else:
-                fp.write("\t{}".format(row[i]))
+                fp.write("\t{}".format(line[i]))
         fp.write("\n")
     fp.close()
 
@@ -55,18 +55,18 @@ def load_enc_keys(filepath, optional=False):
     # Read the provided file line by line
     loaded_keys = {}
     with open(filepath, mode="r", encoding="utf-8") as fp:
-        rows = csv.reader(fp, delimiter="\t")
-        for i, row in enumerate(rows, start=1):
+        lines = csv.reader(fp, delimiter="\t")
+        for i, line in enumerate(lines, start=1):
             # Sanity check
-            if len(row) != 2:
+            if len(line) != 2:
                 raise ValueError(
                     "Line #{} in \"{}\" should contain ".format(i, filepath)
-                    + "2 tab-separated values, not {}".format(len(row)),
+                    + "2 tab-separated values, not {}".format(len(line)),
                 )
 
             # Extract the key in hexadecimal notation and its name
-            key_hex = row[0]
-            key_name = row[1]
+            key_hex = line[0]
+            key_name = line[1]
 
             # Sanity checks
             if not (
@@ -126,18 +126,18 @@ def load_install_codes(filepath, optional=False):
     loaded_codes = {}
     derived_keys = {}
     with open(filepath, mode="r", encoding="utf-8") as fp:
-        rows = csv.reader(fp, delimiter="\t")
-        for i, row in enumerate(rows, start=1):
+        lines = csv.reader(fp, delimiter="\t")
+        for i, line in enumerate(lines, start=1):
             # Sanity check
-            if len(row) != 2:
+            if len(line) != 2:
                 raise ValueError(
                     "Line #{} in \"{}\" should contain ".format(i, filepath)
-                    + "2 tab-separated values, not {}".format(len(row)),
+                    + "2 tab-separated values, not {}".format(len(line)),
                 )
 
             # Extract the install code in hexadecimal notation and its name
-            code_hex = row[0]
-            code_name = row[1]
+            code_hex = line[0]
+            code_name = line[1]
 
             # Sanity checks
             if not (

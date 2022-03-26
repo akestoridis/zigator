@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -46,9 +46,7 @@ class NetworkKeysService(object):
     @cherrypy.tools.json_out()
     def GET(self):
         with NETWORK_KEYS_LOCK:
-            return [
-                key.hex() for key in config.network_keys.values()
-            ]
+            return [key.hex() for key in config.network_keys.values()]
 
     @cherrypy.tools.json_in()
     def POST(self):
@@ -92,9 +90,7 @@ class LinkKeysService(object):
     @cherrypy.tools.json_out()
     def GET(self):
         with LINK_KEYS_LOCK:
-            return [
-                key.hex() for key in config.link_keys.values()
-            ]
+            return [key.hex() for key in config.link_keys.values()]
 
     @cherrypy.tools.json_in()
     def POST(self):
@@ -315,533 +311,549 @@ class PairsService(object):
 class PacketCountersService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            pending_group = (
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        pending_group = (
+            datetime
+            .fromtimestamp(time())
+            .replace(second=0, microsecond=0)
+            .timestamp()
+        )
+        if last is None:
+            start_group = 0.0
+        else:
+            start_group = (
                 datetime
-                .fromtimestamp(time())
+                .fromtimestamp(float(last) + 60)
                 .replace(second=0, microsecond=0)
                 .timestamp()
             )
-            if last is None:
-                start_group = 0.0
-            else:
-                start_group = (
-                    datetime
-                    .fromtimestamp(float(last) + 60)
-                    .replace(second=0, microsecond=0)
-                    .timestamp()
-                )
-            cursor.execute(
-                "SELECT pkt_time, der_mac_srcpanid, der_mac_srcshortaddr "
-                + "FROM basic_information "
-                + "WHERE error_msg IS NULL "
-                + "AND der_mac_srcpanid IS NOT NULL "
-                + "AND pkt_time>=$1 "
-                + "AND pkt_time<$2 "
-                + "ORDER BY pkt_time",
-                (start_group, pending_group),
+        cursor.execute(
+            "SELECT pkt_time, der_mac_srcpanid, der_mac_srcshortaddr "
+            + "FROM basic_information "
+            + "WHERE error_msg IS NULL "
+            + "AND der_mac_srcpanid IS NOT NULL "
+            + "AND pkt_time>=$1 "
+            + "AND pkt_time<$2 "
+            + "ORDER BY pkt_time",
+            (start_group, pending_group),
+        )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        packet_counters = []
+        tmp_dict = {}
+        tmp_group = None
+        for (pkt_time, srcpanid, srcshortaddr) in result:
+            pkt_group = (
+                datetime
+                .fromtimestamp(pkt_time)
+                .replace(second=0, microsecond=0)
+                .timestamp()
             )
-            result = cursor.fetchall()
-            packet_counters = []
-            tmp_dict = {}
-            tmp_group = None
-            for (pkt_time, srcpanid, srcshortaddr) in result:
-                pkt_group = (
-                    datetime
-                    .fromtimestamp(pkt_time)
-                    .replace(second=0, microsecond=0)
-                    .timestamp()
-                )
 
-                if tmp_group is None:
-                    if pkt_group >= pending_group:
-                        break
-                    else:
-                        tmp_group = pkt_group
+            if tmp_group is None:
+                if pkt_group >= pending_group:
+                    break
+                else:
+                    tmp_group = pkt_group
 
-                if pkt_group == tmp_group:
-                    if srcpanid in tmp_dict.keys():
-                        tmp_dict[srcpanid]["counter"] += 1
-                    else:
-                        tmp_dict[srcpanid] = {
-                            "counter": 1,
-                            "dev": {},
-                        }
-
-                    if srcshortaddr in tmp_dict[srcpanid]["dev"].keys():
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] += 1
-                    elif srcshortaddr is not None:
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] = 1
-                elif pkt_group > tmp_group:
-                    tmp_pan_list = []
-                    for panid in tmp_dict.keys():
-                        tmp_dev_list = []
-                        for shortaddr in tmp_dict[panid]["dev"].keys():
-                            counter = tmp_dict[panid]["dev"][shortaddr]
-                            tmp_dev_list.append(
-                                {
-                                    "srcshortaddr": shortaddr,
-                                    "counter": counter,
-                                },
-                            )
-                        counter = tmp_dict[panid]["counter"]
-                        tmp_pan_list.append(
-                            {
-                                "srcpanid": panid,
-                                "counter": counter,
-                                "devicePacketCounters": tmp_dev_list,
-                            },
-                        )
-                    packet_counters.append(
-                        {
-                            "epochTimestamp": "{:.6f}".format(tmp_group),
-                            "panPacketCounters": tmp_pan_list,
-                        },
-                    )
-
-                    tmp_dict = {}
-                    tmp_group += 60
-                    while tmp_group < pkt_group:
-                        tmp_group += 60
-                    if tmp_group != pkt_group:
-                        raise ValueError("Unexpected group value")
-                    elif tmp_group >= pending_group:
-                        break
-
+            if pkt_group == tmp_group:
+                if srcpanid in tmp_dict.keys():
+                    tmp_dict[srcpanid]["counter"] += 1
+                else:
                     tmp_dict[srcpanid] = {
                         "counter": 1,
                         "dev": {},
                     }
-                    if srcshortaddr is not None:
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] = 1
-                else:
-                    raise ValueError("Unexpected packet timestamp")
-            if tmp_group is not None:
-                if tmp_dict != {} and tmp_group < pending_group:
-                    tmp_pan_list = []
-                    for panid in tmp_dict.keys():
-                        tmp_dev_list = []
-                        for shortaddr in tmp_dict[panid]["dev"].keys():
-                            counter = tmp_dict[panid]["dev"][shortaddr]
-                            tmp_dev_list.append(
-                                {
-                                    "srcshortaddr": shortaddr,
-                                    "counter": counter,
-                                },
-                            )
-                        counter = tmp_dict[panid]["counter"]
-                        tmp_pan_list.append(
+
+                if srcshortaddr in tmp_dict[srcpanid]["dev"].keys():
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] += 1
+                elif srcshortaddr is not None:
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] = 1
+            elif pkt_group > tmp_group:
+                tmp_pan_list = []
+                for panid in tmp_dict.keys():
+                    tmp_dev_list = []
+                    for shortaddr in tmp_dict[panid]["dev"].keys():
+                        counter = tmp_dict[panid]["dev"][shortaddr]
+                        tmp_dev_list.append(
                             {
-                                "srcpanid": panid,
+                                "srcshortaddr": shortaddr,
                                 "counter": counter,
-                                "devicePacketCounters": tmp_dev_list,
                             },
                         )
-                    packet_counters.append(
+                    counter = tmp_dict[panid]["counter"]
+                    tmp_pan_list.append(
                         {
-                            "epochTimestamp": "{:.6f}".format(tmp_group),
-                            "panPacketCounters": tmp_pan_list,
+                            "srcpanid": panid,
+                            "counter": counter,
+                            "devicePacketCounters": tmp_dev_list,
                         },
                     )
-            return packet_counters
+                packet_counters.append(
+                    {
+                        "epochTimestamp": "{:.6f}".format(tmp_group),
+                        "panPacketCounters": tmp_pan_list,
+                    },
+                )
+
+                tmp_dict = {}
+                tmp_group += 60
+                while tmp_group < pkt_group:
+                    tmp_group += 60
+                if tmp_group != pkt_group:
+                    raise ValueError("Unexpected group value")
+                elif tmp_group >= pending_group:
+                    break
+
+                tmp_dict[srcpanid] = {
+                    "counter": 1,
+                    "dev": {},
+                }
+                if srcshortaddr is not None:
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] = 1
+            else:
+                raise ValueError("Unexpected packet timestamp")
+        if tmp_group is not None:
+            if tmp_dict != {} and tmp_group < pending_group:
+                tmp_pan_list = []
+                for panid in tmp_dict.keys():
+                    tmp_dev_list = []
+                    for shortaddr in tmp_dict[panid]["dev"].keys():
+                        counter = tmp_dict[panid]["dev"][shortaddr]
+                        tmp_dev_list.append(
+                            {
+                                "srcshortaddr": shortaddr,
+                                "counter": counter,
+                            },
+                        )
+                    counter = tmp_dict[panid]["counter"]
+                    tmp_pan_list.append(
+                        {
+                            "srcpanid": panid,
+                            "counter": counter,
+                            "devicePacketCounters": tmp_dev_list,
+                        },
+                    )
+                packet_counters.append(
+                    {
+                        "epochTimestamp": "{:.6f}".format(tmp_group),
+                        "panPacketCounters": tmp_pan_list,
+                    },
+                )
+        return packet_counters
 
 
 @cherrypy.expose
 class ByteCountersService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            pending_group = (
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        pending_group = (
+            datetime
+            .fromtimestamp(time())
+            .replace(second=0, microsecond=0)
+            .timestamp()
+        )
+        if last is None:
+            start_group = 0.0
+        else:
+            start_group = (
                 datetime
-                .fromtimestamp(time())
+                .fromtimestamp(float(last) + 60)
                 .replace(second=0, microsecond=0)
                 .timestamp()
             )
-            if last is None:
-                start_group = 0.0
-            else:
-                start_group = (
-                    datetime
-                    .fromtimestamp(float(last) + 60)
-                    .replace(second=0, microsecond=0)
-                    .timestamp()
-                )
-            cursor.execute(
-                "SELECT pkt_time, phy_length, "
-                + "der_mac_srcpanid, der_mac_srcshortaddr "
-                + "FROM basic_information "
-                + "WHERE error_msg IS NULL "
-                + "AND phy_length IS NOT NULL "
-                + "AND der_mac_srcpanid IS NOT NULL "
-                + "AND pkt_time>=$1 "
-                + "AND pkt_time<$2 "
-                + "ORDER BY pkt_time",
-                (start_group, pending_group),
+        cursor.execute(
+            "SELECT pkt_time, phy_length, "
+            + "der_mac_srcpanid, der_mac_srcshortaddr "
+            + "FROM basic_information "
+            + "WHERE error_msg IS NULL "
+            + "AND phy_length IS NOT NULL "
+            + "AND der_mac_srcpanid IS NOT NULL "
+            + "AND pkt_time>=$1 "
+            + "AND pkt_time<$2 "
+            + "ORDER BY pkt_time",
+            (start_group, pending_group),
+        )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        byte_counters = []
+        tmp_dict = {}
+        tmp_group = None
+        for (pkt_time, num_bytes, srcpanid, srcshortaddr) in result:
+            pkt_group = (
+                datetime
+                .fromtimestamp(pkt_time)
+                .replace(second=0, microsecond=0)
+                .timestamp()
             )
-            result = cursor.fetchall()
-            byte_counters = []
-            tmp_dict = {}
-            tmp_group = None
-            for (pkt_time, num_bytes, srcpanid, srcshortaddr) in result:
-                pkt_group = (
-                    datetime
-                    .fromtimestamp(pkt_time)
-                    .replace(second=0, microsecond=0)
-                    .timestamp()
-                )
 
-                if tmp_group is None:
-                    if pkt_group >= pending_group:
-                        break
-                    else:
-                        tmp_group = pkt_group
+            if tmp_group is None:
+                if pkt_group >= pending_group:
+                    break
+                else:
+                    tmp_group = pkt_group
 
-                if pkt_group == tmp_group:
-                    if srcpanid in tmp_dict.keys():
-                        tmp_dict[srcpanid]["counter"] += num_bytes
-                    else:
-                        tmp_dict[srcpanid] = {
-                            "counter": num_bytes,
-                            "dev": {},
-                        }
-
-                    if srcshortaddr in tmp_dict[srcpanid]["dev"].keys():
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] += num_bytes
-                    elif srcshortaddr is not None:
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] = num_bytes
-                elif pkt_group > tmp_group:
-                    tmp_pan_list = []
-                    for panid in tmp_dict.keys():
-                        tmp_dev_list = []
-                        for shortaddr in tmp_dict[panid]["dev"].keys():
-                            counter = tmp_dict[panid]["dev"][shortaddr]
-                            tmp_dev_list.append(
-                                {
-                                    "srcshortaddr": shortaddr,
-                                    "counter": counter,
-                                },
-                            )
-                        counter = tmp_dict[panid]["counter"]
-                        tmp_pan_list.append(
-                            {
-                                "srcpanid": panid,
-                                "counter": counter,
-                                "deviceByteCounters": tmp_dev_list,
-                            },
-                        )
-                    byte_counters.append(
-                        {
-                            "epochTimestamp": "{:.6f}".format(tmp_group),
-                            "panByteCounters": tmp_pan_list,
-                        },
-                    )
-
-                    tmp_dict = {}
-                    tmp_group += 60
-                    while tmp_group < pkt_group:
-                        tmp_group += 60
-                    if tmp_group != pkt_group:
-                        raise ValueError("Unexpected group value")
-                    elif tmp_group >= pending_group:
-                        break
-
+            if pkt_group == tmp_group:
+                if srcpanid in tmp_dict.keys():
+                    tmp_dict[srcpanid]["counter"] += num_bytes
+                else:
                     tmp_dict[srcpanid] = {
                         "counter": num_bytes,
                         "dev": {},
                     }
-                    if srcshortaddr is not None:
-                        tmp_dict[srcpanid]["dev"][srcshortaddr] = num_bytes
-                else:
-                    raise ValueError("Unexpected packet timestamp")
-            if tmp_group is not None:
-                if tmp_dict != {} and tmp_group < pending_group:
-                    tmp_pan_list = []
-                    for panid in tmp_dict.keys():
-                        tmp_dev_list = []
-                        for shortaddr in tmp_dict[panid]["dev"].keys():
-                            counter = tmp_dict[panid]["dev"][shortaddr]
-                            tmp_dev_list.append(
-                                {
-                                    "srcshortaddr": shortaddr,
-                                    "counter": counter,
-                                },
-                            )
-                        counter = tmp_dict[panid]["counter"]
-                        tmp_pan_list.append(
+
+                if srcshortaddr in tmp_dict[srcpanid]["dev"].keys():
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] += num_bytes
+                elif srcshortaddr is not None:
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] = num_bytes
+            elif pkt_group > tmp_group:
+                tmp_pan_list = []
+                for panid in tmp_dict.keys():
+                    tmp_dev_list = []
+                    for shortaddr in tmp_dict[panid]["dev"].keys():
+                        counter = tmp_dict[panid]["dev"][shortaddr]
+                        tmp_dev_list.append(
                             {
-                                "srcpanid": panid,
+                                "srcshortaddr": shortaddr,
                                 "counter": counter,
-                                "deviceByteCounters": tmp_dev_list,
                             },
                         )
-                    byte_counters.append(
+                    counter = tmp_dict[panid]["counter"]
+                    tmp_pan_list.append(
                         {
-                            "epochTimestamp": "{:.6f}".format(tmp_group),
-                            "panByteCounters": tmp_pan_list,
+                            "srcpanid": panid,
+                            "counter": counter,
+                            "deviceByteCounters": tmp_dev_list,
                         },
                     )
-            return byte_counters
+                byte_counters.append(
+                    {
+                        "epochTimestamp": "{:.6f}".format(tmp_group),
+                        "panByteCounters": tmp_pan_list,
+                    },
+                )
+
+                tmp_dict = {}
+                tmp_group += 60
+                while tmp_group < pkt_group:
+                    tmp_group += 60
+                if tmp_group != pkt_group:
+                    raise ValueError("Unexpected group value")
+                elif tmp_group >= pending_group:
+                    break
+
+                tmp_dict[srcpanid] = {
+                    "counter": num_bytes,
+                    "dev": {},
+                }
+                if srcshortaddr is not None:
+                    tmp_dict[srcpanid]["dev"][srcshortaddr] = num_bytes
+            else:
+                raise ValueError("Unexpected packet timestamp")
+        if tmp_group is not None:
+            if tmp_dict != {} and tmp_group < pending_group:
+                tmp_pan_list = []
+                for panid in tmp_dict.keys():
+                    tmp_dev_list = []
+                    for shortaddr in tmp_dict[panid]["dev"].keys():
+                        counter = tmp_dict[panid]["dev"][shortaddr]
+                        tmp_dev_list.append(
+                            {
+                                "srcshortaddr": shortaddr,
+                                "counter": counter,
+                            },
+                        )
+                    counter = tmp_dict[panid]["counter"]
+                    tmp_pan_list.append(
+                        {
+                            "srcpanid": panid,
+                            "counter": counter,
+                            "deviceByteCounters": tmp_dev_list,
+                        },
+                    )
+                byte_counters.append(
+                    {
+                        "epochTimestamp": "{:.6f}".format(tmp_group),
+                        "panByteCounters": tmp_pan_list,
+                    },
+                )
+        return byte_counters
 
 
 @cherrypy.expose
 class MACSeqnumsService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, mac_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND (mac_frametype=$1 OR mac_frametype=$2) "
-                    + "AND mac_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "ORDER BY pkt_time",
-                    ("0b001: MAC Data", "0b011: MAC Command"),
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, mac_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND (mac_frametype=$1 OR mac_frametype=$2) "
-                    + "AND mac_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "AND pkt_time>$3 "
-                    + "ORDER BY pkt_time",
-                    ("0b001: MAC Data", "0b011: MAC Command", last),
-                )
-            result = cursor.fetchall()
-            mac_seqnums = []
-            for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
-                mac_seqnums.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "srcpanid": srcpanid,
-                        "srcshortaddr": srcshortaddr,
-                        "macSeqnum": seqnum,
-                    },
-                )
-            return mac_seqnums
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, mac_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND (mac_frametype=$1 OR mac_frametype=$2) "
+                + "AND mac_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "ORDER BY pkt_time",
+                ("0b001: MAC Data", "0b011: MAC Command"),
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, mac_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND (mac_frametype=$1 OR mac_frametype=$2) "
+                + "AND mac_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "AND pkt_time>$3 "
+                + "ORDER BY pkt_time",
+                ("0b001: MAC Data", "0b011: MAC Command", last),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        mac_seqnums = []
+        for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
+            mac_seqnums.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "srcpanid": srcpanid,
+                    "srcshortaddr": srcshortaddr,
+                    "macSeqnum": seqnum,
+                },
+            )
+        return mac_seqnums
 
 
 @cherrypy.expose
 class BeaconSeqnumsService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, mac_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND mac_frametype=$1 "
-                    + "AND mac_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "ORDER BY pkt_time",
-                    ("0b000: MAC Beacon",),
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, mac_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND mac_frametype=$1 "
-                    + "AND mac_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "AND pkt_time>$2 "
-                    + "ORDER BY pkt_time",
-                    ("0b000: MAC Beacon", last),
-                )
-            result = cursor.fetchall()
-            beacon_seqnums = []
-            for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
-                beacon_seqnums.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "srcpanid": srcpanid,
-                        "srcshortaddr": srcshortaddr,
-                        "beaconSeqnum": seqnum,
-                    },
-                )
-            return beacon_seqnums
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, mac_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND mac_frametype=$1 "
+                + "AND mac_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "ORDER BY pkt_time",
+                ("0b000: MAC Beacon",),
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, mac_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND mac_frametype=$1 "
+                + "AND mac_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "AND pkt_time>$2 "
+                + "ORDER BY pkt_time",
+                ("0b000: MAC Beacon", last),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        beacon_seqnums = []
+        for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
+            beacon_seqnums.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "srcpanid": srcpanid,
+                    "srcshortaddr": srcshortaddr,
+                    "beaconSeqnum": seqnum,
+                },
+            )
+        return beacon_seqnums
 
 
 @cherrypy.expose
 class NWKSeqnumsService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, nwk_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND der_same_macnwksrc=$1 "
-                    + "AND nwk_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "ORDER BY pkt_time",
-                    ("Same MAC/NWK Src: True",),
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, nwk_seqnum, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND der_same_macnwksrc=$1 "
-                    + "AND nwk_seqnum IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "AND pkt_time>$2 "
-                    + "ORDER BY pkt_time",
-                    ("Same MAC/NWK Src: True", last),
-                )
-            result = cursor.fetchall()
-            nwk_seqnums = []
-            for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
-                nwk_seqnums.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "srcpanid": srcpanid,
-                        "srcshortaddr": srcshortaddr,
-                        "nwkSeqnum": seqnum,
-                    },
-                )
-            return nwk_seqnums
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, nwk_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND der_same_macnwksrc=$1 "
+                + "AND nwk_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "ORDER BY pkt_time",
+                ("Same MAC/NWK Src: True",),
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, nwk_seqnum, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND der_same_macnwksrc=$1 "
+                + "AND nwk_seqnum IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "AND pkt_time>$2 "
+                + "ORDER BY pkt_time",
+                ("Same MAC/NWK Src: True", last),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        nwk_seqnums = []
+        for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
+            nwk_seqnums.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "srcpanid": srcpanid,
+                    "srcshortaddr": srcshortaddr,
+                    "nwkSeqnum": seqnum,
+                },
+            )
+        return nwk_seqnums
 
 
 @cherrypy.expose
 class NWKAUXSeqnumsService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, nwk_aux_framecounter, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND nwk_aux_framecounter IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "ORDER BY pkt_time",
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, nwk_aux_framecounter, "
-                    + "der_mac_srcpanid, der_mac_srcshortaddr "
-                    + "FROM basic_information "
-                    + "WHERE error_msg IS NULL "
-                    + "AND nwk_aux_framecounter IS NOT NULL "
-                    + "AND der_mac_srcpanid IS NOT NULL "
-                    + "AND der_mac_srcshortaddr IS NOT NULL "
-                    + "AND pkt_time>$1 "
-                    + "ORDER BY pkt_time",
-                    (last,),
-                )
-            result = cursor.fetchall()
-            nwkaux_seqnums = []
-            for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
-                nwkaux_seqnums.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "srcpanid": srcpanid,
-                        "srcshortaddr": srcshortaddr,
-                        "nwkauxSeqnum": seqnum,
-                    },
-                )
-            return nwkaux_seqnums
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, nwk_aux_framecounter, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND nwk_aux_framecounter IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "ORDER BY pkt_time",
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, nwk_aux_framecounter, "
+                + "der_mac_srcpanid, der_mac_srcshortaddr "
+                + "FROM basic_information "
+                + "WHERE error_msg IS NULL "
+                + "AND nwk_aux_framecounter IS NOT NULL "
+                + "AND der_mac_srcpanid IS NOT NULL "
+                + "AND der_mac_srcshortaddr IS NOT NULL "
+                + "AND pkt_time>$1 "
+                + "ORDER BY pkt_time",
+                (last,),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        nwkaux_seqnums = []
+        for (pkt_time, seqnum, srcpanid, srcshortaddr) in result:
+            nwkaux_seqnums.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "srcpanid": srcpanid,
+                    "srcshortaddr": srcshortaddr,
+                    "nwkauxSeqnum": seqnum,
+                },
+            )
+        return nwkaux_seqnums
 
 
 @cherrypy.expose
 class BatteryPercentagesService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, srcpanid, srcshortaddr, percentage "
-                    + "FROM battery_percentages "
-                    + "ORDER BY pkt_time",
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, srcpanid, srcshortaddr, percentage "
-                    + "FROM battery_percentages "
-                    + "WHERE pkt_time>$1 "
-                    + "ORDER BY pkt_time",
-                    (last,),
-                )
-            result = cursor.fetchall()
-            battery_percentages = []
-            for (pkt_time, srcpanid, srcshortaddr, percentage) in result:
-                battery_percentages.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "srcpanid": srcpanid,
-                        "srcshortaddr": srcshortaddr,
-                        "batteryPercentage": percentage,
-                    },
-                )
-            return battery_percentages
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, srcpanid, srcshortaddr, percentage "
+                + "FROM battery_percentages "
+                + "ORDER BY pkt_time",
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, srcpanid, srcshortaddr, percentage "
+                + "FROM battery_percentages "
+                + "WHERE pkt_time>$1 "
+                + "ORDER BY pkt_time",
+                (last,),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        battery_percentages = []
+        for (pkt_time, srcpanid, srcshortaddr, percentage) in result:
+            battery_percentages.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "srcpanid": srcpanid,
+                    "srcshortaddr": srcshortaddr,
+                    "batteryPercentage": percentage,
+                },
+            )
+        return battery_percentages
 
 
 @cherrypy.expose
 class EventsService(object):
     @cherrypy.tools.json_out()
     def GET(self, last=None):
-        with sqlite3.connect(DB_FILEPATH) as connection:
-            connection.text_factory = str
-            cursor = connection.cursor()
-            if last is None:
-                cursor.execute(
-                    "SELECT pkt_time, description "
-                    + "FROM events "
-                    + "ORDER BY pkt_time",
-                )
-            else:
-                cursor.execute(
-                    "SELECT pkt_time, description "
-                    + "FROM events "
-                    + "WHERE pkt_time>$1 "
-                    + "ORDER BY pkt_time",
-                    (last,),
-                )
-            result = cursor.fetchall()
-            events = []
-            for (pkt_time, description) in result:
-                events.append(
-                    {
-                        "epochTimestamp": "{:.6f}".format(pkt_time),
-                        "description": description,
-                    },
-                )
-            return events
+        connection = sqlite3.connect(DB_FILEPATH)
+        connection.text_factory = str
+        cursor = connection.cursor()
+        if last is None:
+            cursor.execute(
+                "SELECT pkt_time, description "
+                + "FROM events "
+                + "ORDER BY pkt_time",
+            )
+        else:
+            cursor.execute(
+                "SELECT pkt_time, description "
+                + "FROM events "
+                + "WHERE pkt_time>$1 "
+                + "ORDER BY pkt_time",
+                (last,),
+            )
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        events = []
+        for (pkt_time, description) in result:
+            events.append(
+                {
+                    "epochTimestamp": "{:.6f}".format(pkt_time),
+                    "description": description,
+                },
+            )
+        return events
 
 
 def start(

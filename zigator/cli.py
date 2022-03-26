@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,10 +21,19 @@ Command-line interface for the ``zigator`` package.
 import argparse
 import os
 
+from ._metadata import (
+    __title__,
+    __description__,
+)
+from .enums import (
+    Protocol,
+    Subcommand,
+)
+
 
 zigator_parser = argparse.ArgumentParser(
-    prog="zigator",
-    description="Zigator: Security analysis tool for Zigbee networks",
+    prog=__title__,
+    description=__description__,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     add_help=True,
 )
@@ -34,20 +43,27 @@ zigator_subparsers = zigator_parser.add_subparsers(
 )
 
 zigator_subparsers.add_parser(
-    "print-config",
+    Subcommand.PRINT_CONFIG.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="print the current configuration",
 )
 
 add_config_entry_parser = zigator_subparsers.add_parser(
-    "add-config-entry",
+    Subcommand.ADD_CONFIG_ENTRY.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="add a configuration entry",
 )
 add_config_entry_parser.add_argument(
     "ENTRY_TYPE",
     type=str.lower,
-    choices=["network-key", "link-key", "install-code"],
+    choices=[
+        "network-key",
+        "link-key",
+        "install-code",
+        "mac-key",
+        "mle-key",
+        "master-key",
+    ],
     action="store",
     help="the type of the configuration entry",
 )
@@ -65,14 +81,21 @@ add_config_entry_parser.add_argument(
 )
 
 rm_config_entry_parser = zigator_subparsers.add_parser(
-    "rm-config-entry",
+    Subcommand.RM_CONFIG_ENTRY.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="remove a configuration entry",
 )
 rm_config_entry_parser.add_argument(
     "ENTRY_TYPE",
     type=str.lower,
-    choices=["network-key", "link-key", "install-code"],
+    choices=[
+        "network-key",
+        "link-key",
+        "install-code",
+        "mac-key",
+        "mle-key",
+        "master-key",
+    ],
     action="store",
     help="the type of the configuration entry",
 )
@@ -84,9 +107,16 @@ rm_config_entry_parser.add_argument(
 )
 
 parse_parser = zigator_subparsers.add_parser(
-    "parse",
+    Subcommand.PARSE.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="parse pcap files",
+)
+parse_parser.add_argument(
+    "NWK_PROTOCOL",
+    type=str.lower,
+    choices=[Protocol.ZIGBEE.value, Protocol.THREAD.value],
+    action="store",
+    help="the expected networking protocol for IEEE 802.15.4-based networks",
 )
 parse_parser.add_argument(
     "PCAP_DIRECTORY",
@@ -109,9 +139,16 @@ parse_parser.add_argument(
 )
 
 analyze_parser = zigator_subparsers.add_parser(
-    "analyze",
+    Subcommand.ANALYZE.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="analyze data from a database",
+)
+analyze_parser.add_argument(
+    "NWK_PROTOCOL",
+    type=str.lower,
+    choices=[Protocol.ZIGBEE.value, Protocol.THREAD.value],
+    action="store",
+    help="the expected networking protocol for IEEE 802.15.4-based networks",
 )
 analyze_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -136,9 +173,16 @@ analyze_parser.add_argument(
 )
 
 visualize_parser = zigator_subparsers.add_parser(
-    "visualize",
+    Subcommand.VISUALIZE.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="visualize data from a database",
+)
+visualize_parser.add_argument(
+    "NWK_PROTOCOL",
+    type=str.lower,
+    choices=[Protocol.ZIGBEE.value],
+    action="store",
+    help="the expected networking protocol for IEEE 802.15.4-based networks",
 )
 visualize_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -156,9 +200,16 @@ visualize_parser.add_argument(
 )
 
 train_parser = zigator_subparsers.add_parser(
-    "train",
+    Subcommand.TRAIN.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="train a classifier using data from a database",
+)
+train_parser.add_argument(
+    "NWK_PROTOCOL",
+    type=str.lower,
+    choices=[Protocol.ZIGBEE.value],
+    action="store",
+    help="the expected networking protocol for IEEE 802.15.4-based networks",
 )
 train_parser.add_argument(
     "DATABASE_FILEPATH",
@@ -188,14 +239,14 @@ train_parser.add_argument(
 )
 
 inject_parser = zigator_subparsers.add_parser(
-    "inject",
+    Subcommand.INJECT.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="inject a forged packet",
 )
 inject_parser.add_argument(
     "FW_PROTOCOL",
     type=str.lower,
-    choices=["udp", "sll"],
+    choices=[Protocol.UDP.value, Protocol.SLL.value],
     action="store",
     help="the protocol that will be used to forward the forged packet",
 )
@@ -220,6 +271,13 @@ inject_parser.add_argument(
     help="the name of the IEEE 802.15.4 interface",
     default="wpan0",
 )
+inject_parser.add_argument(
+    "--flood_rate",
+    type=float,
+    action="store",
+    help="the number of seconds between the injection of two forged packets",
+    default=argparse.SUPPRESS,
+)
 inject_subparsers = inject_parser.add_subparsers(
     dest="PKT_TYPE",
     metavar="PKT_TYPE",
@@ -238,33 +296,33 @@ mpdu_parser.add_argument(
     default="418889aa990000adde5241576e7f",
 )
 
-beacon_parser = inject_subparsers.add_parser(
-    "beacon",
+zigbeebeacon_parser = inject_subparsers.add_parser(
+    "zigbeebeacon",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    help="inject a forged beacon",
+    help="inject a forged Zigbee beacon",
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--mac_seqnum",
     type=int,
     action="store",
     help="the MAC sequence number",
     default=137,
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--mac_srcpanid",
     type=str,
     action="store",
     help="the source PAN ID in hexadecimal notation",
     default="0x99aa",
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--mac_srcshortaddr",
     type=str,
     action="store",
     help="the short source MAC address in hexadecimal notation",
     default="0xdead",
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--mac_beacon_pancoord",
     type=int,
     choices=range(2),
@@ -272,7 +330,7 @@ beacon_parser.add_argument(
     help="the PAN Coordinator beacon field value",
     default=0,
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--mac_beacon_assocpermit",
     type=int,
     choices=range(2),
@@ -280,26 +338,97 @@ beacon_parser.add_argument(
     help="the Association Permit beacon field value",
     default=0,
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--nwk_beacon_devdepth",
     type=int,
     action="store",
     help="the Device Depth beacon field value",
     default=2,
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--nwk_beacon_epid",
     type=str,
     action="store",
     help="the Extended PAN ID beacon field value in hexadecimal notation",
     default="facefeedbeefcafe",
 )
-beacon_parser.add_argument(
+zigbeebeacon_parser.add_argument(
     "--nwk_beacon_updateid",
     type=int,
     action="store",
     help="the Update ID beacon field value",
     default=0,
+)
+
+threadbeacon_parser = inject_subparsers.add_parser(
+    "threadbeacon",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged Thread beacon",
+)
+threadbeacon_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137,
+)
+threadbeacon_parser.add_argument(
+    "--mac_srcpanid",
+    type=str,
+    action="store",
+    help="the source PAN ID in hexadecimal notation",
+    default="0x99aa",
+)
+threadbeacon_parser.add_argument(
+    "--mac_srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source MAC address in hexadecimal notation",
+    default="1122334455667788",
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_version",
+    type=int,
+    action="store",
+    help="the Version beacon field value",
+    default=2,
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_native",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the Native beacon field value",
+    default=0,
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_joining",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the Joining beacon field value",
+    default=0,
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_networkname",
+    type=str,
+    action="store",
+    help="the Network Name beacon field value",
+    default="ExampleNetwName",
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_epid",
+    type=str,
+    action="store",
+    help="the Extended PAN ID beacon field value in hexadecimal notation",
+    default="facefeedbeefcafe",
+)
+threadbeacon_parser.add_argument(
+    "--thr_beacon_payload",
+    type=str,
+    action="store",
+    help="additional raw beacon payload in hexadecimal notation",
+    default="",
 )
 
 beaconreq_parser = inject_subparsers.add_parser(
@@ -744,8 +873,386 @@ activeepreq_parser.add_argument(
     default="11111111111111111111111111111111",
 )
 
+firstfrag_parser = inject_subparsers.add_parser(
+    "firstfrag",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged first fragment",
+)
+firstfrag_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137,
+)
+firstfrag_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa",
+)
+firstfrag_parser.add_argument(
+    "--mac_dstextendedaddr",
+    type=str,
+    action="store",
+    help="the extended destination MAC address in hexadecimal notation",
+    default="1122334444332211",
+)
+firstfrag_parser.add_argument(
+    "--mac_srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source MAC address in hexadecimal notation",
+    default="1122334455667788",
+)
+firstfrag_parser.add_argument(
+    "--thr_firstfrag_datagramsize",
+    type=int,
+    action="store",
+    help="the datagram size",
+    default=712,
+)
+firstfrag_parser.add_argument(
+    "--thr_firstfrag_datagramtag",
+    type=str,
+    action="store",
+    help="the datagram tag in hexadecimal notation",
+    default="0xf001",
+)
+firstfrag_parser.add_argument(
+    "--thr_firstfrag_payload",
+    type=str,
+    action="store",
+    help="the first fragment payload in hexadecimal notation",
+    default="465241474d454e54"*11,
+)
+firstfrag_parser.add_argument(
+    "--thr_iphc_hlim",
+    type=int,
+    choices=range(4),
+    action="store",
+    help="the IPHC HLIM mode",
+    default=3,
+)
+firstfrag_parser.add_argument(
+    "--thr_iphc_hoplimit",
+    type=int,
+    action="store",
+    help="the IPHC hop limit field value",
+    default=argparse.SUPPRESS,
+)
+firstfrag_parser.add_argument(
+    "--thr_nhcudp_sport",
+    type=int,
+    action="store",
+    help="the NHC UDP source port",
+    default=19788,
+)
+firstfrag_parser.add_argument(
+    "--thr_nhcudp_dport",
+    type=int,
+    action="store",
+    help="the NHC UDP destination port",
+    default=19788,
+)
+firstfrag_parser.add_argument(
+    "--thr_nhcudp_checksum",
+    type=str,
+    action="store",
+    help="the NHC UDP checksum in hexadecimal notation",
+    default="0xb000",
+)
+firstfrag_parser.add_argument(
+    "--mac_security",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the MAC security field value",
+    default=0,
+)
+firstfrag_parser.add_argument(
+    "--mac_aux_seclevel",
+    type=int,
+    choices=range(8),
+    action="store",
+    help="the MAC auxiliary security level field value",
+    default=5,
+)
+firstfrag_parser.add_argument(
+    "--mac_aux_keyidmode",
+    type=int,
+    choices=range(4),
+    action="store",
+    help="the MAC auxiliary key identifier mode",
+    default=0,
+)
+firstfrag_parser.add_argument(
+    "--mac_aux_framecounter",
+    type=int,
+    action="store",
+    help="the MAC auxiliary frame counter",
+    default=10000,
+)
+firstfrag_parser.add_argument(
+    "--mac_aux_keysource",
+    type=str,
+    action="store",
+    help="the MAC auxiliary key source in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+firstfrag_parser.add_argument(
+    "--mac_aux_keyindex",
+    type=str,
+    action="store",
+    help="the MAC auxiliary key index in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+firstfrag_parser.add_argument(
+    "--mac_key",
+    type=str,
+    action="store",
+    help="the MAC key in hexadecimal notation",
+    default="11111111111111111111111111111111",
+)
+firstfrag_parser.add_argument(
+    "--mac_noncesrcaddr",
+    type=str,
+    action="store",
+    help="the source address for the MAC nonce in hexadecimal notation",
+    default="1122334455667788",
+)
+
+subseqfrag_parser = inject_subparsers.add_parser(
+    "subseqfrag",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged subsequent fragment",
+)
+subseqfrag_parser.add_argument(
+    "--mac_framepending",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the MAC frame pending field value",
+    default=1,
+)
+subseqfrag_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137,
+)
+subseqfrag_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa",
+)
+subseqfrag_parser.add_argument(
+    "--mac_dstextendedaddr",
+    type=str,
+    action="store",
+    help="the extended destination MAC address in hexadecimal notation",
+    default="1122334444332211",
+)
+subseqfrag_parser.add_argument(
+    "--mac_srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source MAC address in hexadecimal notation",
+    default="1122334455667788",
+)
+subseqfrag_parser.add_argument(
+    "--thr_subseqfrag_datagramsize",
+    type=int,
+    action="store",
+    help="the datagram size",
+    default=712,
+)
+subseqfrag_parser.add_argument(
+    "--thr_subseqfrag_datagramtag",
+    type=str,
+    action="store",
+    help="the datagram tag in hexadecimal notation",
+    default="0xf001",
+)
+subseqfrag_parser.add_argument(
+    "--thr_subseqfrag_datagramoffset",
+    type=int,
+    action="store",
+    help="the datagram offset",
+    default=17,
+)
+subseqfrag_parser.add_argument(
+    "--thr_subseqfrag_payload",
+    type=str,
+    action="store",
+    help="the subsequent fragment payload in hexadecimal notation",
+    default="465241474d454e54"*12,
+)
+subseqfrag_parser.add_argument(
+    "--mac_security",
+    type=int,
+    choices=range(2),
+    action="store",
+    help="the MAC security field value",
+    default=0,
+)
+subseqfrag_parser.add_argument(
+    "--mac_aux_seclevel",
+    type=int,
+    choices=range(8),
+    action="store",
+    help="the MAC auxiliary security level field value",
+    default=5,
+)
+subseqfrag_parser.add_argument(
+    "--mac_aux_keyidmode",
+    type=int,
+    choices=range(4),
+    action="store",
+    help="the MAC auxiliary key identifier mode",
+    default=0,
+)
+subseqfrag_parser.add_argument(
+    "--mac_aux_framecounter",
+    type=int,
+    action="store",
+    help="the MAC auxiliary frame counter",
+    default=10000,
+)
+subseqfrag_parser.add_argument(
+    "--mac_aux_keysource",
+    type=str,
+    action="store",
+    help="the MAC auxiliary key source in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+subseqfrag_parser.add_argument(
+    "--mac_aux_keyindex",
+    type=str,
+    action="store",
+    help="the MAC auxiliary key index in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+subseqfrag_parser.add_argument(
+    "--mac_key",
+    type=str,
+    action="store",
+    help="the MAC key in hexadecimal notation",
+    default="11111111111111111111111111111111",
+)
+subseqfrag_parser.add_argument(
+    "--mac_noncesrcaddr",
+    type=str,
+    action="store",
+    help="the source address for the MAC nonce in hexadecimal notation",
+    default="1122334455667788",
+)
+
+childupdatereq_parser = inject_subparsers.add_parser(
+    "childupdatereq",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    help="inject a forged Child Update Request",
+)
+childupdatereq_parser.add_argument(
+    "--mac_seqnum",
+    type=int,
+    action="store",
+    help="the MAC sequence number",
+    default=137,
+)
+childupdatereq_parser.add_argument(
+    "--mac_dstpanid",
+    type=str,
+    action="store",
+    help="the destination PAN ID in hexadecimal notation",
+    default="0x99aa",
+)
+childupdatereq_parser.add_argument(
+    "--mac_dstextendedaddr",
+    type=str,
+    action="store",
+    help="the extended destination MAC address in hexadecimal notation",
+    default="1122334444332211",
+)
+childupdatereq_parser.add_argument(
+    "--mac_srcextendedaddr",
+    type=str,
+    action="store",
+    help="the extended source MAC address in hexadecimal notation",
+    default="1122334455667788",
+)
+childupdatereq_parser.add_argument(
+    "--thr_nhcudp_checksum",
+    type=str,
+    action="store",
+    help="the NHC UDP checksum in hexadecimal notation",
+    default="0xb000",
+)
+childupdatereq_parser.add_argument(
+    "--mle_cmd_payload",
+    type=str,
+    action="store",
+    help="the MLE command payload in hexadecimal notation",
+    default="4d4c45434d44"*9,
+)
+childupdatereq_parser.add_argument(
+    "--mle_aux_seclevel",
+    type=int,
+    choices=range(8),
+    action="store",
+    help="the MLE auxiliary security level field value",
+    default=5,
+)
+childupdatereq_parser.add_argument(
+    "--mle_aux_keyidmode",
+    type=int,
+    choices=range(4),
+    action="store",
+    help="the MLE auxiliary key identifier mode",
+    default=0,
+)
+childupdatereq_parser.add_argument(
+    "--mle_aux_framecounter",
+    type=int,
+    action="store",
+    help="the MLE auxiliary frame counter",
+    default=10000,
+)
+childupdatereq_parser.add_argument(
+    "--mle_aux_keysource",
+    type=str,
+    action="store",
+    help="the MLE auxiliary key source in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+childupdatereq_parser.add_argument(
+    "--mle_aux_keyindex",
+    type=str,
+    action="store",
+    help="the MLE auxiliary key index in hexadecimal notation",
+    default=argparse.SUPPRESS,
+)
+childupdatereq_parser.add_argument(
+    "--mle_key",
+    type=str,
+    action="store",
+    help="the MLE key in hexadecimal notation",
+    default="33333333333333333333333333333333",
+)
+childupdatereq_parser.add_argument(
+    "--mle_noncesrcaddr",
+    type=str,
+    action="store",
+    help="the source address for the MLE nonce in hexadecimal notation",
+    default="1122334455667788",
+)
+
 atusb_parser = zigator_subparsers.add_parser(
-    "atusb",
+    Subcommand.ATUSB.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="launch selective jamming and spoofing attacks with an ATUSB",
 )
@@ -757,9 +1264,16 @@ atusb_parser.add_argument(
 )
 
 wids_parser = zigator_subparsers.add_parser(
-    "wids",
+    Subcommand.WIDS.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="operate as a WIDS sensor",
+)
+wids_parser.add_argument(
+    "NWK_PROTOCOL",
+    type=str.lower,
+    choices=[Protocol.ZIGBEE.value],
+    action="store",
+    help="the expected networking protocol for IEEE 802.15.4-based networks",
 )
 wids_parser.add_argument(
     "SENSOR_ID",
@@ -813,6 +1327,13 @@ wids_parser.add_argument(
     action="store",
     help="the maximum number of concurrently stored zip files",
     default=16,
+)
+wids_parser.add_argument(
+    "--max_queue_size",
+    type=int,
+    action="store",
+    help="the maximum number of tasks in each processing queue",
+    default=1024,
 )
 wids_parser.add_argument(
     "--link_key_names",

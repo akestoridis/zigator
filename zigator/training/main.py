@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -16,11 +16,20 @@
 
 import os
 
+from .. import config
+from ..enums import Protocol
 from .enc_nwk_cmd import enc_nwk_cmd
 
 
 def main(train_type, db_filepath, out_dirpath, seed, restricted):
     """Train a classifier from data stored in a database file."""
+    # Make sure that the expected networking protocol is supported
+    if config.nwk_protocol not in {Protocol.ZIGBEE}:
+        raise ValueError(
+            "Unsupported networking protocol for training purposes: "
+            + "{}".format(config.nwk_protocol),
+        )
+
     if train_type.lower() == "enc-nwk-cmd":
         enc_nwk_cmd(
             db_filepath,

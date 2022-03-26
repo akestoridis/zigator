@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,9 +21,11 @@ Database module for the ``zigator`` package.
 import sqlite3
 import string
 
+from .enums import Table
 
-# Define the columns of the packets table in the database
-PKT_COLUMNS = [
+
+# Define the columns of the zigbee_packets table in the database
+ZIGBEE_PACKETS_COLUMNS = [
     ("pcap_directory", "TEXT"),
     ("pcap_filename", "TEXT"),
     ("pkt_num", "INTEGER"),
@@ -302,8 +304,176 @@ PKT_COLUMNS = [
     ("error_msg", "TEXT"),
 ]
 
+# Define the columns of the thread_packets table in the database
+THREAD_PACKETS_COLUMNS = [
+    ("pcap_directory", "TEXT"),
+    ("pcap_filename", "TEXT"),
+    ("pkt_num", "INTEGER"),
+    ("pkt_time", "REAL"),
+    ("sll_pkttype", "TEXT"),
+    ("sll_arphrdtype", "INTEGER"),
+    ("sll_addrlength", "INTEGER"),
+    ("sll_addr", "TEXT"),
+    ("sll_protocoltype", "INTEGER"),
+    ("phy_length", "INTEGER"),
+    ("phy_payload", "TEXT"),
+    ("mac_show", "TEXT"),
+    ("mac_fcs", "TEXT"),
+    ("mac_frametype", "TEXT"),
+    ("mac_security", "TEXT"),
+    ("mac_framepending", "TEXT"),
+    ("mac_ackreq", "TEXT"),
+    ("mac_panidcomp", "TEXT"),
+    ("mac_dstaddrmode", "TEXT"),
+    ("mac_frameversion", "TEXT"),
+    ("mac_srcaddrmode", "TEXT"),
+    ("mac_seqnum", "INTEGER"),
+    ("mac_dstpanid", "TEXT"),
+    ("mac_dstshortaddr", "TEXT"),
+    ("mac_dstextendedaddr", "TEXT"),
+    ("mac_srcpanid", "TEXT"),
+    ("mac_srcshortaddr", "TEXT"),
+    ("mac_srcextendedaddr", "TEXT"),
+    ("mac_aux_seclevel", "TEXT"),
+    ("mac_aux_keyidmode", "TEXT"),
+    ("mac_aux_framecounter", "INTEGER"),
+    ("mac_aux_keysource", "TEXT"),
+    ("mac_aux_keyindex", "INTEGER"),
+    ("mac_aux_deckey", "TEXT"),
+    ("mac_aux_decsrc", "TEXT"),
+    ("mac_aux_decpayload", "TEXT"),
+    ("mac_aux_decshow", "TEXT"),
+    ("mac_cmd_id", "TEXT"),
+    ("mac_cmd_payloadlength", "INTEGER"),
+    ("mac_assocreq_apc", "TEXT"),
+    ("mac_assocreq_devtype", "TEXT"),
+    ("mac_assocreq_powsrc", "TEXT"),
+    ("mac_assocreq_rxidle", "TEXT"),
+    ("mac_assocreq_seccap", "TEXT"),
+    ("mac_assocreq_allocaddr", "TEXT"),
+    ("mac_assocrsp_shortaddr", "TEXT"),
+    ("mac_assocrsp_status", "TEXT"),
+    ("mac_disassoc_reason", "TEXT"),
+    ("mac_realign_panid", "TEXT"),
+    ("mac_realign_coordaddr", "TEXT"),
+    ("mac_realign_channel", "INTEGER"),
+    ("mac_realign_shortaddr", "TEXT"),
+    ("mac_realign_page", "INTEGER"),
+    ("mac_gtsreq_length", "INTEGER"),
+    ("mac_gtsreq_dir", "TEXT"),
+    ("mac_gtsreq_chartype", "TEXT"),
+    ("mac_beacon_beaconorder", "INTEGER"),
+    ("mac_beacon_sforder", "INTEGER"),
+    ("mac_beacon_finalcap", "INTEGER"),
+    ("mac_beacon_ble", "INTEGER"),
+    ("mac_beacon_pancoord", "TEXT"),
+    ("mac_beacon_assocpermit", "TEXT"),
+    ("mac_beacon_gtsnum", "INTEGER"),
+    ("mac_beacon_gtspermit", "INTEGER"),
+    ("mac_beacon_gtsmask", "INTEGER"),
+    ("mac_beacon_nsap", "INTEGER"),
+    ("mac_beacon_neap", "INTEGER"),
+    ("mac_beacon_shortaddresses", "TEXT"),
+    ("mac_beacon_extendedaddresses", "TEXT"),
+    ("thr_beacon_protocolid", "INTEGER"),
+    ("thr_beacon_version", "INTEGER"),
+    ("thr_beacon_native", "INTEGER"),
+    ("thr_beacon_joining", "INTEGER"),
+    ("thr_beacon_networkname", "TEXT"),
+    ("thr_beacon_epid", "TEXT"),
+    ("thr_beacon_payload", "TEXT"),
+    ("thr_mesh_pattern", "INTEGER"),
+    ("thr_mesh_vf", "TEXT"),
+    ("thr_mesh_fd", "TEXT"),
+    ("thr_mesh_hopsleft", "INTEGER"),
+    ("thr_mesh_deephopsleft", "INTEGER"),
+    ("thr_mesh_srcshortaddr", "TEXT"),
+    ("thr_mesh_srcextendedaddr", "TEXT"),
+    ("thr_mesh_dstshortaddr", "TEXT"),
+    ("thr_mesh_dstextendedaddr", "TEXT"),
+    ("thr_firstfrag_pattern", "INTEGER"),
+    ("thr_firstfrag_datagramsize", "INTEGER"),
+    ("thr_firstfrag_datagramtag", "INTEGER"),
+    ("thr_firstfrag_payload", "TEXT"),
+    ("thr_subseqfrag_pattern", "INTEGER"),
+    ("thr_subseqfrag_datagramsize", "INTEGER"),
+    ("thr_subseqfrag_datagramtag", "INTEGER"),
+    ("thr_subseqfrag_datagramoffset", "INTEGER"),
+    ("thr_subseqfrag_payload", "TEXT"),
+    ("thr_iphc_pattern", "INTEGER"),
+    ("thr_iphc_tf", "TEXT"),
+    ("thr_iphc_nh", "TEXT"),
+    ("thr_iphc_hlim", "TEXT"),
+    ("thr_iphc_cid", "TEXT"),
+    ("thr_iphc_sac", "TEXT"),
+    ("thr_iphc_sam", "TEXT"),
+    ("thr_iphc_multicast", "TEXT"),
+    ("thr_iphc_dac", "TEXT"),
+    ("thr_iphc_dam", "TEXT"),
+    ("thr_iphc_sci", "INTEGER"),
+    ("thr_iphc_dci", "INTEGER"),
+    ("thr_iphc_ecn", "INTEGER"),
+    ("thr_iphc_dscp", "INTEGER"),
+    ("thr_iphc_fl", "INTEGER"),
+    ("thr_iphc_nextheader", "INTEGER"),
+    ("thr_iphc_hoplimit", "INTEGER"),
+    ("thr_iphr_src", "TEXT"),
+    ("thr_iphr_dst", "TEXT"),
+    ("thr_nhcext_pattern", "INTEGER"),
+    ("thr_nhcext_id", "TEXT"),
+    ("thr_nhcext_nh", "TEXT"),
+    ("thr_nhcext_nextheader", "TEXT"),
+    ("thr_nhcext_length", "INTEGER"),
+    ("thr_nhcext_data", "TEXT"),
+    ("thr_nhcudp_pattern", "INTEGER"),
+    ("thr_nhcudp_cm", "TEXT"),
+    ("thr_nhcudp_pm", "TEXT"),
+    ("thr_nhcudp_sport", "INTEGER"),
+    ("thr_nhcudp_dport", "INTEGER"),
+    ("thr_nhcudp_checksum", "TEXT"),
+    ("thr_decompipv6_version", "INTEGER"),
+    ("thr_decompipv6_tc", "INTEGER"),
+    ("thr_decompipv6_fl", "INTEGER"),
+    ("thr_decompipv6_plen", "INTEGER"),
+    ("thr_decompipv6_nh", "INTEGER"),
+    ("thr_decompipv6_hlim", "INTEGER"),
+    ("thr_decompipv6_src", "TEXT"),
+    ("thr_decompipv6_dst", "TEXT"),
+    ("thr_decompicmpv6", "TEXT"),
+    ("thr_decompudp_sport", "INTEGER"),
+    ("thr_decompudp_dport", "INTEGER"),
+    ("thr_decompudp_length", "INTEGER"),
+    ("thr_decompudp_checksum", "TEXT"),
+    ("thr_decompudp_payload", "TEXT"),
+    ("mle_secsuite", "TEXT"),
+    ("mle_aux_seclevel", "TEXT"),
+    ("mle_aux_keyidmode", "TEXT"),
+    ("mle_aux_framecounter", "INTEGER"),
+    ("mle_aux_keysource", "TEXT"),
+    ("mle_aux_keyindex", "INTEGER"),
+    ("mle_aux_deckey", "TEXT"),
+    ("mle_aux_decsrc", "TEXT"),
+    ("mle_aux_decpayload", "TEXT"),
+    ("mle_aux_decshow", "TEXT"),
+    ("mle_cmd_type", "TEXT"),
+    ("mle_cmd_payloadlength", "INTEGER"),
+    ("mle_cmd_payload", "TEXT"),
+    ("der_tx_type", "TEXT"),
+    ("der_mac_dsttype", "TEXT"),
+    ("der_mac_srctype", "TEXT"),
+    ("der_mac_dstpanid", "TEXT"),
+    ("der_mac_dstshortaddr", "TEXT"),
+    ("der_mac_dstextendedaddr", "TEXT"),
+    ("der_mac_srcpanid", "TEXT"),
+    ("der_mac_srcshortaddr", "TEXT"),
+    ("der_mac_srcextendedaddr", "TEXT"),
+    ("warning_msg", "TEXT"),
+    ("error_msg", "TEXT"),
+]
+
+
 # Define the columns of the basic_information table in the database
-BASIC_INFO_COLUMNS = [
+BASIC_INFORMATION_COLUMNS = [
     ("pkt_time", "REAL"),
     ("phy_length", "INTEGER"),
     ("mac_frametype", "TEXT"),
@@ -318,7 +488,7 @@ BASIC_INFO_COLUMNS = [
 ]
 
 # Define the columns of the battery_percentages table in the database
-BTRY_PERC_COLUMNS = [
+BATTERY_PERCENTAGES_COLUMNS = [
     ("pkt_time", "REAL"),
     ("srcpanid", "TEXT"),
     ("srcshortaddr", "TEXT"),
@@ -332,10 +502,23 @@ EVENTS_COLUMNS = [
 ]
 
 # Define a list that contains only the column names for each table
-PKT_COLUMN_NAMES = [column[0] for column in PKT_COLUMNS]
-BASIC_INFO_COLUMN_NAMES = [column[0] for column in BASIC_INFO_COLUMNS]
-BTRY_PERC_COLUMN_NAMES = [column[0] for column in BTRY_PERC_COLUMNS]
-EVENTS_COLUMN_NAMES = [column[0] for column in EVENTS_COLUMNS]
+ZIGBEE_PACKETS_COLUMN_NAMES = [
+    column_name
+    for column_name, _ in ZIGBEE_PACKETS_COLUMNS
+]
+THREAD_PACKETS_COLUMN_NAMES = [
+    column_name
+    for column_name, _ in THREAD_PACKETS_COLUMNS
+]
+BASIC_INFORMATION_COLUMN_NAMES = [
+    column_name
+    for column_name, _ in BASIC_INFORMATION_COLUMNS
+]
+BATTERY_PERCENTAGES_COLUMN_NAMES = [
+    column_name
+    for column_name, _ in BATTERY_PERCENTAGES_COLUMNS
+]
+EVENTS_COLUMN_NAMES = [column_name for column_name, _ in EVENTS_COLUMNS]
 
 # Define sets that will be used to construct valid column definitions
 ALLOWED_CHARACTERS = set(string.ascii_letters + string.digits + "_")
@@ -345,16 +528,22 @@ ALLOWED_TYPES = {
     "REAL",
     "BLOB",
 }
-CONSTRAINED_PKT_COLUMNS = {
+CONSTRAINED_ZIGBEE_PACKETS_COLUMNS = {
     "pcap_directory",
     "pcap_filename",
     "pkt_num",
     "pkt_time",
 }
-CONSTRAINED_BASIC_INFO_COLUMNS = {
+CONSTRAINED_THREAD_PACKETS_COLUMNS = {
+    "pcap_directory",
+    "pcap_filename",
+    "pkt_num",
     "pkt_time",
 }
-CONSTRAINED_BTRY_PERC_COLUMNS = {
+CONSTRAINED_BASIC_INFORMATION_COLUMNS = {
+    "pkt_time",
+}
+CONSTRAINED_BATTERY_PERCENTAGES_COLUMNS = {
     "pkt_time",
     "srcpanid",
     "srcshortaddr",
@@ -386,16 +575,19 @@ def connect(db_filepath, wal=False):
 
 def create_table(tablename):
     # Use the variables of the corresponding table
-    if tablename == "packets":
-        table_columns = PKT_COLUMNS
-        constrained_table_columns = CONSTRAINED_PKT_COLUMNS
-    elif tablename == "basic_information":
-        table_columns = BASIC_INFO_COLUMNS
-        constrained_table_columns = CONSTRAINED_BASIC_INFO_COLUMNS
-    elif tablename == "battery_percentages":
-        table_columns = BTRY_PERC_COLUMNS
-        constrained_table_columns = CONSTRAINED_BTRY_PERC_COLUMNS
-    elif tablename == "events":
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_columns = ZIGBEE_PACKETS_COLUMNS
+        constrained_table_columns = CONSTRAINED_ZIGBEE_PACKETS_COLUMNS
+    elif tablename == Table.THREAD_PACKETS:
+        table_columns = THREAD_PACKETS_COLUMNS
+        constrained_table_columns = CONSTRAINED_THREAD_PACKETS_COLUMNS
+    elif tablename == Table.BASIC_INFORMATION:
+        table_columns = BASIC_INFORMATION_COLUMNS
+        constrained_table_columns = CONSTRAINED_BASIC_INFORMATION_COLUMNS
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_columns = BATTERY_PERCENTAGES_COLUMNS
+        constrained_table_columns = CONSTRAINED_BATTERY_PERCENTAGES_COLUMNS
+    elif tablename == Table.EVENTS:
         table_columns = EVENTS_COLUMNS
         constrained_table_columns = CONSTRAINED_EVENTS_COLUMNS
     else:
@@ -451,12 +643,14 @@ def create_table(tablename):
 
 def create_count_trigger(tablename, table_thres, table_reduct):
     # Make sure that the table name is valid
-    valid_tablenames = {
-        "basic_information",
-        "battery_percentages",
-        "events",
-    }
-    if tablename not in valid_tablenames:
+    if (
+        tablename
+        not in {
+            Table.BASIC_INFORMATION,
+            Table.BATTERY_PERCENTAGES,
+            Table.EVENTS,
+        }
+    ):
         raise ValueError("Invalid table name \"{}\"".format(tablename))
 
     # Derive the trigger name
@@ -486,16 +680,19 @@ def create_count_trigger(tablename, table_thres, table_reduct):
 
 def insert(tablename, row_data):
     # Use the variables of the corresponding table
-    if tablename == "packets":
-        table_columns = PKT_COLUMNS
-        table_column_names = PKT_COLUMN_NAMES
-    elif tablename == "basic_information":
-        table_columns = BASIC_INFO_COLUMNS
-        table_column_names = BASIC_INFO_COLUMN_NAMES
-    elif tablename == "battery_percentages":
-        table_columns = BTRY_PERC_COLUMNS
-        table_column_names = BTRY_PERC_COLUMN_NAMES
-    elif tablename == "events":
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_columns = ZIGBEE_PACKETS_COLUMNS
+        table_column_names = ZIGBEE_PACKETS_COLUMN_NAMES
+    elif tablename == Table.THREAD_PACKETS:
+        table_columns = THREAD_PACKETS_COLUMNS
+        table_column_names = THREAD_PACKETS_COLUMN_NAMES
+    elif tablename == Table.BASIC_INFORMATION:
+        table_columns = BASIC_INFORMATION_COLUMNS
+        table_column_names = BASIC_INFORMATION_COLUMN_NAMES
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_columns = BATTERY_PERCENTAGES_COLUMNS
+        table_column_names = BATTERY_PERCENTAGES_COLUMN_NAMES
+    elif tablename == Table.EVENTS:
         table_columns = EVENTS_COLUMNS
         table_column_names = EVENTS_COLUMN_NAMES
     else:
@@ -504,12 +701,12 @@ def insert(tablename, row_data):
     # Sanity check
     if len(row_data.keys()) != len(table_column_names):
         raise ValueError(
-            "Unexpected number of data entries: {}".format(
+            "Unexpected number of row data entries: {}".format(
                 len(row_data.keys()),
             ),
         )
 
-    # Insert the provided data entries into the corresponding table
+    # Insert the provided row data entries into the corresponding table
     cursor.execute(
         "INSERT INTO {} VALUES ({})".format(
             tablename,
@@ -525,13 +722,15 @@ def commit():
 
 def grouped_count(tablename, selected_columns, count_errors):
     # Use the variables of the corresponding table
-    if tablename == "packets":
-        table_column_names = PKT_COLUMN_NAMES
-    elif tablename == "basic_information":
-        table_column_names = BASIC_INFO_COLUMN_NAMES
-    elif tablename == "battery_percentages":
-        table_column_names = BTRY_PERC_COLUMN_NAMES
-    elif tablename == "events":
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_column_names = ZIGBEE_PACKETS_COLUMN_NAMES
+    elif tablename == Table.THREAD_PACKETS:
+        table_column_names = THREAD_PACKETS_COLUMN_NAMES
+    elif tablename == Table.BASIC_INFORMATION:
+        table_column_names = BASIC_INFORMATION_COLUMN_NAMES
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_column_names = BATTERY_PERCENTAGES_COLUMN_NAMES
+    elif tablename == Table.EVENTS:
         table_column_names = EVENTS_COLUMN_NAMES
     else:
         raise ValueError("Unknown table name \"{}\"".format(tablename))
@@ -556,15 +755,23 @@ def grouped_count(tablename, selected_columns, count_errors):
     return cursor.fetchall()
 
 
-def fetch_values(tablename, selected_columns, conditions, distinct):
+def fetch_values(
+    tablename,
+    selected_columns,
+    conditions,
+    distinct,
+    sorting_columns=None,
+):
     # Use the variables of the corresponding table
-    if tablename == "packets":
-        table_column_names = PKT_COLUMN_NAMES
-    elif tablename == "basic_information":
-        table_column_names = BASIC_INFO_COLUMN_NAMES
-    elif tablename == "battery_percentages":
-        table_column_names = BTRY_PERC_COLUMN_NAMES
-    elif tablename == "events":
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_column_names = ZIGBEE_PACKETS_COLUMN_NAMES
+    elif tablename == Table.THREAD_PACKETS:
+        table_column_names = THREAD_PACKETS_COLUMN_NAMES
+    elif tablename == Table.BASIC_INFORMATION:
+        table_column_names = BASIC_INFORMATION_COLUMN_NAMES
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_column_names = BATTERY_PERCENTAGES_COLUMN_NAMES
+    elif tablename == Table.EVENTS:
         table_column_names = EVENTS_COLUMN_NAMES
     else:
         raise ValueError("Unknown table name \"{}\"".format(tablename))
@@ -608,6 +815,8 @@ def fetch_values(tablename, selected_columns, conditions, distinct):
                     expr_statements.append("{}=?".format(param))
                 expr_values.append(value)
         select_command += " AND ".join(expr_statements)
+    if sorting_columns is not None:
+        select_command += " ORDER BY {}".format(", ".join(sorting_columns))
 
     # Return the results of the constructed command
     cursor.execute(select_command, tuple(expr_values))
@@ -616,13 +825,15 @@ def fetch_values(tablename, selected_columns, conditions, distinct):
 
 def matching_frequency(tablename, conditions):
     # Use the variables of the corresponding table
-    if tablename == "packets":
-        table_column_names = PKT_COLUMN_NAMES
-    elif tablename == "basic_information":
-        table_column_names = BASIC_INFO_COLUMN_NAMES
-    elif tablename == "battery_percentages":
-        table_column_names = BTRY_PERC_COLUMN_NAMES
-    elif tablename == "events":
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_column_names = ZIGBEE_PACKETS_COLUMN_NAMES
+    elif tablename == Table.THREAD_PACKETS:
+        table_column_names = THREAD_PACKETS_COLUMN_NAMES
+    elif tablename == Table.BASIC_INFORMATION:
+        table_column_names = BASIC_INFORMATION_COLUMN_NAMES
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_column_names = BATTERY_PERCENTAGES_COLUMN_NAMES
+    elif tablename == Table.EVENTS:
         table_column_names = EVENTS_COLUMN_NAMES
     else:
         raise ValueError("Unknown table name \"{}\"".format(tablename))
@@ -829,7 +1040,21 @@ def get_nwkdevtype(panid, shortaddr, extendedaddr):
         return "Conflicting Data"
 
 
-def update_packets(selected_columns, selected_values, conditions):
+def update_table(tablename, selected_columns, selected_values, conditions):
+    # Use the variables of the corresponding table
+    if tablename == Table.ZIGBEE_PACKETS:
+        table_column_names = ZIGBEE_PACKETS_COLUMN_NAMES
+    elif tablename == Table.THREAD_PACKETS:
+        table_column_names = THREAD_PACKETS_COLUMN_NAMES
+    elif tablename == Table.BASIC_INFORMATION:
+        table_column_names = BASIC_INFORMATION_COLUMN_NAMES
+    elif tablename == Table.BATTERY_PERCENTAGES:
+        table_column_names = BATTERY_PERCENTAGES_COLUMN_NAMES
+    elif tablename == Table.EVENTS:
+        table_column_names = EVENTS_COLUMN_NAMES
+    else:
+        raise ValueError("Unknown table name \"{}\"".format(tablename))
+
     # Sanity checks
     if len(selected_columns) == 0:
         raise ValueError("At least one selected column is required")
@@ -839,11 +1064,12 @@ def update_packets(selected_columns, selected_values, conditions):
             + "the number of selected values",
         )
     for column_name in selected_columns:
-        if column_name not in PKT_COLUMN_NAMES:
+        if column_name not in table_column_names:
             raise ValueError("Unknown column name \"{}\"".format(column_name))
 
-    # Update the packets table
-    update_command = "UPDATE packets SET {}".format(
+    # Update the corresponding table
+    update_command = "UPDATE {} SET {}".format(
+        tablename,
         ", ".join(["{} = ?".format(x) for x in selected_columns]),
     )
     expr_statements = []
@@ -858,7 +1084,7 @@ def update_packets(selected_columns, selected_values, conditions):
                 param = param[1:]
             else:
                 neq = False
-            if param not in PKT_COLUMN_NAMES:
+            if param not in table_column_names:
                 raise ValueError("Unknown column name \"{}\"".format(param))
             elif value is None:
                 if neq:

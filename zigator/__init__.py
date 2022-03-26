@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -15,39 +15,42 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 """
-Zigator: Security analysis tool for Zigbee networks
-===================================================
+Zigator: A security analysis tool for Zigbee and Thread networks
+================================================================
 
 Disclaimer
 ----------
 
-Zigator is a software tool that analyzes the security of Zigbee networks,
-which is made available for benign research purposes only. The users of this
-tool are responsible for making sure that they are compliant with their local
-laws and that they have proper permission from the affected network owners.
+Zigator is a software tool that analyzes the security of Zigbee and Thread
+networks, which is made available for benign research purposes only. The users
+of this tool are responsible for making sure that they are compliant with
+their local laws and that they have proper permission from the affected
+network owners.
+
 
 Features
 --------
 
 Zigator enables its users to do the following:
 
+* Decrypt and verify both Zigbee and Thread packets
+* Encrypt and authenticate both Zigbee and Thread packets
 * Derive preconfigured Trust Center link keys from install codes
-* Decrypt and verify Zigbee packets
-* Encrypt and authenticate Zigbee packets
-* Parse almost all the header fields of Zigbee packets up to the APS layer
-* Infer information from captured Zigbee packets
-* Produce statistics from a database of Zigbee packets
-* Visualize data from a database of Zigbee packets
-* Train decision tree classifiers from a database of Zigbee packets
+* Derive MAC keys and MLE keys from master keys
+* Parse several header fields of Zigbee and Thread packets
+* Infer information from captured Zigbee and Thread packets
+* Produce statistics from databases with Zigbee and Thread packets
+* Visualize data from databases with Zigbee packets
+* Train decision tree classifiers from databases with Zigbee packets
 * Inject forged packets over UDP and SLL
 * Launch selective jamming and spoofing attacks with an ATUSB
-* Deploy stand-alone WIDS sensors
+* Deploy stand-alone WIDS sensors for Zigbee networks
 
 
 License
 -------
 
-Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 
 This project is licensed under the terms of the GNU General Public License
 version 2 only (GPL-2.0-only).

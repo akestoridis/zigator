@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,9 +21,11 @@ Metadata for the ``zigator`` package.
 __title__ = "zigator"
 __author__ = "Dimitrios-Georgios Akestoridis"
 __author_email__ = "akestoridis@cmu.edu"
-__description__ = "Zigator: Security analysis tool for Zigbee networks"
+__description__ = (
+    "Zigator: A security analysis tool for Zigbee and Thread networks"
+)
 __license__ = "GPL-2.0-only"
-__copyright__ = "Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis"
+__copyright__ = "Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis"
 __url__ = "https://github.com/akestoridis/zigator"
 __keywords__ = [
     "wireless",
@@ -52,7 +54,7 @@ __install_requires__ = [
     "psutil==5.8.0",
     "pycrc==0.9.2",
     "pycryptodomex==3.11.0",
-    "scapy @ git+https://github.com/secdev/scapy@6ad83c513648fc1b4199a4b2d7b74b8a8c2ae0ce#egg=scapy",
+    "scapy @ git+https://github.com/akestoridis/scapy@lowpan-enhancements#egg=scapy",
     "scikit-learn==1.0.1",
     # indirect dependencies
     "cheroot==8.5.2",

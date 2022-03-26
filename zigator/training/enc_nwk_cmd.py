@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -32,6 +32,7 @@ from sklearn.tree import (
 )
 
 from .. import config
+from ..enums import Table
 
 
 def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
@@ -113,7 +114,7 @@ def enc_nwk_cmd(db_filepath, out_dirpath, seed, restricted, single_cmd=None):
         ("!nwk_cmd_id", None),
     ]
     raw_samples = config.db.fetch_values(
-        "packets",
+        Table.ZIGBEE_PACKETS.value,
         columns,
         conditions,
         False,

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,190 +21,13 @@ import os
 from .. import config
 
 
-CONDITION_SELECTIONS = [
-    (
-        "packet_types.tsv",
-        (
-            "MAC Acknowledgment",
-            ("error_msg", None),
-            ("mac_frametype", "0b010: MAC Acknowledgment"),
-        ),
-        (
-            "MAC Beacon",
-            ("error_msg", None),
-            ("mac_frametype", "0b000: MAC Beacon"),
-        ),
-        (
-            "MAC Command",
-            ("error_msg", None),
-            ("mac_frametype", "0b011: MAC Command"),
-        ),
-        (
-            "NWK Command",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-        ),
-        (
-            "APS Acknowledgment",
-            ("error_msg", None),
-            ("aps_frametype", "0b10: APS Acknowledgment"),
-        ),
-        (
-            "APS Command",
-            ("error_msg", None),
-            ("aps_frametype", "0b01: APS Command"),
-        ),
-        (
-            "ZDP Command",
-            ("error_msg", None),
-            ("aps_frametype", "0b00: APS Data"),
-            ("aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
-        ),
-        (
-            "ZCL Command",
-            ("error_msg", None),
-            ("aps_frametype", "0b00: APS Data"),
-            ("!aps_profile_id", "0x0000: Zigbee Device Profile (ZDP)"),
-        ),
-    ),
-    (
-        "encrypted_nwk_commands.tsv",
-        (
-            "NWK Route Request",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x01: NWK Route Request"),
-        ),
-        (
-            "NWK Route Reply",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x02: NWK Route Reply"),
-        ),
-        (
-            "NWK Network Status",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x03: NWK Network Status"),
-        ),
-        (
-            "NWK Leave",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x04: NWK Leave"),
-        ),
-        (
-            "NWK Route Record",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x05: NWK Route Record"),
-        ),
-        (
-            "NWK Rejoin Request",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x06: NWK Rejoin Request"),
-        ),
-        (
-            "NWK Rejoin Response",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x07: NWK Rejoin Response"),
-        ),
-        (
-            "NWK Link Status",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x08: NWK Link Status"),
-        ),
-        (
-            "NWK Network Report",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x09: NWK Network Report"),
-        ),
-        (
-            "NWK Network Update",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x0a: NWK Network Update"),
-        ),
-        (
-            "NWK End Device Timeout Request",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x0b: NWK End Device Timeout Request"),
-        ),
-        (
-            "NWK End Device Timeout Response",
-            ("error_msg", None),
-            ("nwk_frametype", "0b01: NWK Command"),
-            ("nwk_security", "0b1: NWK Security Enabled"),
-            ("nwk_cmd_id", "0x0c: NWK End Device Timeout Response"),
-        ),
-    ),
-    (
-        "datarequest--srcaddrmode.tsv",
-        (
-            "MAC Data Request with short source address",
-            ("error_msg", None),
-            ("mac_cmd_id", "0x04: MAC Data Request"),
-            ("mac_srcaddrmode", "0b10: Short source MAC address"),
-        ),
-        (
-            "MAC Data Request with extended source address",
-            ("error_msg", None),
-            ("mac_cmd_id", "0x04: MAC Data Request"),
-            ("mac_srcaddrmode", "0b11: Extended source MAC address"),
-        ),
-    ),
-]
-
-
-def worker(db_filepath, out_dirpath, task_index, task_lock):
-    # Connect to the provided database
-    config.db.connect(db_filepath)
-
-    while True:
-        with task_lock:
-            # Get the next task
-            if task_index.value < len(CONDITION_SELECTIONS):
-                condition_selection = CONDITION_SELECTIONS[task_index.value]
-                task_index.value += 1
-            else:
-                break
-
-        # Derive the path of the output file and the selected conditions
-        out_filepath = os.path.join(out_dirpath, condition_selection[0])
-        selections = condition_selection[1:]
-
-        # Compute the matching frequency of each selection
-        results = []
-        for selection in selections:
-            name = selection[0]
-            conditions = selection[1:]
-            matches = config.db.matching_frequency("packets", conditions)
-            results.append((name, matches))
-
-        # Write the matching frequencies in the output file
-        config.fs.write_tsv(results, out_filepath)
-
-    # Disconnect from the provided database
-    config.db.disconnect()
-
-
-def selected_frequencies(db_filepath, out_dirpath, num_workers):
+def selected_frequencies(
+    db_filepath,
+    tablename,
+    condition_selections,
+    out_dirpath,
+    num_workers,
+):
     """Compute the frequency of selected conditions."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
@@ -220,7 +43,7 @@ def selected_frequencies(db_filepath, out_dirpath, num_workers):
     logging.info(
         "Computing the frequency of "
         + "{} condition selections using {} workers...".format(
-            len(CONDITION_SELECTIONS),
+            len(condition_selections),
             num_workers,
         ),
     )
@@ -234,7 +57,14 @@ def selected_frequencies(db_filepath, out_dirpath, num_workers):
     for _ in range(num_workers):
         p = mp.Process(
             target=worker,
-            args=(db_filepath, out_dirpath, task_index, task_lock),
+            args=(
+                db_filepath,
+                tablename,
+                condition_selections,
+                out_dirpath,
+                task_index,
+                task_lock,
+            ),
         )
         p.start()
         processes.append(p)
@@ -243,3 +73,42 @@ def selected_frequencies(db_filepath, out_dirpath, num_workers):
     for p in processes:
         p.join()
     logging.info("All {} workers completed their tasks".format(num_workers))
+
+
+def worker(
+    db_filepath,
+    tablename,
+    condition_selections,
+    out_dirpath,
+    task_index,
+    task_lock,
+):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
+
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(condition_selections):
+                condition_selection = condition_selections[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
+        # Derive the path of the output file and the selected conditions
+        out_filepath = os.path.join(out_dirpath, condition_selection[0])
+        selections = condition_selection[1:]
+
+        # Compute the matching frequency of each selection
+        results = []
+        for selection in selections:
+            name = selection[0]
+            conditions = selection[1:]
+            matches = config.db.matching_frequency(tablename, conditions)
+            results.append((name, matches))
+
+        # Write the matching frequencies in the output file
+        config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()

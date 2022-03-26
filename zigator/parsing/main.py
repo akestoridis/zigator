@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -19,13 +19,32 @@ import multiprocessing as mp
 import os
 from glob import glob
 
+from scapy.all import conf
+
 from .. import config
-from ..enums import Message
+from ..enums import (
+    Message,
+    Protocol,
+    Table,
+)
 from .pcap_file import pcap_file
 
 
 def main(pcap_dirpath, db_filepath, num_workers):
     """Parse all pcap files in the provided directory."""
+    # Make sure that the expected networking protocol is supported
+    if config.nwk_protocol == Protocol.ZIGBEE:
+        conf.dot15d4_protocol = "zigbee"
+        tablename = Table.ZIGBEE_PACKETS.value
+    elif config.nwk_protocol == Protocol.THREAD:
+        conf.dot15d4_protocol = "sixlowpan"
+        tablename = Table.THREAD_PACKETS.value
+    else:
+        raise ValueError(
+            "Unsupported networking protocol for parsing purposes: "
+            + "{}".format(config.nwk_protocol),
+        )
+
     # Sanity check
     if not os.path.isdir(pcap_dirpath):
         raise ValueError(
@@ -36,7 +55,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
 
     # Initialize the database that will store the parsed data
     config.db.connect(db_filepath)
-    config.db.create_table("packets")
+    config.db.create_table(tablename)
     config.db.commit()
 
     # Get a sorted list of pcap filepaths
@@ -111,7 +130,7 @@ def main(pcap_dirpath, db_filepath, num_workers):
                 ),
             )
         elif msg_type == Message.PKT:
-            config.db.insert("packets", msg_obj)
+            config.db.insert(tablename, msg_obj)
         elif msg_type == Message.NETWORK_KEYS:
             for key_name in msg_obj.keys():
                 if key_name not in config.network_keys.keys():
@@ -208,9 +227,9 @@ def main(pcap_dirpath, db_filepath, num_workers):
     )
 
     # Update the packets table using the derived information
-    logging.info("Updating the derived entries of parsed packets...")
-    config.update_derived_entries()
-    logging.info("Finished updating the derived entries of parsed packets")
+    logging.info("Updating the derived information...")
+    config.update_derived_info(tablename)
+    logging.info("Finished updating the derived information")
 
     # Store the derived information into the database
     config.db.store_networks(config.networks)
@@ -220,14 +239,14 @@ def main(pcap_dirpath, db_filepath, num_workers):
     config.db.commit()
 
     # Log a summary of the generated warnings
-    warnings = config.db.fetch_values("packets", ["warning_msg"], None, True)
+    warnings = config.db.fetch_values(tablename, ["warning_msg"], None, True)
     warnings.sort(key=config.custom_sorter)
     for warning in warnings:
         message = warning[0]
         if message is None:
             continue
         frequency = config.db.matching_frequency(
-            "packets",
+            tablename,
             [("warning_msg", message)],
         )
         logging.warning(
@@ -235,14 +254,14 @@ def main(pcap_dirpath, db_filepath, num_workers):
         )
 
     # Log a summary of the generated errors
-    errors = config.db.fetch_values("packets", ["error_msg"], None, True)
+    errors = config.db.fetch_values(tablename, ["error_msg"], None, True)
     errors.sort(key=config.custom_sorter)
     for error in errors:
         message = error[0]
         if message is None:
             continue
         frequency = config.db.matching_frequency(
-            "packets",
+            tablename,
             [("error_msg", message)],
         )
         logging.warning(

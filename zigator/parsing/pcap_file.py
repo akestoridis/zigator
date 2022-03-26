@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -39,13 +39,13 @@ def pcap_file(filepath, msg_queue):
     init_extended_addresses = deepcopy(config.extended_addresses)
     init_pairs = deepcopy(config.pairs)
 
-    # Reset all data entries in the dictionary
-    config.reset_entries()
+    # Reset all row data entries
+    config.reset_row()
 
     # Collect data that are common for all the packets of the pcap file
     head, tail = os.path.split(os.path.abspath(filepath))
-    config.entry["pcap_directory"] = head
-    config.entry["pcap_filename"] = tail
+    config.row["pcap_directory"] = head
+    config.row["pcap_filename"] = tail
 
     # Parse the packets of the pcap file
     msg_queue.put(
@@ -54,28 +54,26 @@ def pcap_file(filepath, msg_queue):
             "Reading packets from the \"{}\" file...".format(filepath),
         ),
     )
-    config.entry["pkt_num"] = 0
+    config.row["pkt_num"] = 0
     pcap_reader = PcapReader(filepath)
     for pkt in pcap_reader:
         # Collect data about the packet
-        config.entry["pkt_num"] += 1
-        config.entry["pkt_time"] = float(pkt.time)
+        config.row["pkt_num"] += 1
+        config.row["pkt_time"] = float(pkt.time)
         if pkt.haslayer(CookedLinux):
             sll_fields(pkt, msg_queue)
         else:
             phy_fields(pkt, msg_queue)
 
         # Derive additional information from the parsed packet
-        if config.entry["error_msg"] is None:
+        if config.row["error_msg"] is None:
             derive_info()
 
         # Send a copy of the collected data to the main process
-        msg_queue.put((Message.PKT, deepcopy(config.entry)))
+        msg_queue.put((Message.PKT, deepcopy(config.row)))
 
-        # Reset only the data entries that the next packet may change
-        config.reset_entries(
-            keep={"pcap_directory", "pcap_filename", "pkt_num"},
-        )
+        # Reset only the row data entries that the next packet may change
+        config.reset_row(keep={"pcap_directory", "pcap_filename", "pkt_num"})
     pcap_reader.close()
 
     # Log the number of parsed packets from this pcap file
@@ -83,7 +81,7 @@ def pcap_file(filepath, msg_queue):
         (
             Message.INFO,
             "Parsed {} packets from the \"{}\" file".format(
-                config.entry["pkt_num"],
+                config.row["pkt_num"],
                 filepath,
             ),
         ),

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -21,75 +21,24 @@ import os
 from .. import config
 
 
-IGNORED_COLUMNS = {
-    "pkt_num",
-    "pkt_time",
-    "phy_payload",
-    "mac_show",
-    "mac_fcs",
-    "mac_seqnum",
-    "nwk_seqnum",
-    "nwk_aux_framecounter",
-    "nwk_aux_decpayload",
-    "nwk_aux_decshow",
-    "aps_counter",
-    "aps_aux_framecounter",
-    "aps_aux_decpayload",
-    "aps_aux_decshow",
-    "aps_tunnel_counter",
-    "zdp_seqnum",
-    "zcl_seqnum",
-}
-
-INSPECTED_COLUMNS = [
-    column_name
-    for column_name in config.db.PKT_COLUMN_NAMES
-    if column_name not in IGNORED_COLUMNS
-]
-
-
-def worker(db_filepath, out_dirpath, task_index, task_lock):
-    # Connect to the provided database
-    config.db.connect(db_filepath)
-
-    while True:
-        with task_lock:
-            # Get the next task
-            if task_index.value < len(INSPECTED_COLUMNS):
-                column_name = INSPECTED_COLUMNS[task_index.value]
-                task_index.value += 1
-            else:
-                break
-
-        # Derive the path of the output file
-        global_index = config.db.PKT_COLUMN_NAMES.index(column_name)
-        out_filepath = os.path.join(
-            out_dirpath,
-            "{}-{}-frequency.tsv".format(
-                str(global_index).zfill(3),
-                column_name,
-            ),
-        )
-
-        # Do not count entries with errors,
-        # except when we want to count the errors themselves
-        results = config.db.grouped_count(
-            "packets",
-            [column_name],
-            column_name == "error_msg",
-        )
-
-        # Write the computed frequencies in the output file
-        config.fs.write_tsv(results, out_filepath)
-
-    # Disconnect from the provided database
-    config.db.disconnect()
-
-
-def solo_frequencies(db_filepath, out_dirpath, num_workers):
+def solo_frequencies(
+    db_filepath,
+    tablename,
+    packets_column_names,
+    ignored_columns,
+    out_dirpath,
+    num_workers,
+):
     """Compute the frequency of values for certain columns."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
+
+    # Construct the list of columns that will be inspected
+    inspected_columns = [
+        column_name
+        for column_name in packets_column_names
+        if column_name not in ignored_columns
+    ]
 
     # Determine the number of processes that will be used
     if num_workers is None:
@@ -102,7 +51,7 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
     logging.info(
         "Computing the frequency of values "
         + "for {} columns using {} workers...".format(
-            len(INSPECTED_COLUMNS),
+            len(inspected_columns),
             num_workers,
         ),
     )
@@ -116,7 +65,15 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
     for _ in range(num_workers):
         p = mp.Process(
             target=worker,
-            args=(db_filepath, out_dirpath, task_index, task_lock),
+            args=(
+                db_filepath,
+                tablename,
+                packets_column_names,
+                inspected_columns,
+                out_dirpath,
+                task_index,
+                task_lock,
+            ),
         )
         p.start()
         processes.append(p)
@@ -125,3 +82,49 @@ def solo_frequencies(db_filepath, out_dirpath, num_workers):
     for p in processes:
         p.join()
     logging.info("All {} workers completed their tasks".format(num_workers))
+
+
+def worker(
+    db_filepath,
+    tablename,
+    packets_column_names,
+    inspected_columns,
+    out_dirpath,
+    task_index,
+    task_lock,
+):
+    # Connect to the provided database
+    config.db.connect(db_filepath)
+
+    while True:
+        with task_lock:
+            # Get the next task
+            if task_index.value < len(inspected_columns):
+                column_name = inspected_columns[task_index.value]
+                task_index.value += 1
+            else:
+                break
+
+        # Derive the path of the output file
+        global_index = packets_column_names.index(column_name)
+        out_filepath = os.path.join(
+            out_dirpath,
+            "{}-{}-frequency.tsv".format(
+                str(global_index).zfill(3),
+                column_name,
+            ),
+        )
+
+        # Do not count entries with errors,
+        # except when we want to count the errors themselves
+        results = config.db.grouped_count(
+            tablename,
+            [column_name],
+            column_name == "error_msg",
+        )
+
+        # Write the computed frequencies in the output file
+        config.fs.write_tsv(results, out_filepath)
+
+    # Disconnect from the provided database
+    config.db.disconnect()

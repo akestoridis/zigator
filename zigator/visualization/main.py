@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -18,11 +18,19 @@ import logging
 import os
 
 from .. import config
+from ..enums import Protocol
 from .network_graphs import network_graphs
 
 
 def main(db_filepath, out_dirpath):
     """Visualize traffic stored in a database file."""
+    # Make sure that the expected networking protocol is supported
+    if config.nwk_protocol not in {Protocol.ZIGBEE}:
+        raise ValueError(
+            "Unsupported networking protocol for visualization purposes: "
+            + "{}".format(config.nwk_protocol),
+        )
+
     # Sanity check
     if not os.path.isfile(db_filepath):
         raise ValueError(

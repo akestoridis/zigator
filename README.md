@@ -2,7 +2,7 @@
 
 # zigator
 
-Zigator: Security analysis tool for Zigbee networks
+Zigator: A security analysis tool for Zigbee and Thread networks
 
 <!-- START OF BADGES -->
 ![Status of tests workflow](https://img.shields.io/github/workflow/status/akestoridis/zigator/wf01-tests?label=tests)
@@ -15,7 +15,7 @@ Zigator: Security analysis tool for Zigbee networks
 
 ## Disclaimer
 
-Zigator is a software tool that analyzes the security of Zigbee networks, which is made available for benign research purposes only.
+Zigator is a software tool that analyzes the security of Zigbee and Thread networks, which is made available for benign research purposes only.
 The users of this tool are responsible for making sure that they are compliant with their local laws and that they have proper permission from the affected network owners.
 
 
@@ -49,17 +49,18 @@ After reloading your `~/.bashrc` file, you should be able to find the `zigator` 
 
 Zigator enables its users to do the following:
 
+* Decrypt and verify both Zigbee and Thread packets
+* Encrypt and authenticate both Zigbee and Thread packets
 * Derive preconfigured Trust Center link keys from install codes
-* Decrypt and verify Zigbee packets
-* Encrypt and authenticate Zigbee packets
-* Parse almost all the header fields of Zigbee packets up to the APS layer
-* Infer information from captured Zigbee packets
-* Produce statistics from a database of Zigbee packets
-* Visualize data from a database of Zigbee packets
-* Train decision tree classifiers from a database of Zigbee packets
+* Derive MAC keys and MLE keys from master keys
+* Parse several header fields of Zigbee and Thread packets
+* Infer information from captured Zigbee and Thread packets
+* Produce statistics from databases with Zigbee and Thread packets
+* Visualize data from databases with Zigbee packets
+* Train decision tree classifiers from databases with Zigbee packets
 * Inject forged packets over UDP and SLL
 * Launch selective jamming and spoofing attacks with an ATUSB
-* Deploy stand-alone WIDS sensors
+* Deploy stand-alone WIDS sensors for Zigbee networks
 
 
 ## Getting Started
@@ -75,20 +76,20 @@ For example, the following command displays the supported arguments of the `inje
 (venv) $ zigator inject -h
 ```
 
-Similarly, you can view the supported arguments of the `inject` subcommand for the forging of a beacon, before forwarding it for injection over UDP, with the following command:
+Similarly, you can view the supported arguments of the `inject` subcommand for the forging of a Zigbee beacon, before forwarding it for injection over UDP, with the following command:
 ```console
-(venv) $ zigator inject udp beacon -h
+(venv) $ zigator inject udp zigbeebeacon -h
 ```
 
-For instance, you can forward a forged beacon for injection over UDP, that has its PAN ID set to 0xbbcc and the remaining fields set to their default values, by executing the following command:
+For instance, you can forward a forged Zigbee beacon for injection over UDP, that has its PAN ID set to 0xbbcc and the remaining fields set to their default values, by executing the following command:
 ```console
-(venv) $ zigator inject udp beacon --mac_srcpanid 0xbbcc
+(venv) $ zigator inject udp zigbeebeacon --mac_srcpanid 0xbbcc
 ```
 
 Note that some Zigator subcommands can only be executed by the superuser.
 For example, you will have to execute your installed executable with `sudo` in order to send a forged packet to a raw socket, e.g.:
 ```console
-(venv) $ sudo ./venv/bin/zigator inject sll beacon --mac_srcpanid 0xbbcc
+(venv) $ sudo ./venv/bin/zigator inject sll zigbeebeacon --mac_srcpanid 0xbbcc
 ```
 
 A disclaimer will be printed whenever the user executes a command that would launch an attack.
@@ -119,6 +120,6 @@ Zigator was used in the following publications:
 
 ## License
 
-Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 
 This project is licensed under the terms of the GNU General Public License version 2 only (GPL-2.0-only).

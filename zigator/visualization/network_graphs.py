@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -19,6 +19,7 @@ import os
 import graphviz
 
 from .. import config
+from ..enums import Table
 
 
 def network_graphs(out_dirpath):
@@ -28,7 +29,7 @@ def network_graphs(out_dirpath):
 
     # Get the path of each pcap file
     pcap_filepaths = config.db.fetch_values(
-        "packets",
+        Table.ZIGBEE_PACKETS.value,
         [
             "pcap_directory",
             "pcap_filename",
@@ -54,7 +55,7 @@ def network_graphs(out_dirpath):
 
         # Get all destination PAN IDs that were observed in these packets
         panids = config.db.fetch_values(
-            "packets",
+            Table.ZIGBEE_PACKETS.value,
             [
                 "mac_dstpanid",
             ],
@@ -70,7 +71,7 @@ def network_graphs(out_dirpath):
 
             # Get the addresses of nodes that have exchanged MAC Data packets
             addr_pairs = config.db.fetch_values(
-                "packets",
+                Table.ZIGBEE_PACKETS.value,
                 [
                     "mac_srcshortaddr",
                     "mac_dstshortaddr",
@@ -108,11 +109,11 @@ def network_graphs(out_dirpath):
                     fillcolor = "#FFFFFF"
                 digraph.node(
                     addr_node,
-                    style="filled",
                     color="black",
+                    style="filled",
                     fillcolor=fillcolor,
-                    fontname="DejaVu Sans Mono",
-                    fontsize="10",
+                    fontname="Liberation Sans",
+                    fontsize="14",
                 )
             for addr_pair in addr_pairs:
                 digraph.edge(addr_pair[0], addr_pair[1])

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -22,7 +22,7 @@ from operator import itemgetter
 from .. import config
 
 
-def battery_statuses(db_filepath, out_dirpath):
+def battery_statuses(db_filepath, tablename, out_dirpath):
     """Extract battery status measurements."""
     # Make sure that the output directory exists
     os.makedirs(out_dirpath, exist_ok=True)
@@ -36,7 +36,7 @@ def battery_statuses(db_filepath, out_dirpath):
 
     # Extract measurements from Read Attribute Response commands
     fetched_tuples = config.db.fetch_values(
-        "packets",
+        tablename,
         [
             "pkt_time",
             "zcl_readattributesresponse_identifiers",
@@ -91,7 +91,7 @@ def battery_statuses(db_filepath, out_dirpath):
 
     # Extract measurements from Zone Status Change Notification commands
     fetched_tuples = config.db.fetch_values(
-        "packets",
+        tablename,
         [
             "pkt_time",
             "zcl_iaszone_zonestatuschangenotif_zonestatus",

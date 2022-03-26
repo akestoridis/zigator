@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -15,47 +15,48 @@
 # along with Zigator. If not, see <https://www.gnu.org/licenses/>.
 
 from .. import config
+from ..enums import Table
 
 
 def basic_information():
     row_data = {
-        "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
-        "phy_length": config.entry["phy_length"],
-        "mac_frametype": config.entry["mac_frametype"],
-        "mac_seqnum": config.entry["mac_seqnum"],
-        "nwk_seqnum": config.entry["nwk_seqnum"],
-        "nwk_aux_framecounter": config.entry["nwk_aux_framecounter"],
-        "der_same_macnwksrc": config.entry["der_same_macnwksrc"],
-        "der_mac_srcpanid": config.entry["der_mac_srcpanid"],
-        "der_mac_srcshortaddr": config.entry["der_mac_srcshortaddr"],
-        "der_mac_srcextendedaddr": config.entry["der_mac_srcextendedaddr"],
-        "error_msg": config.entry["error_msg"],
+        "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
+        "phy_length": config.row["phy_length"],
+        "mac_frametype": config.row["mac_frametype"],
+        "mac_seqnum": config.row["mac_seqnum"],
+        "nwk_seqnum": config.row["nwk_seqnum"],
+        "nwk_aux_framecounter": config.row["nwk_aux_framecounter"],
+        "der_same_macnwksrc": config.row["der_same_macnwksrc"],
+        "der_mac_srcpanid": config.row["der_mac_srcpanid"],
+        "der_mac_srcshortaddr": config.row["der_mac_srcshortaddr"],
+        "der_mac_srcextendedaddr": config.row["der_mac_srcextendedaddr"],
+        "error_msg": config.row["error_msg"],
     }
-    config.db.insert("basic_information", row_data)
+    config.db.insert(Table.BASIC_INFORMATION.value, row_data)
 
 
 def battery_percentage():
     if (
-        config.entry["error_msg"] is None
-        and config.entry["der_same_macnwksrc"] == "Same MAC/NWK Src: True"
-        and config.entry["aps_frametype"] == "0b00: APS Data"
+        config.row["error_msg"] is None
+        and config.row["der_same_macnwksrc"] == "Same MAC/NWK Src: True"
+        and config.row["aps_frametype"] == "0b00: APS Data"
         and (
-            config.entry["aps_profile_id"]
+            config.row["aps_profile_id"]
             == "0x0104: Zigbee Home Automation (ZHA)"
         )
-        and config.entry["aps_cluster_id"] == "0x0001: Power Configuration"
+        and config.row["aps_cluster_id"] == "0x0001: Power Configuration"
     ):
-        if config.entry["zcl_cmd_id"] == "0x01: Read Attributes Response":
-            identifiers = config.entry[
+        if config.row["zcl_cmd_id"] == "0x01: Read Attributes Response":
+            identifiers = config.row[
                 "zcl_readattributesresponse_identifiers"
             ].split(",")
-            statuses = config.entry[
+            statuses = config.row[
                 "zcl_readattributesresponse_statuses"
             ].split(",")
-            datatypes = config.entry[
+            datatypes = config.row[
                 "zcl_readattributesresponse_datatypes"
             ].split(",")
-            values = config.entry[
+            values = config.row[
                 "zcl_readattributesresponse_values"
             ].split(",")
             if (
@@ -65,9 +66,9 @@ def battery_percentage():
             ):
                 return
             row_data = {
-                "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
-                "srcpanid": config.entry["der_mac_srcpanid"],
-                "srcshortaddr": config.entry["der_mac_srcshortaddr"],
+                "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
+                "srcpanid": config.row["der_mac_srcpanid"],
+                "srcshortaddr": config.row["der_mac_srcshortaddr"],
             }
             for i in range(len(identifiers)):
                 if (
@@ -76,27 +77,28 @@ def battery_percentage():
                     and datatypes[i] == "0x20: Unsigned 8-bit integer"
                 ):
                     row_data["percentage"] = int(values[i], 16) / 2.0
-                    config.db.insert("battery_percentages", row_data)
+                    config.db.insert(
+                        Table.BATTERY_PERCENTAGES.value,
+                        row_data,
+                    )
                     return
-        elif config.entry["zcl_cmd_id"] == "0x0a: Report Attributes":
-            identifiers = config.entry[
+        elif config.row["zcl_cmd_id"] == "0x0a: Report Attributes":
+            identifiers = config.row[
                 "zcl_reportattributes_identifiers"
             ].split(",")
-            datatypes = config.entry[
+            datatypes = config.row[
                 "zcl_reportattributes_datatypes"
             ].split(",")
-            data = config.entry[
-                "zcl_reportattributes_data"
-            ].split(",")
+            data = config.row["zcl_reportattributes_data"].split(",")
             if (
                 len(identifiers) != len(datatypes)
                 or len(identifiers) != len(data)
             ):
                 return
             row_data = {
-                "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
-                "srcpanid": config.entry["der_mac_srcpanid"],
-                "srcshortaddr": config.entry["der_mac_srcshortaddr"],
+                "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
+                "srcpanid": config.row["der_mac_srcpanid"],
+                "srcshortaddr": config.row["der_mac_srcshortaddr"],
             }
             for i in range(len(identifiers)):
                 if (
@@ -104,5 +106,8 @@ def battery_percentage():
                     and datatypes[i] == "0x20: Unsigned 8-bit integer"
                 ):
                     row_data["percentage"] = int(data[i], 16) / 2.0
-                    config.db.insert("battery_percentages", row_data)
+                    config.db.insert(
+                        Table.BATTERY_PERCENTAGES.value,
+                        row_data,
+                    )
                     return

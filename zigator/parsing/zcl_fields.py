@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -222,230 +222,224 @@ def zcl_fields(pkt):
     # Frame Control field (1 byte)
     # Frame Type subfield (2 bits)
     if not (
-        config.set_entry(
+        config.update_row(
             "zcl_frametype",
             pkt[ZigbeeClusterLibrary].zcl_frametype,
             ZCL_FRAME_TYPES,
+            "PE601: Unknown ZCL frame type",
         )
     ):
-        config.entry["error_msg"] = "PE601: Unknown ZCL frame type"
         return
     # Manufacturer Specific subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zcl_manufspecific",
             pkt[ZigbeeClusterLibrary].manufacturer_specific,
             MS_STATES,
+            "PE602: Unknown ZCL MS state",
         )
     ):
-        config.entry["error_msg"] = "PE602: Unknown ZCL MS state"
         return
     # Direction subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zcl_direction",
             pkt[ZigbeeClusterLibrary].command_direction,
             DIRECTION_STATES,
+            "PE603: Unknown ZCL direction state",
         )
     ):
-        config.entry["error_msg"] = "PE603: Unknown ZCL direction state"
         return
     # Default Response subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zcl_disdefrsp",
             pkt[ZigbeeClusterLibrary].disable_default_response,
             DR_STATES,
+            "PE604: Unknown ZCL DR state",
         )
     ):
-        config.entry["error_msg"] = "PE604: Unknown ZCL DR state"
         return
 
     # Manufacturer Code field (0/2 bytes)
-    if config.entry["zcl_manufspecific"].startswith("0b1:"):
-        config.entry["zcl_manufcode"] = "0x{:04x}".format(
+    if config.row["zcl_manufspecific"].startswith("0b1:"):
+        config.row["zcl_manufcode"] = "0x{:04x}".format(
             pkt[ZigbeeClusterLibrary].manufacturer_code,
         )
-    elif not config.entry["zcl_manufspecific"].startswith("0b0:"):
-        config.entry["error_msg"] = "Invalid manufacturer-specific state"
+    elif not config.row["zcl_manufspecific"].startswith("0b0:"):
+        config.row["error_msg"] = "Invalid manufacturer-specific state"
         return
 
     # Transaction Sequence Number field (1 byte)
-    config.entry["zcl_seqnum"] = (
-        pkt[ZigbeeClusterLibrary].transaction_sequence
-    )
+    config.row["zcl_seqnum"] = pkt[ZigbeeClusterLibrary].transaction_sequence
 
-    if config.entry["zcl_frametype"].startswith("0b00:"):
+    if config.row["zcl_frametype"].startswith("0b00:"):
         # Command Identifier field (1 byte)
         if not (
-            config.set_entry(
+            config.update_row(
                 "zcl_cmd_id",
                 pkt[ZigbeeClusterLibrary].command_identifier,
                 GLOBAL_COMMANDS,
+                "PE605: Unknown global command",
             )
         ):
-            config.entry["error_msg"] = "PE605: Unknown global command"
             return
 
         # ZCL Payload field (variable)
-        if config.entry["zcl_cmd_id"].startswith("0x00:"):
+        if config.row["zcl_cmd_id"].startswith("0x00:"):
             if pkt.haslayer(ZCLGeneralReadAttributes):
                 zcl_readattributes(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Read Attributes fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x01:"):
+        elif config.row["zcl_cmd_id"].startswith("0x01:"):
             if pkt.haslayer(ZCLGeneralReadAttributesResponse):
                 zcl_readattributesresponse(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Read Attributes Response fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x02:"):
+        elif config.row["zcl_cmd_id"].startswith("0x02:"):
             if pkt.haslayer(ZCLGeneralWriteAttributes):
                 zcl_writeattributes(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Write Attributes fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x04:"):
+        elif config.row["zcl_cmd_id"].startswith("0x04:"):
             if pkt.haslayer(ZCLGeneralWriteAttributesResponse):
                 zcl_writeattributesresponse(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Write Attributes Response fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x06:"):
+        elif config.row["zcl_cmd_id"].startswith("0x06:"):
             if pkt.haslayer(ZCLGeneralConfigureReporting):
                 zcl_configurereporting(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Configure Reporting fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x07:"):
+        elif config.row["zcl_cmd_id"].startswith("0x07:"):
             if pkt.haslayer(ZCLGeneralConfigureReportingResponse):
                 zcl_configurereportingresponse(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Configure Reporting Response fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x0a:"):
+        elif config.row["zcl_cmd_id"].startswith("0x0a:"):
             if pkt.haslayer(ZCLGeneralReportAttributes):
                 zcl_reportattributes(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Report Attributes fields"
                 )
                 return
-        elif config.entry["zcl_cmd_id"].startswith("0x0b:"):
+        elif config.row["zcl_cmd_id"].startswith("0x0b:"):
             if pkt.haslayer(ZCLGeneralDefaultResponse):
                 zcl_defaultresponse(pkt)
             else:
-                config.entry["error_msg"] = (
+                config.row["error_msg"] = (
                     "There are no ZCL Default Response fields"
                 )
                 return
         else:
-            config.entry["warning_msg"] = "Unsupported global command"
+            config.row["warning_msg"] = "Unsupported global command"
             return
-    elif config.entry["zcl_frametype"].startswith("0b01:"):
-        if config.entry["aps_cluster_id"].startswith("0x0500:"):
-            if config.entry["zcl_direction"].startswith("0b0:"):
+    elif config.row["zcl_frametype"].startswith("0b01:"):
+        if config.row["aps_cluster_id"].startswith("0x0500:"):
+            if config.row["zcl_direction"].startswith("0b0:"):
                 # Command Identifier field (1 byte)
                 if not (
-                    config.set_entry(
+                    config.update_row(
                         "zcl_cmd_id",
                         pkt[ZigbeeClusterLibrary].command_identifier,
                         ZCL_IASZONE_RECEIVED_COMMANDS,
+                        "Unknown ZCL IAS Zone client-to-server command",
                     )
                 ):
-                    config.entry["error_msg"] = (
-                        "Unknown ZCL IAS Zone client-to-server command"
-                    )
                     return
 
                 # ZCL Payload field (variable)
-                if config.entry["zcl_cmd_id"].startswith("0x00:"):
+                if config.row["zcl_cmd_id"].startswith("0x00:"):
                     if pkt.haslayer(ZCLIASZoneZoneEnrollResponse):
                         zcl_iaszone_zoneenrollrsp(pkt)
                     else:
-                        config.entry["error_msg"] = (
+                        config.row["error_msg"] = (
                             "There are no ZCL IAS Zone: "
                             + "Zone Enroll Response fields"
                         )
                         return
                 else:
-                    config.entry["warning_msg"] = (
+                    config.row["warning_msg"] = (
                         "Unsupported ZCL IAS Zone client-to-server command"
                     )
                     return
-            elif config.entry["zcl_direction"].startswith("0b1:"):
+            elif config.row["zcl_direction"].startswith("0b1:"):
                 # Command Identifier field (1 byte)
                 if not (
-                    config.set_entry(
+                    config.update_row(
                         "zcl_cmd_id",
                         pkt[ZigbeeClusterLibrary].command_identifier,
                         ZCL_IASZONE_GENERATED_COMMANDS,
+                        "Unknown ZCL IAS Zone server-to-client command",
                     )
                 ):
-                    config.entry["error_msg"] = (
-                        "Unknown ZCL IAS Zone server-to-client command"
-                    )
                     return
 
                 # ZCL Payload field (variable)
-                if config.entry["zcl_cmd_id"].startswith("0x00:"):
+                if config.row["zcl_cmd_id"].startswith("0x00:"):
                     if pkt.haslayer(ZCLIASZoneZoneStatusChangeNotification):
                         zcl_iaszone_zonestatuschangenotif(pkt)
                     else:
-                        config.entry["error_msg"] = (
+                        config.row["error_msg"] = (
                             "There are no ZCL IAS Zone: "
                             + "Zone Status Change Notification fields"
                         )
                         return
-                elif config.entry["zcl_cmd_id"].startswith("0x01:"):
+                elif config.row["zcl_cmd_id"].startswith("0x01:"):
                     if pkt.haslayer(ZCLIASZoneZoneEnrollRequest):
                         zcl_iaszone_zoneenrollreq(pkt)
                     else:
-                        config.entry["error_msg"] = (
+                        config.row["error_msg"] = (
                             "There are no ZCL IAS Zone: "
                             + "Zone Enroll Request fields"
                         )
                         return
                 else:
-                    config.entry["warning_msg"] = (
+                    config.row["warning_msg"] = (
                         "Unsupported ZCL IAS Zone server-to-client command"
                     )
                     return
             else:
-                config.entry["error_msg"] = "Invalid ZCL direction state"
+                config.row["error_msg"] = "Invalid ZCL direction state"
                 return
         else:
             # Command Identifier field (1 byte)
-            config.entry["zcl_cmd_id"] = (
+            config.row["zcl_cmd_id"] = (
                 "0x{:02x}: Unknown cluster-specific command".format(
                     pkt[ZigbeeClusterLibrary].command_identifier,
                 )
             )
 
             # ZCL Payload field (variable)
-            config.entry["warning_msg"] = "Unknown cluster-specific command"
+            config.row["warning_msg"] = "Unknown cluster-specific command"
             return
     else:
-        config.entry["error_msg"] = "Invalid ZCL frame type"
+        config.row["error_msg"] = "Invalid ZCL frame type"
         return
 
 
 def zcl_readattributes(pkt):
     # Attribute Identifiers field (variable)
-    config.entry["zcl_readattributes_identifiers"] = ",".join(
+    config.row["zcl_readattributes_identifiers"] = ",".join(
         [
             "0x{:04x}".format(identifier)
             for identifier in pkt[
@@ -456,7 +450,7 @@ def zcl_readattributes(pkt):
 
     # ZCL Read Attributes commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralReadAttributes].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -488,7 +482,7 @@ def zcl_readattributesresponse(pkt):
                     tmp_record.status,
                 ),
             )
-            config.entry["warning_msg"] = "Unknown ZCL command status"
+            config.row["warning_msg"] = "Unknown ZCL command status"
 
         # Attribute Data Type subfield (0/1 byte)
         if tmp_statuses[-1].startswith("0x00:"):
@@ -497,7 +491,7 @@ def zcl_readattributesresponse(pkt):
                     ZCL_ATTR_DATATYPES[tmp_record.attribute_data_type],
                 )
             else:
-                config.entry["error_msg"] = "Unknown ZCL attribute data type"
+                config.row["error_msg"] = "Unknown ZCL attribute data type"
                 return
         else:
             tmp_datatypes.append("Omitted")
@@ -507,20 +501,18 @@ def zcl_readattributesresponse(pkt):
             tmp_values.append("0x" + tmp_record.attribute_value.hex())
         else:
             tmp_values.append("Omitted")
-    config.entry["zcl_readattributesresponse_identifiers"] = ",".join(
+    config.row["zcl_readattributesresponse_identifiers"] = ",".join(
         tmp_identifiers,
     )
-    config.entry["zcl_readattributesresponse_statuses"] = ",".join(
-        tmp_statuses,
-    )
-    config.entry["zcl_readattributesresponse_datatypes"] = ",".join(
+    config.row["zcl_readattributesresponse_statuses"] = ",".join(tmp_statuses)
+    config.row["zcl_readattributesresponse_datatypes"] = ",".join(
         tmp_datatypes,
     )
-    config.entry["zcl_readattributesresponse_values"] = ",".join(tmp_values)
+    config.row["zcl_readattributesresponse_values"] = ",".join(tmp_values)
 
     # ZCL Read Attributes Response commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralReadAttributesResponse].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -544,20 +536,18 @@ def zcl_writeattributes(pkt):
                 ZCL_ATTR_DATATYPES[tmp_record.attribute_data_type],
             )
         else:
-            config.entry["error_msg"] = "Unknown ZCL attribute data type"
+            config.row["error_msg"] = "Unknown ZCL attribute data type"
             return
 
         # Attribute Data subfield (variable)
         tmp_data.append("0x" + tmp_record.attribute_data.hex())
-    config.entry["zcl_writeattributes_identifiers"] = ",".join(
-        tmp_identifiers,
-    )
-    config.entry["zcl_writeattributes_datatypes"] = ",".join(tmp_datatypes)
-    config.entry["zcl_writeattributes_data"] = ",".join(tmp_data)
+    config.row["zcl_writeattributes_identifiers"] = ",".join(tmp_identifiers)
+    config.row["zcl_writeattributes_datatypes"] = ",".join(tmp_datatypes)
+    config.row["zcl_writeattributes_data"] = ",".join(tmp_data)
 
     # ZCL Write Attributes commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralWriteAttributes].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -578,7 +568,7 @@ def zcl_writeattributesresponse(pkt):
                     tmp_record.status,
                 ),
             )
-            config.entry["warning_msg"] = "Unknown ZCL command status"
+            config.row["warning_msg"] = "Unknown ZCL command status"
 
         # Attribute Identifier subfield (0/2 bytes)
         if not tmp_statuses[-1].startswith("0x00:"):
@@ -587,16 +577,16 @@ def zcl_writeattributesresponse(pkt):
             )
         else:
             tmp_identifiers.append("Omitted")
-    config.entry["zcl_writeattributesresponse_statuses"] = ",".join(
+    config.row["zcl_writeattributesresponse_statuses"] = ",".join(
         tmp_statuses,
     )
-    config.entry["zcl_writeattributesresponse_identifiers"] = ",".join(
+    config.row["zcl_writeattributesresponse_identifiers"] = ",".join(
         tmp_identifiers,
     )
 
     # ZCL Write Attributes Response commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralWriteAttributesResponse].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -619,7 +609,7 @@ def zcl_configurereporting(pkt):
                 ZCL_ATTR_DIRECTIONS[tmp_record.attribute_direction],
             )
         else:
-            config.entry["error_msg"] = "Unknown ZCL attribute direction"
+            config.row["error_msg"] = "Unknown ZCL attribute direction"
             return
 
         # Attribute Identifier subfield (2 bytes)
@@ -634,7 +624,7 @@ def zcl_configurereporting(pkt):
                     ZCL_ATTR_DATATYPES[tmp_record.attribute_data_type],
                 )
             else:
-                config.entry["error_msg"] = "Unknown ZCL attribute data type"
+                config.row["error_msg"] = "Unknown ZCL attribute data type"
                 return
         else:
             tmp_datatypes.append("Omitted")
@@ -662,27 +652,25 @@ def zcl_configurereporting(pkt):
             tmp_timeoutperiods.append(str(tmp_record.timeout_period))
         else:
             tmp_timeoutperiods.append("Omitted")
-    config.entry["zcl_configurereporting_directions"] = ",".join(
-        tmp_directions,
-    )
-    config.entry["zcl_configurereporting_identifiers"] = ",".join(
+    config.row["zcl_configurereporting_directions"] = ",".join(tmp_directions)
+    config.row["zcl_configurereporting_identifiers"] = ",".join(
         tmp_identifiers,
     )
-    config.entry["zcl_configurereporting_datatypes"] = ",".join(tmp_datatypes)
-    config.entry["zcl_configurereporting_minintervals"] = ",".join(
+    config.row["zcl_configurereporting_datatypes"] = ",".join(tmp_datatypes)
+    config.row["zcl_configurereporting_minintervals"] = ",".join(
         tmp_minintervals,
     )
-    config.entry["zcl_configurereporting_maxintervals"] = ",".join(
+    config.row["zcl_configurereporting_maxintervals"] = ",".join(
         tmp_maxintervals,
     )
-    config.entry["zcl_configurereporting_changes"] = ",".join(tmp_changes)
-    config.entry["zcl_configurereporting_timeoutperiods"] = ",".join(
+    config.row["zcl_configurereporting_changes"] = ",".join(tmp_changes)
+    config.row["zcl_configurereporting_timeoutperiods"] = ",".join(
         tmp_timeoutperiods,
     )
 
     # ZCL Configure Reporting commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralConfigureReporting].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -708,7 +696,7 @@ def zcl_configurereportingresponse(pkt):
                     tmp_record.status,
                 ),
             )
-            config.entry["warning_msg"] = "Unknown ZCL command status"
+            config.row["warning_msg"] = "Unknown ZCL command status"
 
         # Direction subfield (0/1 byte)
         if not tmp_statuses[-1].startswith("0x00:"):
@@ -717,7 +705,7 @@ def zcl_configurereportingresponse(pkt):
                     ZCL_ATTR_DIRECTIONS[tmp_record.attribute_direction],
                 )
             else:
-                config.entry["error_msg"] = "Unknown ZCL attribute direction"
+                config.row["error_msg"] = "Unknown ZCL attribute direction"
                 return
         else:
             tmp_directions.append("Omitted")
@@ -729,20 +717,20 @@ def zcl_configurereportingresponse(pkt):
             )
         else:
             tmp_identifiers.append("Omitted")
-    config.entry["zcl_configurereportingresponse_statuses"] = ",".join(
+    config.row["zcl_configurereportingresponse_statuses"] = ",".join(
         tmp_statuses,
     )
-    config.entry["zcl_configurereportingresponse_directions"] = ",".join(
+    config.row["zcl_configurereportingresponse_directions"] = ",".join(
         tmp_directions,
     )
-    config.entry["zcl_configurereportingresponse_identifiers"] = ",".join(
+    config.row["zcl_configurereportingresponse_identifiers"] = ",".join(
         tmp_identifiers,
     )
 
     # ZCL Configure Reporting Response commands
     # do not contain any other fields
     if len(bytes(pkt[ZCLGeneralConfigureReportingResponse].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -766,77 +754,73 @@ def zcl_reportattributes(pkt):
                 ZCL_ATTR_DATATYPES[tmp_report.attribute_data_type],
             )
         else:
-            config.entry["error_msg"] = "Unknown ZCL attribute data type"
+            config.row["error_msg"] = "Unknown ZCL attribute data type"
             return
 
         # Attribute Data subfield (variable)
         tmp_data.append("0x" + tmp_report.attribute_data.hex())
-    config.entry["zcl_reportattributes_identifiers"] = ",".join(
-        tmp_identifiers,
-    )
-    config.entry["zcl_reportattributes_datatypes"] = ",".join(tmp_datatypes)
-    config.entry["zcl_reportattributes_data"] = ",".join(tmp_data)
+    config.row["zcl_reportattributes_identifiers"] = ",".join(tmp_identifiers)
+    config.row["zcl_reportattributes_datatypes"] = ",".join(tmp_datatypes)
+    config.row["zcl_reportattributes_data"] = ",".join(tmp_data)
 
     # ZCL Report Attributes commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralReportAttributes].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
 def zcl_defaultresponse(pkt):
     # Response Command Identifier field (1 byte)
-    config.entry["zcl_defaultresponse_rspcmdid"] = "0x{:02x}".format(
+    config.row["zcl_defaultresponse_rspcmdid"] = "0x{:02x}".format(
         pkt[ZCLGeneralDefaultResponse].response_command_identifier,
     )
 
     # Status field (1 byte)
     if pkt[ZCLGeneralDefaultResponse].status in ZCL_CMD_STATUSES.keys():
-        config.entry["zcl_defaultresponse_status"] = (
+        config.row["zcl_defaultresponse_status"] = (
             ZCL_CMD_STATUSES[pkt[ZCLGeneralDefaultResponse].status]
         )
     else:
-        config.entry["zcl_defaultresponse_status"] = (
+        config.row["zcl_defaultresponse_status"] = (
             "0x{:02x}: Unknown ZCL command status".format(
                 pkt[ZCLGeneralDefaultResponse].status,
             )
         )
-        config.entry["warning_msg"] = "Unknown ZCL command status"
+        config.row["warning_msg"] = "Unknown ZCL command status"
 
     # ZCL Default Response commands do not contain any other fields
     if len(bytes(pkt[ZCLGeneralDefaultResponse].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
 def zcl_iaszone_zoneenrollrsp(pkt):
     # Enroll Response Code field (1 byte)
     if not (
-        config.set_entry(
+        config.update_row(
             "zcl_iaszone_zoneenrollrsp_code",
             pkt[ZCLIASZoneZoneEnrollResponse].rsp_code,
             ZCL_IASZONE_ENROLLRESPONSECODES,
+            "Unknown ZCL IAS Zone enroll response code",
         )
     ):
-        config.entry["error_msg"] = (
-            "Unknown ZCL IAS Zone enroll response code"
-        )
         return
 
     # Zone ID field (1 byte)
-    config.entry["zcl_iaszone_zoneenrollrsp_zoneid"] = "0x{:02x}".format(
+    config.row["zcl_iaszone_zoneenrollrsp_zoneid"] = "0x{:02x}".format(
         pkt[ZCLIASZoneZoneEnrollResponse].zone_id,
     )
 
     # ZCL IAS Zone: Zone Enroll Response commands
     # do not contain any other fields
     if len(bytes(pkt[ZCLIASZoneZoneEnrollResponse].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
 def zcl_iaszone_zonestatuschangenotif(pkt):
     # Zone Status field (2 bytes)
-    config.entry["zcl_iaszone_zonestatuschangenotif_zonestatus"] = (
+    config.row["zcl_iaszone_zonestatuschangenotif_zonestatus"] = (
         "0x"
         + pkt[
             ZCLIASZoneZoneStatusChangeNotification
@@ -844,7 +828,7 @@ def zcl_iaszone_zonestatuschangenotif(pkt):
     )
 
     # Extended Status field (1 byte)
-    config.entry["zcl_iaszone_zonestatuschangenotif_extendedstatus"] = (
+    config.row["zcl_iaszone_zonestatuschangenotif_extendedstatus"] = (
         "0x"
         + pkt[
             ZCLIASZoneZoneStatusChangeNotification
@@ -852,14 +836,14 @@ def zcl_iaszone_zonestatuschangenotif(pkt):
     )
 
     # Zone ID field (1 byte)
-    config.entry["zcl_iaszone_zonestatuschangenotif_zoneid"] = (
+    config.row["zcl_iaszone_zonestatuschangenotif_zoneid"] = (
         "0x{:02x}".format(
             pkt[ZCLIASZoneZoneStatusChangeNotification].zone_id,
         )
     )
 
     # Delay (2 bytes)
-    config.entry["zcl_iaszone_zonestatuschangenotif_delay"] = (
+    config.row["zcl_iaszone_zonestatuschangenotif_delay"] = (
         "0x{:04x}".format(
             pkt[ZCLIASZoneZoneStatusChangeNotification].delay,
         )
@@ -868,7 +852,7 @@ def zcl_iaszone_zonestatuschangenotif(pkt):
     # ZCL IAS Zone: Zone Status Change Notification commands
     # do not contain any other fields
     if len(bytes(pkt[ZCLIASZoneZoneStatusChangeNotification].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
@@ -878,24 +862,24 @@ def zcl_iaszone_zoneenrollreq(pkt):
         pkt[ZCLIASZoneZoneEnrollRequest].zone_type
         in ZCL_IASZONE_ZONETYPES.keys()
     ):
-        config.entry["zcl_iaszone_zoneenrollreq_zonetype"] = (
+        config.row["zcl_iaszone_zoneenrollreq_zonetype"] = (
             ZCL_IASZONE_ZONETYPES[pkt[ZCLIASZoneZoneEnrollRequest].zone_type]
         )
     else:
-        config.entry["zcl_iaszone_zoneenrollreq_zonetype"] = (
+        config.row["zcl_iaszone_zoneenrollreq_zonetype"] = (
             "0x{:04x}: Unknown zone type".format(
                 pkt[ZCLIASZoneZoneEnrollRequest].zone_type,
             )
         )
-        config.entry["warning_msg"] = "Unknown zone type"
+        config.row["warning_msg"] = "Unknown zone type"
 
     # Manufacturer Code (2 bytes)
-    config.entry["zcl_iaszone_zoneenrollreq_manufcode"] = "0x{:04x}".format(
+    config.row["zcl_iaszone_zoneenrollreq_manufcode"] = "0x{:04x}".format(
         pkt[ZCLIASZoneZoneEnrollRequest].manuf_code,
     )
 
     # ZCL IAS Zone: Zone Enroll Request commands
     # do not contain any other fields
     if len(bytes(pkt[ZCLIASZoneZoneEnrollRequest].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -57,47 +57,45 @@ ALLOCADDR_STATES = {
 def zdp_fields(pkt):
     """Parse Zigbee Device Profile fields."""
     # Transaction Sequence Number field (1 byte)
-    config.entry["zdp_seqnum"] = pkt[ZigbeeDeviceProfile].trans_seqnum
+    config.row["zdp_seqnum"] = pkt[ZigbeeDeviceProfile].trans_seqnum
 
     # Transaction Data field (variable)
-    if config.entry["aps_cluster_id"].startswith("0x0005:"):
+    if config.row["aps_cluster_id"].startswith("0x0005:"):
         if pkt.haslayer(ZDPActiveEPReq):
             zdp_activeepreq(pkt)
         else:
-            config.entry["error_msg"] = (
-                "There are no ZDP Active_EP_req fields"
-            )
+            config.row["error_msg"] = "There are no ZDP Active_EP_req fields"
             return
-    elif config.entry["aps_cluster_id"].startswith("0x0013:"):
+    elif config.row["aps_cluster_id"].startswith("0x0013:"):
         if pkt.haslayer(ZDPDeviceAnnce):
             zdp_deviceannce(pkt)
         else:
-            config.entry["error_msg"] = "There are no ZDP Device_annce fields"
+            config.row["error_msg"] = "There are no ZDP Device_annce fields"
             return
     else:
-        config.entry["warning_msg"] = "Unknown ZDP transaction data"
+        config.row["warning_msg"] = "Unknown ZDP transaction data"
 
 
 def zdp_activeepreq(pkt):
     # NWK Address field (2 bytes)
-    config.entry["zdp_activeepreq_nwkaddr"] = "0x{:04x}".format(
+    config.row["zdp_activeepreq_nwkaddr"] = "0x{:04x}".format(
         pkt[ZDPActiveEPReq].nwk_addr,
     )
 
     # ZDP Active_EP_req commands do not contain any other fields
     if len(bytes(pkt[ZDPActiveEPReq].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return
 
 
 def zdp_deviceannce(pkt):
     # NWK Address field (2 bytes)
-    config.entry["zdp_deviceannce_nwkaddr"] = "0x{:04x}".format(
+    config.row["zdp_deviceannce_nwkaddr"] = "0x{:04x}".format(
         pkt[ZDPDeviceAnnce].nwk_addr,
     )
 
     # IEEE Address field (8 bytes)
-    config.entry["zdp_deviceannce_ieeeaddr"] = format(
+    config.row["zdp_deviceannce_ieeeaddr"] = format(
         pkt[ZDPDeviceAnnce].ieee_addr,
         "016x",
     )
@@ -105,66 +103,66 @@ def zdp_deviceannce(pkt):
     # Capability Information field (1 byte)
     # Alternate PAN Coordinator subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_apc",
             pkt[ZDPDeviceAnnce].alternate_pan_coordinator,
             APC_STATES,
+            "Unknown APC state",
         )
     ):
-        config.entry["error_msg"] = "Unknown APC state"
         return
     # Device Type subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_devtype",
             pkt[ZDPDeviceAnnce].device_type,
             DEVICE_TYPES,
+            "Unknown device type",
         )
     ):
-        config.entry["error_msg"] = "Unknown device type"
         return
     # Power Source subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_powsrc",
             pkt[ZDPDeviceAnnce].power_source,
             POWER_SOURCES,
+            "Unknown power source",
         )
     ):
-        config.entry["error_msg"] = "Unknown power source"
         return
     # Receiver On When Idle subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_rxidle",
             pkt[ZDPDeviceAnnce].receiver_on_when_idle,
             RXIDLE_STATES,
+            "Unknown RX state when idle",
         )
     ):
-        config.entry["error_msg"] = "Unknown RX state when idle"
         return
     # Security Capability subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_seccap",
             pkt[ZDPDeviceAnnce].security_capability,
             SECURITY_CAPABILITIES,
+            "Unknown MAC security capability",
         )
     ):
-        config.entry["error_msg"] = "Unknown MAC security capability"
         return
     # Allocate Address subfield (1 bit)
     if not (
-        config.set_entry(
+        config.update_row(
             "zdp_deviceannce_allocaddr",
             pkt[ZDPDeviceAnnce].allocate_address,
             ALLOCADDR_STATES,
+            "Unknown address allocation",
         )
     ):
-        config.entry["error_msg"] = "Unknown address allocation"
         return
 
     # ZDP Device_annce commands do not contain any other fields
     if len(bytes(pkt[ZDPDeviceAnnce].payload)) != 0:
-        config.entry["error_msg"] = "Unexpected payload"
+        config.row["error_msg"] = "Unexpected payload"
         return

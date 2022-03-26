@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -17,39 +17,43 @@
 from scapy.all import (
     Dot15d4Beacon,
     Dot15d4FCS,
-    ZigBeeBeacon,
+    Raw,
+    ThreadBeacon,
 )
 
 
-def beacon(
+def threadbeacon(
     mac_seqnum,
     mac_srcpanid,
-    mac_srcshortaddr,
-    mac_beacon_pancoord,
-    mac_beacon_assocpermit,
-    nwk_beacon_devdepth,
-    nwk_beacon_epid,
-    nwk_beacon_updateid,
+    mac_srcextendedaddr,
+    thr_beacon_version,
+    thr_beacon_native,
+    thr_beacon_joining,
+    thr_beacon_networkname,
+    thr_beacon_epid,
+    thr_beacon_payload,
 ):
     # Sanity checks
     if mac_seqnum < 0 or mac_seqnum > 255:
         raise ValueError("Invalid MAC sequence number")
     elif mac_srcpanid < 0 or mac_srcpanid.bit_length() > 16:
         raise ValueError("Invalid source PAN ID")
-    elif mac_srcshortaddr < 0 or mac_srcshortaddr.bit_length() > 16:
-        raise ValueError("Invalid short source MAC address")
-    elif mac_beacon_pancoord not in {0, 1}:
-        raise ValueError("Invalid PAN Coordinator beacon field value")
-    elif mac_beacon_assocpermit not in {0, 1}:
-        raise ValueError("Invalid Association Permit beacon field value")
-    elif nwk_beacon_devdepth < 0 or nwk_beacon_devdepth > 15:
-        raise ValueError("Invalid Device Depth beacon field value")
-    elif nwk_beacon_epid < 0 or nwk_beacon_epid.bit_length() > 64:
+    elif mac_srcextendedaddr < 0 or mac_srcextendedaddr.bit_length() > 64:
+        raise ValueError("Invalid extended source MAC address")
+    elif thr_beacon_version < 0 or thr_beacon_version > 15:
+        raise ValueError("Invalid Version beacon field value")
+    elif thr_beacon_native not in {0, 1}:
+        raise ValueError("Invalid Native beacon field value")
+    elif thr_beacon_joining not in {0, 1}:
+        raise ValueError("Invalid Joining beacon field value")
+    elif len(thr_beacon_networkname) > 16:
+        raise ValueError("Invalid Network Name beacon field value")
+    elif thr_beacon_epid < 0 or thr_beacon_epid.bit_length() > 64:
         raise ValueError("Invalid Extended PAN ID beacon field value")
-    elif nwk_beacon_updateid < 0 or nwk_beacon_updateid > 255:
-        raise ValueError("Invalid Update ID beacon field value")
+    elif len(thr_beacon_payload) > 82:
+        raise ValueError("Invalid length of additional raw beacon payload")
 
-    # Forge a beacon
+    # Forge a Thread beacon
     forged_pkt = (
         Dot15d4FCS(
             fcf_frametype=0,
@@ -59,33 +63,33 @@ def beacon(
             fcf_panidcompress=False,
             fcf_destaddrmode=0,
             fcf_framever=0,
-            fcf_srcaddrmode=2,
+            fcf_srcaddrmode=3,
             seqnum=mac_seqnum,
         )
         / Dot15d4Beacon(
             src_panid=mac_srcpanid,
-            src_addr=mac_srcshortaddr,
+            src_addr=mac_srcextendedaddr,
             sf_beaconorder=15,
             sf_sforder=15,
             sf_finalcapslot=15,
             sf_battlifeextend=0,
-            sf_pancoord=mac_beacon_pancoord,
-            sf_assocpermit=mac_beacon_assocpermit,
+            sf_pancoord=0,
+            sf_assocpermit=0,
             gts_spec_desccount=0,
             gts_spec_permit=0,
             pa_num_short=0,
             pa_num_long=0,
         )
-        / ZigBeeBeacon(
-            proto_id=0,
-            stack_profile=2,
-            nwkc_protocol_version=2,
-            router_capacity=1,
-            device_depth=nwk_beacon_devdepth,
-            end_device_capacity=1,
-            extended_pan_id=nwk_beacon_epid,
-            tx_offset=16777215,
-            update_id=nwk_beacon_updateid,
+        / ThreadBeacon(
+            protocol_id=3,
+            version=thr_beacon_version,
+            native=thr_beacon_native,
+            joining=thr_beacon_joining,
+            network_name=thr_beacon_networkname,
+            extended_pan_id=thr_beacon_epid,
+        )
+        / Raw(
+            thr_beacon_payload,
         )
     )
 

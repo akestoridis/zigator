@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -19,6 +19,7 @@ Enumerations for the ``zigator`` package.
 """
 
 from enum import (
+    Enum,
     IntEnum,
     auto,
 )
@@ -39,3 +40,31 @@ class Message(IntEnum):
     SHORT_ADDRESSES = auto()
     EXTENDED_ADDRESSES = auto()
     PAIRS = auto()
+
+
+class Protocol(str, Enum):
+    ZIGBEE = "zigbee"
+    THREAD = "thread"
+    UDP = "udp"
+    SLL = "sll"
+
+
+class Subcommand(str, Enum):
+    PRINT_CONFIG = "print-config"
+    ADD_CONFIG_ENTRY = "add-config-entry"
+    RM_CONFIG_ENTRY = "rm-config-entry"
+    PARSE = "parse"
+    ANALYZE = "analyze"
+    VISUALIZE = "visualize"
+    TRAIN = "train"
+    INJECT = "inject"
+    ATUSB = "atusb"
+    WIDS = "wids"
+
+
+class Table(str, Enum):
+    ZIGBEE_PACKETS = "zigbee_packets"
+    THREAD_PACKETS = "thread_packets"
+    BASIC_INFORMATION = "basic_information"
+    BATTERY_PERCENTAGES = "battery_percentages"
+    EVENTS = "events"

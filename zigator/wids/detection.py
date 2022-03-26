@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -18,62 +18,62 @@ from .. import (
     config,
     crypto,
 )
+from ..enums import Table
 
 
 def panid_conflict(panid, epid):
     if (
-        config.entry["error_msg"] is None
-        and config.entry["mac_frametype"] == "0b000: MAC Beacon"
-        and config.entry["mac_srcpanid"] == panid
-        and config.entry["nwk_beacon_epid"] != epid
+        config.row["error_msg"] is None
+        and config.row["mac_frametype"] == "0b000: MAC Beacon"
+        and config.row["mac_srcpanid"] == panid
+        and config.row["nwk_beacon_epid"] != epid
     ):
         row_data = {
-            "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
+            "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
             "description": "Potential PAN ID conflict",
         }
-        config.db.insert("events", row_data)
+        config.db.insert(Table.EVENTS.value, row_data)
 
 
 def unsecured_rejoinreq(panid):
     if (
-        config.entry["error_msg"] is None
-        and config.entry["mac_frametype"] == "0b001: MAC Data"
-        and config.entry["mac_dstpanid"] == panid
-        and config.entry["nwk_frametype"] == "0b01: NWK Command"
-        and config.entry["nwk_security"] == "0b0: NWK Security Disabled"
-        and config.entry["nwk_cmd_id"] == "0x06: NWK Rejoin Request"
+        config.row["error_msg"] is None
+        and config.row["mac_frametype"] == "0b001: MAC Data"
+        and config.row["mac_dstpanid"] == panid
+        and config.row["nwk_frametype"] == "0b01: NWK Command"
+        and config.row["nwk_security"] == "0b0: NWK Security Disabled"
+        and config.row["nwk_cmd_id"] == "0x06: NWK Rejoin Request"
     ):
         row_data = {
-            "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
+            "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
             "description": "Unsecured rejoin request",
         }
-        config.db.insert("events", row_data)
+        config.db.insert(Table.EVENTS.value, row_data)
 
 
 def key_leakage(panid, link_key_names, link_keys_lock):
     if (
-        config.entry["error_msg"] is None
-        and config.entry["mac_frametype"] == "0b001: MAC Data"
-        and config.entry["mac_dstpanid"] == panid
-        and config.entry["nwk_frametype"] == "0b00: NWK Data"
-        and config.entry["nwk_security"] == "0b0: NWK Security Disabled"
-        and config.entry["aps_frametype"] == "0b01: APS Command"
-        and config.entry["aps_cmd_id"] == "0x05: APS Transport Key"
+        config.row["error_msg"] is None
+        and config.row["mac_frametype"] == "0b001: MAC Data"
+        and config.row["mac_dstpanid"] == panid
+        and config.row["nwk_frametype"] == "0b00: NWK Data"
+        and config.row["nwk_security"] == "0b0: NWK Security Disabled"
+        and config.row["aps_frametype"] == "0b01: APS Command"
+        and config.row["aps_cmd_id"] == "0x05: APS Transport Key"
     ):
         row_data = {
-            "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
+            "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
             "description": "Potential key leakage",
         }
-        if config.entry["aps_security"] == "0b1: APS Security Enabled":
+        if config.row["aps_security"] == "0b1: APS Security Enabled":
             potential_keys = set()
             with link_keys_lock:
-                if config.entry["aps_aux_keytype"] == "0b00: Data Key":
+                if config.row["aps_aux_keytype"] == "0b00: Data Key":
                     for name in link_key_names:
                         if name in config.link_keys.keys():
                             potential_keys.add(config.link_keys[name])
                 elif (
-                    config.entry["aps_aux_keytype"]
-                    == "0b10: Key-Transport Key"
+                    config.row["aps_aux_keytype"] == "0b10: Key-Transport Key"
                 ):
                     for name in link_key_names:
                         if name in config.link_keys.keys():
@@ -83,7 +83,7 @@ def key_leakage(panid, link_key_names, link_keys_lock):
                                     config.link_keys[name],
                                 ),
                             )
-                elif config.entry["aps_aux_keytype"] == "0b11: Key-Load Key":
+                elif config.row["aps_aux_keytype"] == "0b11: Key-Load Key":
                     for name in link_key_names:
                         if name in config.link_keys.keys():
                             potential_keys.add(
@@ -93,50 +93,44 @@ def key_leakage(panid, link_key_names, link_keys_lock):
                                 ),
                             )
             for key in potential_keys:
-                if config.entry["aps_aux_deckey"] == key.hex():
-                    config.db.insert("events", row_data)
+                if config.row["aps_aux_deckey"] == key.hex():
+                    config.db.insert(Table.EVENTS.value, row_data)
                     return
         else:
-            config.db.insert("events", row_data)
+            config.db.insert(Table.EVENTS.value, row_data)
 
 
 def low_battery(panid):
     if (
-        config.entry["error_msg"] is None
-        and config.entry["mac_frametype"] == "0b001: MAC Data"
+        config.row["error_msg"] is None
+        and config.row["mac_frametype"] == "0b001: MAC Data"
+        and config.row["mac_srcaddrmode"] == "0b10: Short source MAC address"
+        and config.row["mac_dstpanid"] == panid
+        and config.row["nwk_frametype"] == "0b00: NWK Data"
+        and config.row["nwk_srcshortaddr"] == config.row["mac_srcshortaddr"]
+        and config.row["aps_frametype"] == "0b00: APS Data"
         and (
-            config.entry["mac_srcaddrmode"]
-            == "0b10: Short source MAC address"
-        )
-        and config.entry["mac_dstpanid"] == panid
-        and config.entry["nwk_frametype"] == "0b00: NWK Data"
-        and (
-            config.entry["nwk_srcshortaddr"]
-            == config.entry["mac_srcshortaddr"]
-        )
-        and config.entry["aps_frametype"] == "0b00: APS Data"
-        and (
-            config.entry["aps_profile_id"]
+            config.row["aps_profile_id"]
             == "0x0104: Zigbee Home Automation (ZHA)"
         )
-        and config.entry["aps_cluster_id"] == "0x0500: IAS Zone"
+        and config.row["aps_cluster_id"] == "0x0500: IAS Zone"
     ):
         row_data = {
-           "pkt_time": "{:.6f}".format(config.entry["pkt_time"]),
+           "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
            "description": "Low battery report from the {} node".format(
-               config.entry["nwk_srcshortaddr"]),
+               config.row["nwk_srcshortaddr"]),
         }
-        if config.entry["zcl_cmd_id"] == "0x01: Read Attributes Response":
-            identifiers = config.entry[
+        if config.row["zcl_cmd_id"] == "0x01: Read Attributes Response":
+            identifiers = config.row[
                 "zcl_readattributesresponse_identifiers"
             ].split(",")
-            statuses = config.entry[
+            statuses = config.row[
                 "zcl_readattributesresponse_statuses"
             ].split(",")
-            datatypes = config.entry[
+            datatypes = config.row[
                 "zcl_readattributesresponse_datatypes"
             ].split(",")
-            values = config.entry[
+            values = config.row[
                 "zcl_readattributesresponse_values"
             ].split(",")
             if (
@@ -161,19 +155,45 @@ def low_battery(panid):
                         & 0b1
                     )
                 ):
-                    config.db.insert("events", row_data)
+                    config.db.insert(Table.EVENTS.value, row_data)
                     return
         elif (
-            config.entry["zcl_cmd_id"]
+            config.row["zcl_cmd_id"]
             == "0x00: Zone Status Change Notification"
         ):
             zone_status = int.from_bytes(
                 bytes.fromhex(
-                    config.entry[
+                    config.row[
                         "zcl_iaszone_zonestatuschangenotif_zonestatus"
                     ][2:],
                 ),
                 byteorder="little",
             )
             if (zone_status >> 3) & 0b1:
-                config.db.insert("events", row_data)
+                config.db.insert(Table.EVENTS.value, row_data)
+
+
+def unverified_payload(panid):
+    if (
+        config.row["error_msg"] is None
+        and config.row["mac_frametype"] == "0b001: MAC Data"
+        and config.row["mac_dstpanid"] == panid
+    ):
+        if (
+            config.row["warning_msg"]
+            == "PW301: Unable to decrypt the NWK payload"
+        ):
+            row_data = {
+                "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
+                "description": "Unverified NWK payload",
+            }
+            config.db.insert(Table.EVENTS.value, row_data)
+        elif (
+            config.row["warning_msg"]
+            == "PW401: Unable to decrypt the APS payload"
+        ):
+            row_data = {
+                "pkt_time": "{:.6f}".format(config.row["pkt_time"]),
+                "description": "Unverified APS payload",
+            }
+            config.db.insert(Table.EVENTS.value, row_data)

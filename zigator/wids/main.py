@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2021-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -28,6 +28,7 @@ from time import sleep
 
 from scapy.all import (
     Dot15d4FCS,
+    conf,
     sniff,
     wrpcap,
 )
@@ -38,7 +39,11 @@ from . import (
     server,
 )
 from .. import config
-from ..enums import Message
+from ..enums import (
+    Message,
+    Protocol,
+    Table,
+)
 from ..parsing.derive_info import derive_info
 from ..parsing.phy_fields import phy_fields
 
@@ -48,6 +53,7 @@ EPID = None
 OUTPUT_DIRECTORY = None
 MAX_PCAP_DURATION = 0.0
 MAX_ZIP_FILES = 0
+MAX_QUEUE_SIZE = 0
 LINK_KEY_NAMES = []
 HELPER_DEQUE = deque()
 START_TIME = 0.0
@@ -63,6 +69,7 @@ def main(
     ifname,
     max_pcap_duration,
     max_zip_files,
+    max_queue_size,
     link_key_names,
     max_uncommitted_entries,
     batch_delay,
@@ -78,9 +85,19 @@ def main(
     global OUTPUT_DIRECTORY
     global MAX_PCAP_DURATION
     global MAX_ZIP_FILES
+    global MAX_QUEUE_SIZE
     global LINK_KEY_NAMES
 
     try:
+        # Make sure that the expected networking protocol is supported
+        if config.nwk_protocol == Protocol.ZIGBEE:
+            conf.dot15d4_protocol = "zigbee"
+        else:
+            raise ValueError(
+                "Unsupported networking protocol for WIDS purposes: "
+                + "{}".format(config.nwk_protocol),
+            )
+
         # Initialize the local variables
         helper_thread = None
         answer = None
@@ -92,6 +109,7 @@ def main(
         OUTPUT_DIRECTORY = output_directory
         MAX_PCAP_DURATION = max_pcap_duration
         MAX_ZIP_FILES = max_zip_files
+        MAX_QUEUE_SIZE = max_queue_size
         LINK_KEY_NAMES = link_key_names
 
         # Log the configuration for the WIDS sensor operation
@@ -105,6 +123,11 @@ def main(
             "Maximum pcap file duration: {} s".format(MAX_PCAP_DURATION),
         )
         logging.info("Maximum number of zip files: {}".format(MAX_ZIP_FILES))
+        logging.info(
+            "Maximum number of tasks in each processing queue: {}".format(
+                MAX_QUEUE_SIZE,
+            ),
+        )
         logging.info("Link key names: {}".format(LINK_KEY_NAMES))
         logging.info(
             "Maximum number of uncommitted entries: {}".format(
@@ -138,21 +161,21 @@ def main(
 
         # Initialize the database that will store data and events
         config.db.connect(db_filepath, wal=True)
-        config.db.create_table("basic_information")
-        config.db.create_table("battery_percentages")
-        config.db.create_table("events")
+        config.db.create_table(Table.BASIC_INFORMATION.value)
+        config.db.create_table(Table.BATTERY_PERCENTAGES.value)
+        config.db.create_table(Table.EVENTS.value)
         config.db.create_count_trigger(
-            "basic_information",
+            Table.BASIC_INFORMATION.value,
             table_thres,
             table_reduct,
         )
         config.db.create_count_trigger(
-            "battery_percentages",
+            Table.BATTERY_PERCENTAGES.value,
             table_thres,
             table_reduct,
         )
         config.db.create_count_trigger(
-            "events",
+            Table.EVENTS.value,
             table_thres,
             table_reduct,
         )
@@ -194,31 +217,35 @@ def packet_handler(pkt):
     global START_TIME
     global PKT_NUM
 
-    tmp_time = pkt.time
-    pkt = Dot15d4FCS(bytes(pkt))
-    pkt.time = tmp_time
+    if MAX_QUEUE_SIZE <= 0 or len(HELPER_DEQUE) < MAX_QUEUE_SIZE:
+        tmp_time = pkt.time
+        pkt = Dot15d4FCS(bytes(pkt))
+        pkt.time = tmp_time
 
-    if float(pkt.time) - START_TIME > MAX_PCAP_DURATION:
-        HELPER_DEQUE.append(
-            (Message.PCAP, "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID)),
-        )
-        START_TIME = float(pkt.time)
-        PKT_NUM = 0
-
-    PKT_NUM += 1
-    HELPER_DEQUE.append(
-        (
-            Message.PKT,
-            (
-                pkt,
-                os.path.join(
-                    OUTPUT_DIRECTORY,
+        if float(pkt.time) - START_TIME > MAX_PCAP_DURATION:
+            HELPER_DEQUE.append(
+                (
+                    Message.PCAP,
                     "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID),
                 ),
-                PKT_NUM,
+            )
+            START_TIME = float(pkt.time)
+            PKT_NUM = 0
+
+        PKT_NUM += 1
+        HELPER_DEQUE.append(
+            (
+                Message.PKT,
+                (
+                    pkt,
+                    os.path.join(
+                        OUTPUT_DIRECTORY,
+                        "{:.6f}.{}.pcap".format(START_TIME, SENSOR_ID),
+                    ),
+                    PKT_NUM,
+                ),
             ),
-        ),
-    )
+        )
 
 
 def helper(
@@ -230,9 +257,9 @@ def helper(
     ipaddr,
     portnum,
 ):
-    writing_queue = mp.Queue()
-    preparsing_queue = mp.Queue()
-    postparsing_queue = mp.Queue()
+    writing_queue = mp.Queue(MAX_QUEUE_SIZE)
+    preparsing_queue = mp.Queue(MAX_QUEUE_SIZE)
+    postparsing_queue = mp.Queue(MAX_QUEUE_SIZE)
 
     writing_process = mp.Process(target=writer, args=(writing_queue,))
     parsing_process = mp.Process(
@@ -361,17 +388,17 @@ def parser(preparsing_queue, postparsing_queue):
         if msg_type == Message.PKT:
             pkt, pcap_filepath, pkt_num = msg_obj
 
-            config.reset_entries()
+            config.reset_row()
             head, tail = os.path.split(os.path.abspath(pcap_filepath))
-            config.entry["pcap_directory"] = head
-            config.entry["pcap_filename"] = tail
-            config.entry["pkt_num"] = pkt_num
-            config.entry["pkt_time"] = float(pkt.time)
+            config.row["pcap_directory"] = head
+            config.row["pcap_filename"] = tail
+            config.row["pkt_num"] = pkt_num
+            config.row["pkt_time"] = float(pkt.time)
             phy_fields(pkt, None)
-            if config.entry["error_msg"] is None:
+            if config.row["error_msg"] is None:
                 derive_info()
 
-            postparsing_queue.put((Message.PKT, deepcopy(config.entry)))
+            postparsing_queue.put((Message.PKT, deepcopy(config.row)))
             if config.network_keys != prev_network_keys:
                 new_network_keys = {}
                 for key_name in config.network_keys.keys():
@@ -488,7 +515,7 @@ def gatherer(
         try:
             msg_type, msg_obj = postparsing_queue.get(timeout=batch_delay)
             if msg_type == Message.PKT:
-                config.entry = msg_obj
+                config.row = msg_obj
                 collect_data()
                 detect_events(link_keys_lock)
                 if num_uncommitted_entries >= max_uncommitted_entries:
@@ -557,3 +584,4 @@ def detect_events(link_keys_lock):
     detection.unsecured_rejoinreq(PANID)
     detection.key_leakage(PANID, LINK_KEY_NAMES, link_keys_lock)
     detection.low_battery(PANID)
+    detection.unverified_payload(PANID)

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -36,31 +36,31 @@ def sll_fields(pkt, msg_queue):
     """Parse SLL fields."""
     # Packet Type field (2 bytes)
     if not (
-        config.set_entry(
+        config.update_row(
             "sll_pkttype",
             pkt[CookedLinux].pkttype,
             SLL_PKT_TYPES,
+            "PE003: Unknown SLL packet type",
         )
     ):
-        config.entry["error_msg"] = "PE003: Unknown SLL packet type"
         return
 
     # ARPHRD Type field (2 bytes)
-    config.entry["sll_arphrdtype"] = pkt[CookedLinux].lladdrtype
-    if config.entry["sll_arphrdtype"] != 0x0325:
-        config.entry["error_msg"] = "PE002: Unsupported ARPHRD type"
+    config.row["sll_arphrdtype"] = pkt[CookedLinux].lladdrtype
+    if config.row["sll_arphrdtype"] != 0x0325:
+        config.row["error_msg"] = "PE002: Unsupported ARPHRD type"
         return
 
     # Address Length field (2 bytes)
-    config.entry["sll_addrlength"] = pkt[CookedLinux].lladdrlen
+    config.row["sll_addrlength"] = pkt[CookedLinux].lladdrlen
 
     # Address field (8 bytes)
-    config.entry["sll_addr"] = pkt[CookedLinux].src.hex()
+    config.row["sll_addr"] = pkt[CookedLinux].src.hex()
 
     # Protocol Type field (2 bytes)
-    config.entry["sll_protocoltype"] = pkt[CookedLinux].proto
-    if config.entry["sll_protocoltype"] != 0x00f6:
-        config.entry["error_msg"] = "PE001: Unsupported protocol type"
+    config.row["sll_protocoltype"] = pkt[CookedLinux].proto
+    if config.row["sll_protocoltype"] != 0x00f6:
+        config.row["error_msg"] = "PE001: Unsupported protocol type"
         return
 
     # SLL Payload field (variable)

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -24,22 +24,22 @@ def phy_fields(pkt, msg_queue):
     """Parse IEEE 802.15.4 PHY fields."""
     if pkt.haslayer(Dot15d4FCS):
         # Frame Length field (7 bits)
-        config.entry["phy_length"] = len(pkt[Dot15d4FCS])
+        config.row["phy_length"] = len(pkt[Dot15d4FCS])
         if (
-            config.entry["phy_length"] > 127
+            config.row["phy_length"] > 127
             or (
-                config.entry["phy_length"] < 9
-                and config.entry["phy_length"] != 5
+                config.row["phy_length"] < 9
+                and config.row["phy_length"] != 5
             )
         ):
-            config.entry["error_msg"] = "PE101: Invalid packet length"
+            config.row["error_msg"] = "PE101: Invalid packet length"
             return
 
         # PHY Payload field (variable)
-        config.entry["phy_payload"] = bytes(pkt[Dot15d4FCS]).hex()
+        config.row["phy_payload"] = bytes(pkt[Dot15d4FCS]).hex()
         mac_fields(pkt, msg_queue)
     else:
-        config.entry["error_msg"] = (
+        config.row["error_msg"] = (
             "PE102: There are no IEEE 802.15.4 MAC fields"
         )
         return

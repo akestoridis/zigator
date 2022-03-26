@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -25,6 +25,7 @@ from . import (
     visualization,
     wids,
 )
+from .enums import Subcommand
 
 
 def main(argv):
@@ -51,39 +52,43 @@ def main(argv):
         return
 
     # Make sure that a packet type was selected when needed
-    if args.SUBCOMMAND == "inject" and args.PKT_TYPE is None:
+    if args.SUBCOMMAND == Subcommand.INJECT and args.PKT_TYPE is None:
         cli.print_zigator_inject_help()
         return
+
+    # Update the expected networking protocol
+    if hasattr(args, "NWK_PROTOCOL"):
+        config.nwk_protocol = args.NWK_PROTOCOL
 
     # Load Zigator's configuration files
     config.load_config_files()
 
     # Process the user's input
-    if args.SUBCOMMAND == "print-config":
+    if args.SUBCOMMAND == Subcommand.PRINT_CONFIG:
         config.print_config()
-    elif args.SUBCOMMAND == "add-config-entry":
+    elif args.SUBCOMMAND == Subcommand.ADD_CONFIG_ENTRY:
         config.add_config_entry(
             args.ENTRY_TYPE,
             args.ENTRY_VALUE,
             args.ENTRY_NAME,
         )
-    elif args.SUBCOMMAND == "rm-config-entry":
+    elif args.SUBCOMMAND == Subcommand.RM_CONFIG_ENTRY:
         config.rm_config_entry(args.ENTRY_TYPE, args.ENTRY_NAME)
-    elif args.SUBCOMMAND == "parse":
+    elif args.SUBCOMMAND == Subcommand.PARSE:
         parsing.main(
             args.PCAP_DIRECTORY,
             args.DATABASE_FILEPATH,
             None if not hasattr(args, "num_workers") else args.num_workers,
         )
-    elif args.SUBCOMMAND == "analyze":
+    elif args.SUBCOMMAND == Subcommand.ANALYZE:
         analysis.main(
             args.DATABASE_FILEPATH,
             args.OUTPUT_DIRECTORY,
             None if not hasattr(args, "num_workers") else args.num_workers,
         )
-    elif args.SUBCOMMAND == "visualize":
+    elif args.SUBCOMMAND == Subcommand.VISUALIZE:
         visualization.main(args.DATABASE_FILEPATH, args.OUTPUT_DIRECTORY)
-    elif args.SUBCOMMAND == "train":
+    elif args.SUBCOMMAND == Subcommand.TRAIN:
         training.main(
             "enc-nwk-cmd",
             args.DATABASE_FILEPATH,
@@ -91,11 +96,11 @@ def main(argv):
             None if not hasattr(args, "seed") else args.seed,
             args.restricted,
         )
-    elif args.SUBCOMMAND == "inject":
+    elif args.SUBCOMMAND == Subcommand.INJECT:
         injection.main(args)
-    elif args.SUBCOMMAND == "atusb":
+    elif args.SUBCOMMAND == Subcommand.ATUSB:
         atusb.main(args.REPO_DIRECTORY)
-    elif args.SUBCOMMAND == "wids":
+    elif args.SUBCOMMAND == Subcommand.WIDS:
         wids.main(
             args.SENSOR_ID,
             args.PANID,
@@ -105,6 +110,7 @@ def main(argv):
             args.ifname,
             args.max_pcap_duration,
             args.max_zip_files,
+            args.max_queue_size,
             args.link_key_names,
             args.max_uncommitted_entries,
             args.batch_delay,

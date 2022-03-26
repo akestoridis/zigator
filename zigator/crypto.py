@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -18,11 +18,13 @@
 Cryptographic module for the ``zigator`` package.
 """
 
+import hashlib
 from Cryptodome.Cipher import AES
 
 
 # The block size is measured in bytes
 ZIGBEE_BLOCK_SIZE = 16
+THREAD_BLOCK_SIZE = 64
 
 
 def zigbee_mmo_hash(message):
@@ -183,6 +185,148 @@ def zigbee_dec_ver(
     # whether the verification process was successful or not
     cipher = AES.new(key=key, mode=AES.MODE_CCM, nonce=nonce, mac_len=4)
     cipher.update(auth_data)
+    dec_payload = cipher.decrypt(enc_payload)
+    try:
+        cipher.verify(mic)
+        return dec_payload, True
+    except ValueError:
+        return dec_payload, False
+
+
+# https://gitlab.com/wireshark/wireshark/-/blob/5ecb57cb9026cebf0cfa4918c4a86942620c5ecf/epan/dissectors/packet-thread.c#L742
+def thread_hmac(message, key):
+    # HMAC uses the following inner and outer pads
+    inner_pad = 0x36
+    outer_pad = 0x5c
+
+    # Hash the key if it is longer than the block size
+    if len(key) > THREAD_BLOCK_SIZE:
+        key = bytearray(hashlib.sha256(key).digest())
+    else:
+        key = bytearray(key)
+
+    # Pad the key with zeros if it is shorter than the block size
+    for _ in range(THREAD_BLOCK_SIZE - len(key)):
+        key.append(0x00)
+
+    # Sanity check
+    if len(key) != THREAD_BLOCK_SIZE:
+        raise ValueError(
+            "The length of the key ({}) ".format(len(key))
+            + "is not equal to the block size ({})".format(THREAD_BLOCK_SIZE),
+        )
+
+    # Compute the inner and outer keys
+    inner_key = bytearray(key)
+    outer_key = bytearray(key)
+    for i in range(THREAD_BLOCK_SIZE):
+        inner_key[i] ^= inner_pad
+        outer_key[i] ^= outer_pad
+
+    return hashlib.sha256(
+        outer_key + hashlib.sha256(inner_key + message).digest(),
+    ).digest()
+
+
+def ieee802154_enc_mic(
+    key,
+    source_addr,
+    frame_counter,
+    sec_level,
+    header,
+    dec_payload,
+):
+    # The fields of the nonce are in big-endian byte order
+    be_srcaddr = source_addr.to_bytes(8, byteorder="big")
+    be_framecounter = frame_counter.to_bytes(4, byteorder="big")
+    be_seclevel = sec_level.to_bytes(1, byteorder="big")
+
+    # Construct the nonce
+    nonce = bytearray(be_srcaddr)
+    nonce.extend(be_framecounter)
+    nonce.extend(be_seclevel)
+
+    # Derive the length of the message authentication code
+    if sec_level in {1, 5}:
+        mac_len = 4
+    elif sec_level in {2, 6}:
+        mac_len = 8
+    elif sec_level in {3, 7}:
+        mac_len = 16
+    else:
+        mac_len = 0
+
+    # Return the appropriate secured payload and message integrity code based
+    # on the provided security level
+    cipher = AES.new(
+        key=key,
+        mode=AES.MODE_CCM,
+        nonce=nonce,
+        mac_len=max(mac_len, 4),
+    )
+    cipher.update(header)
+    if sec_level in {5, 6, 7}:
+        sec_payload, mic = cipher.encrypt_and_digest(dec_payload)
+    elif sec_level in {1, 2, 3}:
+        cipher.update(dec_payload)
+        sec_payload = dec_payload
+        mic = cipher.digest()
+    elif sec_level == 4:
+        sec_payload = cipher.encrypt(dec_payload)
+        mic = None
+    elif sec_level == 0:
+        sec_payload = dec_payload
+        mic = None
+    else:
+        raise ValueError("Invalid security level")
+    return sec_payload, mic
+
+
+def ieee802154_dec_ver(
+    key,
+    source_addr,
+    frame_counter,
+    sec_level,
+    header,
+    enc_payload,
+    mic,
+):
+    # The fields of the nonce are in big-endian byte order
+    be_srcaddr = source_addr.to_bytes(8, byteorder="big")
+    be_framecounter = frame_counter.to_bytes(4, byteorder="big")
+    be_seclevel = sec_level.to_bytes(1, byteorder="big")
+
+    # Construct the nonce
+    nonce = bytearray(be_srcaddr)
+    nonce.extend(be_framecounter)
+    nonce.extend(be_seclevel)
+
+    # Derive the length of the message authentication code
+    if sec_level in {1, 5}:
+        mac_len = 4
+    elif sec_level in {2, 6}:
+        mac_len = 8
+    elif sec_level in {3, 7}:
+        mac_len = 16
+    else:
+        mac_len = 0
+
+    # Sanity check
+    if len(mic) != mac_len:
+        raise ValueError(
+            "Expected a {}-bit message integrity code, ".format(8*mac_len)
+            + "not a {}-bit one".format(8*len(mic)),
+        )
+
+    # Return the decrypted payload and a Boolean value that indicates
+    # whether the verification process was successful or not
+    cipher = AES.new(
+        key=key,
+        mode=AES.MODE_CCM,
+        nonce=nonce,
+        mac_len=max(mac_len, 4),
+    )
+    cipher.update(header)
     dec_payload = cipher.decrypt(enc_payload)
     try:
         cipher.verify(mic)
