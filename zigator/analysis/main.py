@@ -26,6 +26,7 @@ from ..enums import (
 from .battery_percentages import battery_percentages
 from .battery_statuses import battery_statuses
 from .time_series import time_series
+from .serial_processing import serial_processing
 from .distinct_matches import distinct_matches
 from .field_values import field_values
 from .form_frequencies import form_frequencies
@@ -145,6 +146,12 @@ def main(db_filepath, out_dirpath, num_workers):
             db_filepath,
             tablename,
             os.path.join(out_dirpath, "battery-statuses"),
+        )
+        serial_processing(
+            db_filepath,
+            tablename,
+            os.path.join(out_dirpath, "serial-processing"),
+            num_workers,
         )
     time_series(
         db_filepath,

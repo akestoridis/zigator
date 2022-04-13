@@ -13,7 +13,7 @@ psutil==5.8.0
 pycrc==0.9.2
 pycryptodomex==3.11.0
 pytz==2021.1
-scapy==2.4.5rc1.dev215
+scapy==2.4.5rc1.dev228
 scikit-learn==1.0.1
 scipy==1.7.2
 six==1.16.0

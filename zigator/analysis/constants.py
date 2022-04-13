@@ -1017,6 +1017,28 @@ ZIGBEE_COLUMN_MATCHES = [
         ),
         "der_nwk_srctype",
     ),
+    (
+        "nwk_edinitiator--der_nwk_srcextendedaddr.tsv",
+        (
+            "nwk_edinitiator",
+        ),
+        (
+            ("error_msg", None),
+            ("!nwk_edinitiator", None),
+        ),
+        "der_nwk_srcextendedaddr",
+    ),
+    (
+        "nwk_edinitiator--der_nwk_srctype.tsv",
+        (
+            "nwk_edinitiator",
+        ),
+        (
+            ("error_msg", None),
+            ("!nwk_edinitiator", None),
+        ),
+        "der_nwk_srctype",
+    ),
 ]
 
 
