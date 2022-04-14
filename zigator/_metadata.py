@@ -34,6 +34,7 @@ __keywords__ = [
     "security",
     "analysis",
     "Zigbee",
+    "Thread",
     "IEEE 802.15.4",
 ]
 __classifiers__ = [

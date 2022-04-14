@@ -49,8 +49,8 @@ After reloading your `~/.bashrc` file, you should be able to find the `zigator` 
 
 Zigator enables its users to do the following:
 
-* Decrypt and verify both Zigbee and Thread packets
-* Encrypt and authenticate both Zigbee and Thread packets
+* Decrypt and verify captured Zigbee and Thread packets
+* Encrypt and authenticate forged Zigbee and Thread packets
 * Derive preconfigured Trust Center link keys from install codes
 * Derive MAC keys and MLE keys from master keys
 * Parse several header fields of Zigbee and Thread packets
@@ -94,20 +94,6 @@ For example, you will have to execute your installed executable with `sudo` in o
 
 A disclaimer will be printed whenever the user executes a command that would launch an attack.
 The user will have to accept responsibility for their actions if they want to proceed.
-
-If you cannot capture your own Zigbee packets, you may use the pcap files of the [CRAWDAD dataset cmu/zigbee-smarthome](https://doi.org/10.15783/c7-nvc6-4q28) for your analysis.
-More specifically, registered users of [CRAWDAD](https://crawdad.org) can download the following zip files:
-
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-room.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-room.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-duos.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-duos.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-house.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-house.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth3-trios.zip
-* https://crawdad.org/download/cmu/zigbee-smarthome/sth2-trios.zip
-
-Each of these zip files contains a pcap file of captured Zigbee packets and a text file that provides a description of the experimental setup and the keys that were used to encrypt and authenticate them.
 
 
 ## Publications

@@ -33,8 +33,8 @@ Features
 
 Zigator enables its users to do the following:
 
-* Decrypt and verify both Zigbee and Thread packets
-* Encrypt and authenticate both Zigbee and Thread packets
+* Decrypt and verify captured Zigbee and Thread packets
+* Encrypt and authenticate forged Zigbee and Thread packets
 * Derive preconfigured Trust Center link keys from install codes
 * Derive MAC keys and MLE keys from master keys
 * Parse several header fields of Zigbee and Thread packets
