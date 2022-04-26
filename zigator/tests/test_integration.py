@@ -380,7 +380,7 @@ class TestIntegration(unittest.TestCase):
         )
 
     def assertLoggingOutput(self, cm):
-        self.assertEqual(len(cm.output), 55)
+        self.assertEqual(len(cm.output), 57)
 
         self.assertRegex(
             cm.output[0],
@@ -432,7 +432,7 @@ class TestIntegration(unittest.TestCase):
         )
         self.assertAnyRegex(
             cm.output[3:33],
-            r"^INFO:root:Parsed 16 packets from the "
+            r"^INFO:root:Parsed 19 packets from the "
             + r"\".+02-mac-testing.pcap\" file$",
         )
         self.assertAnyRegex(
@@ -598,49 +598,60 @@ class TestIntegration(unittest.TestCase):
         )
         self.assertRegex(
             cm.output[46],
+            r"^WARNING:root:Generated 2 \""
+            + r"Ignored secured MAC Data packet\" parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[47],
             r"^WARNING:root:Generated 2 \"PE101: "
             + r"Invalid packet length\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[47],
+            cm.output[48],
             r"^WARNING:root:Generated 2 \"PE102: "
             + r"There are no IEEE 802.15.4 MAC fields\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[48],
+            cm.output[49],
             r"^WARNING:root:Generated 1 \"PE202: "
             + r"Incorrect frame check sequence \(FCS\)\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[49],
+            cm.output[50],
             r"^WARNING:root:Generated 1 \"PE211: "
             + r"Unknown MAC command\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[50],
+            cm.output[51],
             r"^WARNING:root:Generated 1 \"PE224: "
             + r"Unexpected payload\" parsing errors$",
         )
         self.assertRegex(
-            cm.output[51],
+            cm.output[52],
             r"^WARNING:root:Generated 2 \""
             + r"PE302: Unknown NWK frame type\" "
             + r"parsing errors$",
         )
         self.assertRegex(
-            cm.output[52],
+            cm.output[53],
+            r"^WARNING:root:Generated 1 \""
+            + r"PE303: Unknown NWK protocol version\" "
+            + r"parsing errors$",
+        )
+        self.assertRegex(
+            cm.output[54],
             r"^WARNING:root:Generated 1 \""
             + r"There are no MAC Association Request fields\" "
             + r"parsing errors$",
         )
         self.assertRegex(
-            cm.output[53],
+            cm.output[55],
             r"^WARNING:root:Generated 2 \""
             + r"There are no Zigbee NWK fields\" "
             + r"parsing errors$",
         )
         self.assertRegex(
-            cm.output[54],
+            cm.output[56],
             r"^WARNING:root:Generated 1 \""
             + r"There are no Zigbee beacon fields\" "
             + r"parsing errors$",
@@ -1859,6 +1870,151 @@ class TestIntegration(unittest.TestCase):
                 ("mac_dstshortaddr", "0x8400"),
                 ("mac_srcshortaddr", "0x8401"),
                 ("error_msg", "Ignored secured MAC Command packet"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 17),
+                ("pkt_time", 1599996433.0),
+                ("phy_length", 124),
+                (
+                    "phy_payload",
+                    ""
+                    + "71dcf0dec00800000000999999070000"
+                    + "0000999999e1e320cc11465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e54465241474d45"
+                    + "4e54465241474d454e541a7d",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x7d1a"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b0: MAC Security Disabled"),
+                (
+                    "mac_framepending",
+                    "0b1: Additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b11: Extended destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 240),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstextendedaddr", "9999990000000008"),
+                ("mac_srcextendedaddr", "9999990000000007"),
+                ("nwk_frametype", "0b01: NWK Command"),
+                ("error_msg", "PE303: Unknown NWK protocol version"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 18),
+                ("pkt_time", 1599996434.0),
+                ("phy_length", 126),
+                (
+                    "phy_payload",
+                    ""
+                    + "79dcdbdec00a00000000999999090000"
+                    + "00009999990d010000000185a9ea74e3"
+                    + "488fb9acfac9d49e827e437783a32cca"
+                    + "47e4bd2c770bd519fb2dd65bf3dc0568"
+                    + "f7ec3a6efb03a38e455c5ee0984e1866"
+                    + "7724b807b6397330980266d89e0d2014"
+                    + "ae25629b8191774afd7ddbcd0e5ca920"
+                    + "fdab3bf1792102faa3699667c8d9",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0xd9c8"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b1: MAC Security Enabled"),
+                (
+                    "mac_framepending",
+                    "0b1: Additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b11: Extended destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 219),
+                ("mac_dstpanid", "0xc0de"),
+                ("mac_dstextendedaddr", "999999000000000a"),
+                ("mac_srcextendedaddr", "9999990000000009"),
+                ("error_msg", "Ignored secured MAC Data packet"),
+            ],
+            [
+                ("pcap_directory", None),
+                ("pcap_filename", "02-mac-testing.pcap"),
+                ("pkt_num", 19),
+                ("pkt_time", 1599996435.0),
+                ("phy_length", 126),
+                (
+                    "phy_payload",
+                    ""
+                    + "79dcf8bbc00c000000009999990b0000"
+                    + "00009999990d0100000001ffb9efe90f"
+                    + "d6a31a6768279111d251bbdbf50b6a55"
+                    + "bb78aa1a04d3dc1b871ea35dfb17df61"
+                    + "7ff7b657727e4a013cae68777d918504"
+                    + "03b8a3ea7b1b52d71049dd83b601585e"
+                    + "0adccca30150f4a9082ea83d824062fc"
+                    + "e486b5a51a1cc4ab0367a8ac4180",
+                ),
+                ("mac_show", None),
+                ("mac_fcs", "0x8041"),
+                ("mac_frametype", "0b001: MAC Data"),
+                ("mac_security", "0b1: MAC Security Enabled"),
+                (
+                    "mac_framepending",
+                    "0b1: Additional packets are pending for the receiver",
+                ),
+                (
+                    "mac_ackreq",
+                    "0b1: The sender requests a MAC Acknowledgment",
+                ),
+                (
+                    "mac_panidcomp",
+                    "0b1: "
+                    + "The source PAN ID is the same "
+                    + "as the destination PAN ID",
+                ),
+                ("mac_dstaddrmode", "0b11: Extended destination MAC address"),
+                (
+                    "mac_frameversion",
+                    "0b01: IEEE 802.15.4-2006 Frame Version",
+                ),
+                ("mac_srcaddrmode", "0b11: Extended source MAC address"),
+                ("mac_seqnum", 248),
+                ("mac_dstpanid", "0xc0bb"),
+                ("mac_dstextendedaddr", "999999000000000c"),
+                ("mac_srcextendedaddr", "999999000000000b"),
+                ("error_msg", "Ignored secured MAC Data packet"),
             ],
             [
                 ("pcap_directory", None),
