@@ -21,7 +21,7 @@ The users of this tool are responsible for making sure that they are compliant w
 
 ## Installation
 
-You can install Zigator in a Python 3 virtual environment using pip as follows:
+You can install Zigator in a Python 3 virtual environment as follows:
 ```console
 $ git clone https://github.com/akestoridis/zigator.git
 $ cd zigator/
@@ -96,12 +96,16 @@ A disclaimer will be printed whenever the user executes a command that would lau
 The user will have to accept responsibility for their actions if they want to proceed.
 
 
-## Publications
+## Related Publications
 
-Zigator was used in the following publications:
-
-* D.-G. Akestoridis and P. Tague, “HiveGuard: A network security monitoring architecture for Zigbee networks,” to appear in Proc. IEEE CNS’21.
+* D.-G. Akestoridis, V. Sekar, and P. Tague, “On the security of Thread networks: Experimentation with OpenThread-enabled devices,” to appear in Proc. ACM WiSec’22.
+* D.-G. Akestoridis and P. Tague, “HiveGuard: A network security monitoring architecture for Zigbee networks,” in *Proc. IEEE CNS’21*, 2021, pp. 209–217, doi: [10.1109/CNS53000.2021.9705043](https://doi.org/10.1109/CNS53000.2021.9705043).
 * D.-G. Akestoridis, M. Harishankar, M. Weber, and P. Tague, “Zigator: Analyzing the security of Zigbee-enabled smart homes,” in *Proc. ACM WiSec’20*, 2020, pp. 77–88, doi: [10.1145/3395351.3399363](https://doi.org/10.1145/3395351.3399363).
+
+
+## Acknowledgments
+
+This project was supported in part by the Carnegie Mellon CyLab Security and Privacy Institute and in part by Carnegie Mellon University.
 
 
 ## License

@@ -47,6 +47,13 @@ Zigator enables its users to do the following:
 * Deploy stand-alone WIDS sensors for Zigbee networks
 
 
+Acknowledgments
+---------------
+
+This project was supported in part by the Carnegie Mellon CyLab Security and
+Privacy Institute and in part by Carnegie Mellon University.
+
+
 License
 -------
 
