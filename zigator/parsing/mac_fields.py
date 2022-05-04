@@ -667,7 +667,7 @@ def mac_auxiliary(pkt, msg_queue):
         config.row["mac_aux_keyindex"] = (
             pkt[Dot15d4AuxSecurityHeader].sec_keyid_keyindex
         )
-        config.derive_thread_keys(config.row["mle_aux_keyindex"])
+        config.derive_thread_keys(config.row["mac_aux_keyindex"])
         # https://gitlab.com/wireshark/wireshark/-/blob/5ecb57cb9026cebf0cfa4918c4a86942620c5ecf/epan/dissectors/packet-thread.c#L775-782
         if (
             pkt[Dot15d4AuxSecurityHeader].sec_keyid_keyindex == 0xff
