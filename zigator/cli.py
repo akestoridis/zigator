@@ -49,7 +49,7 @@ zigator_subparsers.add_parser(
 )
 
 add_config_entry_parser = zigator_subparsers.add_parser(
-    Subcommand.ADD_CONFIG_ENTRY.value,
+    Subcommand.ADD_CONFIG.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="add a configuration entry",
 )
@@ -81,7 +81,7 @@ add_config_entry_parser.add_argument(
 )
 
 rm_config_entry_parser = zigator_subparsers.add_parser(
-    Subcommand.RM_CONFIG_ENTRY.value,
+    Subcommand.RM_CONFIG.value,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     help="remove a configuration entry",
 )

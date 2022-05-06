@@ -66,13 +66,13 @@ def main(argv):
     # Process the user's input
     if args.SUBCOMMAND == Subcommand.PRINT_CONFIG:
         config.print_config()
-    elif args.SUBCOMMAND == Subcommand.ADD_CONFIG_ENTRY:
+    elif args.SUBCOMMAND == Subcommand.ADD_CONFIG:
         config.add_config_entry(
             args.ENTRY_TYPE,
             args.ENTRY_VALUE,
             args.ENTRY_NAME,
         )
-    elif args.SUBCOMMAND == Subcommand.RM_CONFIG_ENTRY:
+    elif args.SUBCOMMAND == Subcommand.RM_CONFIG:
         config.rm_config_entry(args.ENTRY_TYPE, args.ENTRY_NAME)
     elif args.SUBCOMMAND == Subcommand.PARSE:
         parsing.main(

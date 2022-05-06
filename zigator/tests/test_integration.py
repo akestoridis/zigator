@@ -147,7 +147,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "add-config-entry",
+                    "add-config",
                     "network-key",
                     "11111111111111111111111111111111",
                     "test_11111111111111111111111111111111",
@@ -170,7 +170,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "add-config-entry",
+                    "add-config",
                     "link-key",
                     "33333333333333333333333333333333",
                     "test_33333333333333333333333333333333",
@@ -193,7 +193,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "add-config-entry",
+                    "add-config",
                     "install-code",
                     "55555555555555555555555555555555a9d1",
                     "test_55555555555555555555555555555555a9d1",
@@ -317,7 +317,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "rm-config-entry",
+                    "rm-config",
                     "network-key",
                     "test_11111111111111111111111111111111",
                 ],
@@ -339,7 +339,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "rm-config-entry",
+                    "rm-config",
                     "link-key",
                     "test_33333333333333333333333333333333",
                 ],
@@ -361,7 +361,7 @@ class TestIntegration(unittest.TestCase):
             zigator.main(
                 [
                     "zigator",
-                    "rm-config-entry",
+                    "rm-config",
                     "install-code",
                     "test_55555555555555555555555555555555a9d1",
                 ],

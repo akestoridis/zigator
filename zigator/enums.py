@@ -51,8 +51,8 @@ class Protocol(str, Enum):
 
 class Subcommand(str, Enum):
     PRINT_CONFIG = "print-config"
-    ADD_CONFIG_ENTRY = "add-config-entry"
-    RM_CONFIG_ENTRY = "rm-config-entry"
+    ADD_CONFIG = "add-config"
+    RM_CONFIG = "rm-config"
     PARSE = "parse"
     ANALYZE = "analyze"
     VISUALIZE = "visualize"
