@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dimitrios-Georgios Akestoridis
+# Copyright (C) 2020-2022 Dimitrios-Georgios Akestoridis
 #
 # This file is part of Zigator.
 #
@@ -97,6 +97,57 @@ def make():
               + "the active period restarting whenever a period of "
               + "inactivity is observed and the idle period restarting "
               + "whenever certain packet types are observed",
+        "14": "Jam only 22-byte MAC commands of a specified network that "
+              + "request a MAC acknowledgment",
+        "15": "Jam only certain 22-byte MAC commands of a specified network "
+              + "that request a MAC acknowledgment and then spoof a MAC "
+              + "acknowledgment followed by a 127-byte MAC Data packet, "
+              + "according to specified active and idle time intervals, with "
+              + "the active period restarting whenever a period of "
+              + "inactivity is observed",
+        "16": "Jam only certain 22-byte MAC commands of a specified network "
+              + "that request a MAC acknowledgment and then spoof a MAC "
+              + "acknowledgment followed by a 127-byte MLE command, "
+              + "according to specified active and idle time intervals, with "
+              + "the active period restarting whenever a period of "
+              + "inactivity is observed",
+        "17": "Jam only certain 22-byte MAC commands of a specified network "
+              + "that request a MAC acknowledgment and then spoof a MAC "
+              + "acknowledgment followed by a 124-byte first fragment, "
+              + "according to specified active and idle time intervals, with "
+              + "the active period restarting whenever a period of "
+              + "inactivity is observed",
+        "18": "Jam only certain 22-byte MAC commands of a specified network "
+              + "that request a MAC acknowledgment and then spoof a MAC "
+              + "acknowledgment followed by a 124-byte subsequent fragment, "
+              + "according to specified active and idle time intervals, with "
+              + "the active period restarting whenever a period of "
+              + "inactivity is observed",
+        "19": "Jam only beacons of a specified network, each of which is at "
+              + "least 45 bytes in length",
+        "20": "Jam only Discovery Responses of a specified network",
+        "21": "Jam only beacons of a specified network, each of which is at "
+              + "least 45 bytes in length, and Discovery Responses of the "
+              + "same network",
+        "22": "Jam only beacons of a specified network, each of which is at "
+              + "least 45 bytes in length, unless the MAC source address "
+              + "corresponds to the specified extended address",
+        "23": "Jam only Discovery Responses of a specified network, unless "
+              + "the MAC source address corresponds to the specified "
+              + "extended address",
+        "24": "Jam only beacons of a specified network, each of which is at "
+              + "least 45 bytes in length, and Discovery Responses of the "
+              + "same network, unless the MAC source address corresponds to "
+              + "the specified extended address",
+        "25": "Jam only 124-byte unsecured 6LoWPAN first fragments of a "
+              + "specified network that use the specified UDP source and "
+              + "destination ports, unless the MAC addresses correspond to "
+              + "the specified extended addresses in either direction",
+        "26": "Jam only 124-byte unsecured 6LoWPAN first fragments of a "
+              + "specified network that use the specified UDP source and "
+              + "destination ports, unless the MAC addresses correspond to "
+              + "the specified extended addresses in either direction, and "
+              + "then spoof a MAC acknowledgment",
     }
     print("Enter the ID of an available attack:")
     for key in sorted(menu.keys()):
@@ -113,7 +164,31 @@ def make():
             break
 
     panid = None
-    if attackid in {"02", "03", "04", "05", "10", "11", "12", "13"}:
+    if (
+        attackid in {
+            "02",
+            "03",
+            "04",
+            "05",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+        }
+    ):
         while True:
             print("Enter the PAN ID as four hexadecimal digits:")
             panid = input("0x")
@@ -129,7 +204,7 @@ def make():
                 break
 
     shortdstaddr = None
-    if attackid in {"12", "13"}:
+    if attackid in {"12", "13", "15"}:
         while True:
             print(
                 "Enter the short destination address as four hexadecimal "
@@ -143,7 +218,7 @@ def make():
                 break
 
     shortsrcaddr = None
-    if attackid in {"12", "13"}:
+    if attackid in {"12", "13", "15"}:
         while True:
             print(
                 "Enter the short source address as four hexadecimal digits:",
@@ -155,8 +230,62 @@ def make():
             ):
                 break
 
+    datagramtag = None
+    if attackid in {"17", "18"}:
+        while True:
+            print(
+                "Enter the datagram tag as four hexadecimal digits:",
+            )
+            datagramtag = input("0x")
+            if (
+                len(datagramtag) == 4
+                and all(d in string.hexdigits for d in datagramtag)
+            ):
+                break
+
+    udpsrcport = None
+    if attackid in {"25", "26"}:
+        while True:
+            print(
+                "Enter the value of the 16-bit UDP source port in decimal "
+                + "notation:",
+            )
+            udpsrcport = input("")
+            if (
+                all(d in string.digits for d in udpsrcport)
+                and int(udpsrcport, 10) < 65536
+            ):
+                break
+
+    udpdstport = None
+    if attackid in {"25", "26"}:
+        while True:
+            print(
+                "Enter the value of the 16-bit UDP destination port in "
+                + "decimal notation:",
+            )
+            udpdstport = input("")
+            if (
+                all(d in string.digits for d in udpdstport)
+                and int(udpdstport, 10) < 65536
+            ):
+                break
+
+    udpchecksum = None
+    if attackid in {"16"}:
+        while True:
+            print(
+                "Enter the UDP checksum as four hexadecimal digits:",
+            )
+            udpchecksum = input("0x")
+            if (
+                len(udpchecksum) == 4
+                and all(d in string.hexdigits for d in udpchecksum)
+            ):
+                break
+
     framecounter = None
-    if attackid in {"12", "13"}:
+    if attackid in {"12", "13", "15", "16"}:
         while True:
             print(
                 "Enter the value of the 32-bit frame counter in decimal "
@@ -169,8 +298,35 @@ def make():
             ):
                 break
 
+    extendeddstaddr = None
+    if attackid in {"16", "17", "18", "25", "26"}:
+        while True:
+            print(
+                "Enter the extended destination address as sixteen "
+                + "hexadecimal digits:",
+            )
+            extendeddstaddr = input("0x")
+            if (
+                len(extendeddstaddr) == 16
+                and all(d in string.hexdigits for d in extendeddstaddr)
+            ):
+                break
+
     extendedsrcaddr = None
-    if attackid in {"12", "13"}:
+    if (
+        attackid in {
+            "12",
+            "13",
+            "16",
+            "17",
+            "18",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+        }
+    ):
         while True:
             print(
                 "Enter the extended source address as sixteen hexadecimal "
@@ -197,8 +353,35 @@ def make():
             ):
                 break
 
+    keysource = None
+    if attackid in {"16"}:
+        while True:
+            print(
+                "Enter the value of the 32-bit key source as eight "
+                + "hexadecimal digits:",
+            )
+            keysource = input("0x")
+            if (
+                len(keysource) == 8
+                and all(d in string.hexdigits for d in keysource)
+            ):
+                break
+
+    keyindex = None
+    if attackid in {"15", "16"}:
+        while True:
+            print(
+                "Enter the value of the 8-bit key index in decimal notation:",
+            )
+            keyindex = input("")
+            if (
+                all(d in string.digits for d in keyindex)
+                and int(keyindex, 10) < 256
+            ):
+                break
+
     activesec = None
-    if attackid in {"13"}:
+    if attackid in {"13", "15", "16", "17", "18"}:
         while True:
             print(
                 "Enter the number of seconds for each active period in "
@@ -212,7 +395,7 @@ def make():
                 break
 
     idlesec = None
-    if attackid in {"13"}:
+    if attackid in {"13", "15", "16", "17", "18"}:
         while True:
             print(
                 "Enter the number of seconds for each idle period in decimal "
@@ -257,12 +440,26 @@ def make():
             args.append("SHORTDSTADDR=0x{}".format(shortdstaddr))
         if shortsrcaddr is not None:
             args.append("SHORTSRCADDR=0x{}".format(shortsrcaddr))
+        if datagramtag is not None:
+            args.append("DATAGRAMTAG=0x{}".format(datagramtag))
+        if udpsrcport is not None:
+            args.append("UDPSRCPORT={}".format(udpsrcport))
+        if udpdstport is not None:
+            args.append("UDPDSTPORT={}".format(udpdstport))
+        if udpchecksum is not None:
+            args.append("UDPCHECKSUM=0x{}".format(udpchecksum))
         if framecounter is not None:
             args.append("FRAMECOUNTER={}".format(framecounter))
+        if extendeddstaddr is not None:
+            args.append("EXTENDEDDSTADDR=0x{}".format(extendeddstaddr))
         if extendedsrcaddr is not None:
             args.append("EXTENDEDSRCADDR=0x{}".format(extendedsrcaddr))
         if keyseqnum is not None:
             args.append("KEYSEQNUM={}".format(keyseqnum))
+        if keysource is not None:
+            args.append("KEYSOURCE=0x{}UL".format(keysource))
+        if keyindex is not None:
+            args.append("KEYINDEX={}".format(keyindex))
         if activesec is not None:
             args.append("ACTIVESEC={}".format(activesec))
         if idlesec is not None:
