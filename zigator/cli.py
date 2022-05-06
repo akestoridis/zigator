@@ -31,10 +31,20 @@ from .enums import (
 )
 
 
+class CustomHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
+    def __init__(self, prog):
+        super().__init__(
+            prog,
+            indent_increment=1,
+            max_help_position=18,
+            width=78,
+        )
+
+
 zigator_parser = argparse.ArgumentParser(
     prog=__title__,
     description=__description__,
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    formatter_class=CustomHelpFormatter,
     add_help=True,
 )
 zigator_subparsers = zigator_parser.add_subparsers(
